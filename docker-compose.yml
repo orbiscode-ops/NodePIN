@@ -1,0 +1,128 @@
+# ═══════════════════════════════════════════
+# NodeYield — Decentralized Node Yield Orchestrator
+# كيف تضيف أو تحذف شبكة؟
+#   1. أضف service جديد أسفل هذه القائمة.
+#   2. أنشئ مجلد خاص تحت services/
+#   3. أضف متغيراته في .env.example و .env
+#   4. أضف شبكته (networks) حسب الحاجة.
+# ═══════════════════════════════════════════
+
+version: "3.8"
+
+# ━━━━━━━━━━━ NETWORKS ━━━━━━━━━━━
+networks:
+  # شبكة داخلية يتواصل عليها كل شيء
+  nodeyield-net:
+    driver: bridge
+
+# ━━━━━━━━━━━ VOLUMES ━━━━━━━━━━━
+volumes:
+  # مكان ثابت خارج الحاويات لحفظ البيانات
+  myst-data:
+  storj-data:
+  control-db:
+  # أضف هنا عند إضافة شبكة جديدة
+
+# ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
+services:
+  # ──────────────────────────────────────────
+  # 1) Mysterium Network Client
+  #    وظيفة: بروكسي/نود لامركزي مع تدوير هويات.
+  # ──────────────────────────────────────────
+  myst_client:
+    image: mysteriumnetwork/myst:latest
+    container_name: myst_client
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - MYST_IDENTITY_PASSPHRASE=${MYST_IDENTITY_PASSPHRASE}
+      - MYST_COUNTRY_FILTER=${MYST_COUNTRY_FILTER:-us}
+      - MYST_MAX_SESSION_MINUTES=${MYST_MAX_SESSION_MINUTES:-30}
+    volumes:
+      - myst-data:/var/lib/mysterium-node
+    ports:
+      - "4050:4050"   # TequilAPI
+      - "4449:4449"   # Web UI
+    networks:
+      - nodeyield-net
+    # ملاحظة: consumer_mode أو provider_mode تحدده identity/تهيئة.
+
+  # ──────────────────────────────────────────
+  # 2) Storj Node
+  #    وظيفة: مشاركة مساحة التخزين مقابل STORJ.
+  # ──────────────────────────────────────────
+  storj-node:
+    image: storjlabs/storagenode:latest
+    container_name: storj_node
+    restart: unless-stopped
+    environment:
+      - WALLET=${STORJ_WALLET}
+      - EMAIL=${STORJ_EMAIL}
+      - ADDRESS=${NODEYIELD_VPS_IP}:28967
+      - STORAGE=${STORJ_STORAGE_SIZE:-500GB}
+      - BANDWIDTH=${STORJ_BANDWIDTH:-100TB}
+    volumes:
+      - storj-data:/app/config
+      - /mnt/storj-storage:/app/storage
+    ports:
+      - "28967:28967/tcp"
+      - "28967:28967/udp"
+      - "14002:14002"  # Storj Web Dashboard
+    networks:
+      - nodeyield-net
+
+  # ──────────────────────────────────────────
+  # 3) Control Panel (Dashboard)
+  #    وظيفة: مراقبة كل الحاويات والعائد.
+  # ──────────────────────────────────────────
+  control-panel:
+    build:
+      context: ./services/control-panel
+      dockerfile: Dockerfile
+    container_name: control_panel
+    restart: unless-stopped
+    environment:
+      - PORT=${DASHBOARD_PORT:-3000}
+      - API_KEY=${DASHBOARD_API_KEY:-}
+      - MYST_API_URL=${MYST_API_URL:-http://myst_client:4050}
+      - DOCKER_SOCK=/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - control-db:/app/data
+    ports:
+      - "${DASHBOARD_PORT:-3000}:${DASHBOARD_PORT:-3000}"
+    networks:
+      - nodeyield-net
+    depends_on:
+      - myst_client
+      - storj-node
+
+  # ──────────────────────────────────────────
+  # 4) Watchtower (اختياري)
+  #    وظيفة: تحديث صور Docker تلقائياً.
+  # ──────────────────────────────────────────
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+    networks:
+      - nodeyield-net
+
+  # ═══════════════════════════════════════════
+  # — أضف شبكة جديدة أسفل هذا الخط —
+  # ═══════════════════════════════════════════
+  # مثال:
+  # packetstream:
+  #   image: packetstream/psclient:latest
+  #   container_name: packetstream
+  #   restart: unless-stopped
+  #   environment:
+  #     - CID=${PACKETSTREAM_CID}
+  #   networks:
+  #     - nodeyield-net

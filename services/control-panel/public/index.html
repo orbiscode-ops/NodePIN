@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodeYield Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --alert: #f87171;
+      --ok: #34d399;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+    }
+    h1 { margin-bottom: 1.5rem; font-size: 1.8rem; }
+    h2 { font-size: 1.2rem; color: var(--muted); margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid #334155;
+    }
+    .card .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 0.6rem;
+    }
+    .badge.running { background: #064e3b; color: var(--ok); }
+    .badge.stopped { background: #450a0a; color: var(--alert); }
+    .data-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #334155; }
+    .data-row:last-child { border-bottom: none; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .refresh { margin-bottom: 1.5rem; }
+    button {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { opacity: 0.9; }
+    .footer { margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>🌐 NodeYield Dashboard</h1>
+  <div class="refresh">
+    <button onclick="loadContainers()">⟳ تحديث البيانات</button>
+  </div>
+
+  <section>
+    <h2>الحاويات النشطة</h2>
+    <div id="containers" class="grid">جاري التحميل...</div>
+  </section>
+
+  <section style="margin-top: 2rem;">
+    <h2>الدخل والمقاييس (تجريبي)</h2>
+    <div id="metrics" class="grid">جاري التحميل...</div>
+  </section>
+
+  <div class="footer">
+    NodeYield — بنية Node لامركزية قابلة للتوسيع
+  </div>
+
+  <script>
+    async function loadContainers() {
+      const el = document.getElementById('containers');
+      el.innerHTML = 'جاري التحميل...';
+      try {
+        const res = await fetch('/api/containers');
+        const data = await res.json();
+        if (!data.containers || data.containers.length === 0) {
+          el.innerHTML = '<p class="muted">لا توجد حاويات</p>';
+          return;
+        }
+        el.innerHTML = data.containers.map(c => `
+          <div class="card">
+            <div class="badge ${c.state}">${c.state === 'running' ? 'يعمل' : 'متوقف'}</div>
+            <div class="data-row"><span class="muted">الاسم</span><span>${c.name}</span></div>
+            <div class="data-row"><span class="muted">الصورة</span><span>${c.image}</span></div>
+            <div class="data-row"><span class="muted">الحالة</span><span>${c.status}</span></div>
+            <div class="data-row"><span class="muted">المنافذ</span><span>${c.ports || '—'}</span></div>
+          </div>
+        `).join('');
+      } catch (e) {
+        el.innerHTML = `<p style="color:var(--alert)">خطأ: ${e.message}</p>`;
+      }
+    }
+
+    async function loadMetrics() {
+      const el = document.getElementById('metrics');
+      try {
+        const res = await fetch('/api/metrics');
+        const data = await res.json();
+        el.innerHTML = Object.entries(data.nodes || {}).map(([name, info]) => `
+          <div class="card">
+            <div class="data-row"><span class="muted">الشبكة</span><span>${name.toUpperCase()}</span></div>
+            <div class="data-row"><span class="muted">الحالة</span><span>${info.status}</span></div>
+            <div class="data-row"><span class="muted">الرمز</span><span>${info.token}</span></div>
+          </div>
+        `).join('');
+      } catch (e) {
+        el.innerHTML = `<p style="color:var(--alert)">خطأ: ${e.message}</p>`;
+      }
+    }
+
+    loadContainers();
+    loadMetrics();
+    setInterval(loadContainers, 30000);
+  </script>
+</body>
+</html>

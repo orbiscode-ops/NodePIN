@@ -1,0 +1,14 @@
+{
+  "name": "nodeyield-control-panel",
+  "version": "1.0.0",
+  "description": "Pluggable dashboard for NodeYield node management",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "dockerode": "^4.0.2"
+  }
+}

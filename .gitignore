@@ -1,0 +1,27 @@
+# Secrets & Environment
+.env
+.env.local
+.env.*.local
+
+# Volumes & Persisted Data
+data/
+volumes/
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker overrides (use for local dev only)
+docker-compose.override.yml
