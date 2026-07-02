@@ -98,4 +98,18 @@ sudo docker compose up -d
 
 ---
 
+## 🤝 Need help? / تحتاج مساعدة؟
+
+Not a developer? No problem. We can set everything up **for you** — install NodePIN,
+connect your wallets, and get you earning. Just reach out:
+
+لست مبرمجًا؟ لا مشكلة. يمكننا إعداد كل شيء **نيابة عنك** — تثبيت NodePIN،
+ربط محافظك، وتجهيزك للربح. فقط تواصل معنا:
+
+- 📧 **Email:** `<add-your-email-here>`
+- 💬 **Telegram:** `<add-your-telegram-here>`
+- 💡 **Other:** `<add-any-other-channel-here>`
+
+---
+
 NodePIN — a scalable, pluggable decentralized-node infrastructure 💡
