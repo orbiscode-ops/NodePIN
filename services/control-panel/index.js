@@ -77,5 +77,5 @@ app.get('/api/metrics', (_req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`[NodeYield] Control Panel running on http://0.0.0.0:${PORT}`);
+  console.log(`[NodePIN] Control Panel running on http://0.0.0.0:${PORT}`);
 });
