@@ -121,8 +121,16 @@ jobs:
 
             if [ '$NETWORK' = 'all' ]; then
               echo '🚀 Deploying all networks...'
-              make pull
-              make up
+              # قراءة ENABLED_NETWORKS من .env
+              ENABLED=$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
+              if [ -z "$ENABLED" ]; then
+                echo 'ℹ️  No ENABLED_NETWORKS set — starting control-panel only'
+                docker compose up -d control-panel watchtower
+              else
+                PROFILE_FLAGS=$(echo "$ENABLED" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
+                docker compose $PROFILE_FLAGS pull
+                docker compose $PROFILE_FLAGS up -d
+              fi
             else
               echo '🚀 Deploying: $NETWORK'
               docker compose --profile $NETWORK pull

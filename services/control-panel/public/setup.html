@@ -13,7 +13,6 @@
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:"Segoe UI",Tahoma,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-    /* ── Top bar ── */
     header {
       display:flex; align-items:center; justify-content:space-between;
       padding:.9rem 2rem; background:var(--surface); border-bottom:1px solid var(--border);
@@ -21,338 +20,328 @@
     .logo { font-size:1.1rem; font-weight:700; color:var(--accent); }
     .logo span { color:var(--text); }
 
-    /* ── Wizard wrapper ── */
-    .wizard { max-width:700px; margin:2rem auto; padding:0 1rem; }
+    .page { max-width:860px; margin:2rem auto; padding:0 1rem; }
 
-    /* Step indicator */
-    .steps { display:flex; gap:0; margin-bottom:2rem; }
-    .step {
-      flex:1; text-align:center; padding:.5rem;
-      font-size:.8rem; color:var(--muted);
-      border-bottom:2px solid var(--border); position:relative;
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; }
+    h2 { font-size:1.1rem; margin-bottom:.3rem; }
+    .sub { color:var(--muted); font-size:.85rem; margin-bottom:1.25rem; }
+
+    /* ── Network list ── */
+    .net-list { display:flex; flex-direction:column; gap:.75rem; }
+    .net-item {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; overflow:hidden;
     }
-    .step.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
-    .step.done   { color:var(--green);  border-bottom-color:var(--green); }
-
-    /* Cards */
-    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.75rem; margin-bottom:1.25rem; }
-    h2 { font-size:1.15rem; margin-bottom:.3rem; }
-    .subtitle { color:var(--muted); font-size:.875rem; margin-bottom:1.5rem; }
-
-    /* Network selector */
-    .net-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.75rem; margin-bottom:1.25rem; }
-    .net-btn {
-      padding:.85rem .5rem; border-radius:10px; border:2px solid var(--border);
-      background:var(--surface); color:var(--text); cursor:pointer;
-      text-align:center; font-size:.875rem; transition:all .15s;
+    .net-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.85rem 1rem; cursor:pointer;
     }
-    .net-btn .icon { font-size:1.6rem; display:block; margin-bottom:.35rem; }
-    .net-btn:hover   { border-color:var(--accent); }
-    .net-btn.selected{ border-color:var(--accent); background:#0c2233; color:var(--accent); font-weight:600; }
+    .net-header:hover { background:#161f30; }
+    .net-header .net-name { font-weight:600; font-size:.95rem; display:flex; align-items:center; gap:.6rem; }
+    .net-header .net-image { font-size:.75rem; color:var(--muted); }
+    .net-header .net-actions { display:flex; gap:.5rem; align-items:center; }
+    .net-body { padding:1rem; border-top:1px solid var(--border); display:none; }
+    .net-body.open { display:block; }
 
-    /* Form fields */
-    .field { margin-bottom:1.1rem; }
-    .field label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:.4rem; font-weight:500; }
-    .field input {
-      width:100%; padding:.6rem .9rem; background:#0b1120;
+    /* ── Env vars table ── */
+    .env-row { display:flex; gap:.5rem; margin-bottom:.5rem; align-items:center; }
+    .env-row input {
+      flex:1; padding:.45rem .75rem; background:#0b1120;
+      border:1px solid var(--border); border-radius:7px;
+      color:var(--text); font-size:.875rem; font-family:monospace;
+    }
+    .env-row input:focus { outline:none; border-color:var(--accent); }
+    .env-row input.key { flex:.8; color:var(--accent); }
+    .env-row input.val { flex:1.2; }
+    .env-row .del-btn {
+      background:none; border:none; color:var(--red);
+      cursor:pointer; font-size:1.1rem; padding:.2rem .4rem;
+      border-radius:4px; transition:background .15s;
+    }
+    .env-row .del-btn:hover { background:#2d0a0a; }
+    .add-var-btn {
+      background:none; border:1px dashed var(--border); color:var(--muted);
+      padding:.4rem .9rem; border-radius:7px; cursor:pointer;
+      font-size:.8rem; margin-top:.35rem; transition:all .15s;
+    }
+    .add-var-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* Status badge */
+    .badge {
+      font-size:.7rem; padding:.15rem .55rem; border-radius:999px; font-weight:700;
+    }
+    .badge.on  { background:#052e16; color:var(--green); }
+    .badge.off { background:#1e293b; color:var(--muted); }
+
+    /* Add network form */
+    .add-form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:flex-end; }
+    .add-form .field { flex:1; min-width:160px; }
+    .add-form label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:.35rem; }
+    .add-form input {
+      width:100%; padding:.5rem .8rem; background:#0b1120;
       border:1px solid var(--border); border-radius:8px;
-      color:var(--text); font-size:.95rem;
-      transition:border-color .15s;
+      color:var(--text); font-size:.9rem;
     }
-    .field input:focus { outline:none; border-color:var(--accent); }
-    .field .hint { font-size:.78rem; color:var(--muted); margin-top:.3rem; }
-    .field .hint a { color:var(--accent); text-decoration:none; }
-
-    /* Network section */
-    .net-section { border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-bottom:1rem; }
-    .net-section h3 { font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+    .add-form input:focus { outline:none; border-color:var(--accent); }
 
     /* Buttons */
     .btn {
-      padding:.6rem 1.4rem; border-radius:8px; border:none;
-      font-weight:700; cursor:pointer; font-size:.9rem; transition:opacity .15s;
+      padding:.5rem 1.2rem; border-radius:8px; border:none;
+      font-weight:700; cursor:pointer; font-size:.875rem; transition:opacity .15s;
+      white-space:nowrap;
     }
     .btn:hover { opacity:.85; }
     .btn-primary { background:var(--accent); color:#0b1120; }
-    .btn-ghost   { background:transparent; color:var(--muted); border:1px solid var(--border); }
-    .btn-ghost:hover { color:var(--text); }
     .btn-success { background:var(--green); color:#052e16; }
-    .btn-row { display:flex; gap:.75rem; margin-top:1.25rem; justify-content:flex-end; }
+    .btn-danger  { background:#7f1d1d; color:var(--red); }
+    .btn-ghost   { background:transparent; color:var(--muted); border:1px solid var(--border); }
 
-    /* Status messages */
-    .msg { padding:.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:.9rem; display:none; }
+    /* Msg */
+    .msg { padding:.65rem 1rem; border-radius:8px; margin:.75rem 0; font-size:.875rem; display:none; }
     .msg.show { display:block; }
-    .msg.error   { background:#2d0a0a; border:1px solid var(--red);    color:var(--red); }
-    .msg.success { background:#052e16; border:1px solid var(--green);  color:var(--green); }
-    .msg.info    { background:#0c2233; border:1px solid var(--accent); color:var(--accent); }
+    .msg.error   { background:#2d0a0a; border:1px solid var(--red);   color:var(--red); }
+    .msg.success { background:#052e16; border:1px solid var(--green); color:var(--green); }
+    .msg.info    { background:#0c2233; border:1px solid var(--accent);color:var(--accent); }
 
-    /* Launch screen */
-    #step-launch { display:none; text-align:center; }
-    #step-launch .big-icon { font-size:4rem; margin-bottom:1rem; }
-    #step-launch h2 { margin-bottom:.5rem; }
-    #step-launch p  { color:var(--muted); margin-bottom:1.5rem; }
-    .spinner { display:inline-block; width:20px; height:20px;
-               border:2px solid var(--border); border-top-color:var(--accent);
-               border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    .dashboard-link { color:var(--accent); text-decoration:none; font-weight:600; font-size:1.05rem; }
+    .empty { color:var(--muted); text-align:center; padding:2rem; font-size:.9rem; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Node<span>PIN</span></div>
-  <a href="/" style="color:var(--muted);font-size:.85rem;text-decoration:none">← العودة للداشبورد</a>
+  <a href="/" style="color:var(--muted);font-size:.85rem;text-decoration:none">← الداشبورد</a>
 </header>
 
-<div class="wizard">
+<div class="page">
 
-  <!-- Step indicator -->
-  <div class="steps">
-    <div class="step active" id="ind-1">1 · اختر الشبكات</div>
-    <div class="step"        id="ind-2">2 · أدخل القيم</div>
-    <div class="step"        id="ind-3">3 · تشغيل</div>
-  </div>
-
-  <!-- ── STEP 1: Pick networks ── -->
-  <div id="step-1">
-    <div class="card">
-      <h2>اختر شبكات الربح</h2>
-      <p class="subtitle">اختر واحدة أو أكثر — يمكن إضافة شبكات لاحقاً بأي وقت</p>
-
-      <div class="net-grid">
-        <button class="net-btn" data-net="mysterium" onclick="toggleNet(this)">
-          <span class="icon">🌐</span>
-          <strong>Mysterium</strong><br>
-          <small style="color:var(--muted)">Bandwidth · MYST ✅</small>
-        </button>
-        <button class="net-btn" data-net="storj" onclick="toggleNet(this)">
-          <span class="icon">💾</span>
-          <strong>Storj</strong><br>
-          <small style="color:var(--muted)">Storage · STORJ ✅</small>
-        </button>
-        <button class="net-btn" data-net="honeygain" onclick="toggleNet(this)">
-          <span class="icon">🍯</span>
-          <strong>Honeygain</strong><br>
-          <small style="color:var(--muted)">Bandwidth · USD ✅</small>
-        </button>
-        <button class="net-btn" data-net="traffmonetizer" onclick="toggleNet(this)">
-          <span class="icon">📡</span>
-          <strong>Traffmonetizer</strong><br>
-          <small style="color:var(--muted)">Bandwidth · USD</small>
-        </button>
-        <button class="net-btn" data-net="iproyal" onclick="toggleNet(this)">
-          <span class="icon">👑</span>
-          <strong>IPRoyal</strong><br>
-          <small style="color:var(--muted)">Bandwidth · USD</small>
-        </button>
-        <button class="net-btn" data-net="peer2profit" onclick="toggleNet(this)">
-          <span class="icon">🔗</span>
-          <strong>Peer2Profit</strong><br>
-          <small style="color:var(--muted)">Bandwidth · USD</small>
-        </button>
-        <button class="net-btn" data-net="repocket" onclick="toggleNet(this)">
-          <span class="icon">💰</span>
-          <strong>Repocket</strong><br>
-          <small style="color:var(--muted)">Bandwidth · USD</small>
-        </button>
+  <!-- ── إضافة شبكة جديدة ── -->
+  <div class="card">
+    <h2>➕ إضافة شبكة</h2>
+    <p class="sub">أضف أي شبكة تريدها — اسم + صورة Docker + متغيرات البيئة المطلوبة</p>
+    <div class="add-form">
+      <div class="field">
+        <label>اسم الشبكة *</label>
+        <input id="new-name" placeholder="مثال: earnapp" />
       </div>
-      <p style="color:var(--muted);font-size:.8rem;margin-bottom:.5rem">✅ = أرباح حية في الداشبورد</p>
-
-      <div id="msg-1" class="msg error"></div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="goStep2()">التالي ←</button>
+      <div class="field" style="flex:2">
+        <label>Docker Image *</label>
+        <input id="new-image" placeholder="مثال: earnapp/earnapp:latest" />
       </div>
+      <button class="btn btn-primary" onclick="addNetwork()">إضافة</button>
     </div>
+    <div id="msg-add" class="msg"></div>
   </div>
 
-  <!-- ── STEP 2: Enter values ── -->
-  <div id="step-2" style="display:none">
-    <div id="fields-container"></div>
-    <div id="msg-2" class="msg error"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goStep(1)">→ رجوع</button>
-      <button class="btn btn-primary" onclick="saveAndNext()">حفظ والمتابعة ←</button>
-    </div>
-  </div>
-
-  <!-- ── STEP 3: Launch ── -->
-  <div id="step-3" style="display:none">
-    <div class="card" id="step-launch" style="display:block">
-      <div class="big-icon">🚀</div>
-      <h2>جاهز للتشغيل!</h2>
-      <p>تم حفظ الإعدادات. اضغط التشغيل لبدء الشبكات المختارة.</p>
-
-      <div id="selected-summary" style="margin-bottom:1.25rem;color:var(--muted);font-size:.9rem"></div>
-
-      <div id="msg-3" class="msg"></div>
-
-      <button class="btn btn-success" id="launch-btn" onclick="launchNetworks()" style="font-size:1rem;padding:.75rem 2rem">
-        🚀 تشغيل الشبكات
-      </button>
-
-      <div id="after-launch" style="display:none;margin-top:1.5rem">
-        <p style="color:var(--green);margin-bottom:.75rem">✅ الشبكات تعمل الآن!</p>
-        <a href="/" class="dashboard-link">فتح الداشبورد →</a>
+  <!-- ── الشبكات المضافة ── -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div>
+        <h2>الشبكات</h2>
+        <p class="sub" style="margin:0">أضف متغيرات البيئة لكل شبكة ثم شغّلها</p>
       </div>
+      <button class="btn btn-success" onclick="startAll()" id="start-btn">🚀 تشغيل الكل</button>
     </div>
 
-    <div class="btn-row" style="justify-content:flex-start">
-      <button class="btn btn-ghost" onclick="goStep(2)">→ رجوع للإعدادات</button>
+    <div id="msg-main" class="msg"></div>
+    <div id="net-list" class="net-list">
+      <div class="empty">لا توجد شبكات — أضف شبكة أعلاه</div>
     </div>
   </div>
 
-</div><!-- /wizard -->
+</div>
 
 <script>
-// ── State ────────────────────────────────────────────
-let selectedNets = [];
-let fieldDefs = {};
-let savedValues = {};
+// ── State ─────────────────────────────────────────────
+// networks: { name, image, vars: [{k,v}], enabled }
+let networks = [];
 
 // ── Init ──────────────────────────────────────────────
 async function init() {
-  // Load field definitions
-  const r = await fetch('/api/setup/fields').catch(()=>null);
-  if (r?.ok) fieldDefs = await r.json();
-
-  // Load existing saved values (masked)
-  const s = await fetch('/api/setup/values').catch(()=>null);
-  if (s?.ok) savedValues = await s.json();
-
-  // Load current status to pre-select networks
-  const st = await fetch('/api/setup/status').catch(()=>null);
-  if (st?.ok) {
-    const data = await st.json();
-    if (data.enabled?.length) {
-      data.enabled.forEach(n => {
-        selectedNets.push(n);
-        document.querySelector(`[data-net="${n}"]`)?.classList.add('selected');
-      });
-    }
+  // Load saved state from backend
+  const r = await fetch('/api/setup/custom').catch(()=>null);
+  if (r?.ok) {
+    const data = await r.json();
+    networks = data.networks || [];
   }
+  render();
 }
 
-// ── Network toggle ────────────────────────────────────
-function toggleNet(btn) {
-  const net = btn.dataset.net;
-  if (btn.classList.contains('selected')) {
-    btn.classList.remove('selected');
-    selectedNets = selectedNets.filter(n => n !== net);
-  } else {
-    btn.classList.add('selected');
-    selectedNets.push(net);
+// ── Render ────────────────────────────────────────────
+function render() {
+  const el = document.getElementById('net-list');
+  if (!networks.length) {
+    el.innerHTML = '<div class="empty">لا توجد شبكات — أضف شبكة أعلاه</div>';
+    return;
   }
+  el.innerHTML = networks.map((net, i) => `
+    <div class="net-item" id="net-${i}">
+      <div class="net-header" onclick="toggleBody(${i})">
+        <div>
+          <div class="net-name">
+            <span>${net.name}</span>
+            <span class="badge ${net.enabled ? 'on' : 'off'}">${net.enabled ? 'يعمل' : 'متوقف'}</span>
+          </div>
+          <div class="net-image">${net.image}</div>
+        </div>
+        <div class="net-actions">
+          <button class="btn btn-success" style="font-size:.8rem;padding:.35rem .8rem" onclick="event.stopPropagation();startNet(${i})">▶ تشغيل</button>
+          <button class="btn btn-danger"  style="font-size:.8rem;padding:.35rem .8rem" onclick="event.stopPropagation();stopNet(${i})">■ إيقاف</button>
+          <button class="btn btn-ghost"   style="font-size:.8rem;padding:.35rem .8rem;color:var(--red)" onclick="event.stopPropagation();removeNet(${i})">حذف</button>
+        </div>
+      </div>
+      <div class="net-body" id="body-${i}">
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">متغيرات البيئة (Environment Variables)</p>
+        <div id="vars-${i}">
+          ${(net.vars||[]).map((v,j) => varRow(i,j,v.k,v.v)).join('')}
+        </div>
+        <button class="add-var-btn" onclick="addVar(${i})">+ إضافة متغير</button>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem">
+          <button class="btn btn-primary" style="font-size:.8rem" onclick="saveNet(${i})">💾 حفظ</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
-// ── Step navigation ───────────────────────────────────
-function goStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById(`step-${i}`).style.display = i===n ? 'block' : 'none';
-    const ind = document.getElementById(`ind-${i}`);
-    ind.className = 'step' + (i===n ? ' active' : i<n ? ' done' : '');
+function varRow(ni, ji, k='', v='') {
+  return `<div class="env-row" id="var-${ni}-${ji}">
+    <input class="key" placeholder="اسم المتغير" value="${esc(k)}" oninput="updateVar(${ni},${ji},'k',this.value)">
+    <input class="val" placeholder="القيمة" type="${k.toLowerCase().includes('pass')||k.toLowerCase().includes('secret')||k.toLowerCase().includes('token')?'password':'text'}" value="${esc(v)}" oninput="updateVar(${ni},${ji},'v',this.value)">
+    <button class="del-btn" onclick="removeVar(${ni},${ji})" title="حذف">✕</button>
+  </div>`;
+}
+
+function esc(s) { return String(s||'').replace(/"/g,'&quot;'); }
+
+// ── Toggle expand ─────────────────────────────────────
+function toggleBody(i) {
+  const b = document.getElementById(`body-${i}`);
+  b.classList.toggle('open');
+}
+
+// ── Add network ───────────────────────────────────────
+function addNetwork() {
+  const name  = document.getElementById('new-name').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const image = document.getElementById('new-image').value.trim();
+  clearMsg('msg-add');
+
+  if (!name)  return showMsg('msg-add', 'اكتب اسم الشبكة');
+  if (!image) return showMsg('msg-add', 'اكتب صورة Docker');
+  if (networks.find(n=>n.name===name)) return showMsg('msg-add', 'هذه الشبكة موجودة بالفعل');
+
+  networks.push({ name, image, vars:[], enabled:false });
+  document.getElementById('new-name').value  = '';
+  document.getElementById('new-image').value = '';
+  render();
+  // فتح تلقائي للشبكة المضافة
+  setTimeout(() => toggleBody(networks.length-1), 50);
+}
+
+// ── Var management ────────────────────────────────────
+function addVar(ni) {
+  networks[ni].vars.push({ k:'', v:'' });
+  render();
+  setTimeout(() => document.getElementById(`body-${ni}`)?.classList.add('open'), 50);
+}
+
+function removeVar(ni, ji) {
+  networks[ni].vars.splice(ji, 1);
+  render();
+  setTimeout(() => document.getElementById(`body-${ni}`)?.classList.add('open'), 50);
+}
+
+function updateVar(ni, ji, field, val) {
+  if (networks[ni]?.vars[ji]) networks[ni].vars[ji][field] = val;
+}
+
+// ── Remove network ────────────────────────────────────
+async function removeNet(i) {
+  if (!confirm(`حذف شبكة "${networks[i].name}"؟`)) return;
+  await stopNet(i, true);
+  networks.splice(i, 1);
+  await saveAll();
+  render();
+}
+
+// ── Save single network ───────────────────────────────
+async function saveNet(i) {
+  // Sync current DOM values
+  document.querySelectorAll(`#vars-${i} .env-row`).forEach((row, j) => {
+    const k = row.querySelector('.key')?.value?.trim();
+    const v = row.querySelector('.val')?.value?.trim();
+    if (networks[i].vars[j]) { networks[i].vars[j].k = k; networks[i].vars[j].v = v; }
+  });
+  await saveAll();
+  showMsg('msg-main', `✅ تم حفظ "${networks[i].name}"`, 'success');
+}
+
+async function saveAll() {
+  await fetch('/api/setup/custom', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ networks }),
   });
 }
 
+// ── Start / Stop ──────────────────────────────────────
+async function startNet(i) {
+  await saveNet(i);
+  showMsg('msg-main', `<span class="spinner"></span> جاري تشغيل ${networks[i].name}…`, 'info');
+  const r = await fetch('/api/setup/start-one', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ network: networks[i] }),
+  });
+  const d = await r.json();
+  if (r.ok) {
+    networks[i].enabled = true;
+    render();
+    showMsg('msg-main', `✅ ${networks[i].name} يعمل الآن`, 'success');
+  } else {
+    showMsg('msg-main', `❌ ${d.error}`, 'error');
+  }
+}
+
+async function stopNet(i, silent=false) {
+  const r = await fetch('/api/setup/stop-one', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: networks[i].name }),
+  });
+  networks[i].enabled = false;
+  if (!silent) { render(); showMsg('msg-main', `⏹ ${networks[i].name} متوقف`, 'info'); }
+}
+
+async function startAll() {
+  const btn = document.getElementById('start-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+  await saveAll();
+  const r = await fetch('/api/setup/start-all', { method:'POST' });
+  const d = await r.json();
+  btn.innerHTML = '🚀 تشغيل الكل'; btn.disabled = false;
+  if (r.ok) {
+    networks.forEach(n => n.enabled = true);
+    render();
+    showMsg('msg-main', '✅ كل الشبكات تعمل', 'success');
+  } else {
+    showMsg('msg-main', '❌ ' + d.error, 'error');
+  }
+}
+
+// ── Msg helpers ───────────────────────────────────────
 function showMsg(id, text, type='error') {
   const el = document.getElementById(id);
-  el.textContent = text; el.className = `msg ${type} show`;
+  el.innerHTML = text; el.className = `msg ${type} show`;
+  if (type !== 'error') setTimeout(() => el.className='msg', 4000);
 }
 function clearMsg(id) {
   const el = document.getElementById(id);
-  el.className = 'msg'; el.textContent = '';
-}
-
-// ── Step 1 → 2 ────────────────────────────────────────
-function goStep2() {
-  clearMsg('msg-1');
-  if (!selectedNets.length) {
-    showMsg('msg-1', 'اختر شبكة واحدة على الأقل'); return;
-  }
-  buildFields();
-  goStep(2);
-}
-
-function buildFields() {
-  const container = document.getElementById('fields-container');
-  container.innerHTML = '';
-  for (const net of selectedNets) {
-    const fields = fieldDefs[net] || [];
-    const icons = { mysterium:'🌐', storj:'💾', packetstream:'📦', grass:'🌿' };
-    const section = document.createElement('div');
-    section.className = 'card net-section';
-    section.innerHTML = `<h3>${icons[net] || '🔗'} ${net.charAt(0).toUpperCase()+net.slice(1)}</h3>`;
-    for (const f of fields) {
-      const existing = f.key in savedValues && savedValues[f.key] !== '••••••••' ? savedValues[f.key] : '';
-      const hint = f.hint + (f.link ? ` — <a href="${f.link.url}" target="_blank">${f.link.label}</a>` : '');
-      section.innerHTML += `
-        <div class="field">
-          <label for="${f.key}">${f.label}${f.default ? ` <span style="color:var(--muted);font-weight:400">(افتراضي: ${f.default})</span>` : ' *'}</label>
-          <input type="${f.type}" id="${f.key}" name="${f.key}"
-            placeholder="${f.default || ''}"
-            value="${existing}"
-            ${f.default ? '' : 'required'}>
-          <div class="hint">${hint}</div>
-        </div>`;
-    }
-    container.appendChild(section);
-  }
-}
-
-// ── Step 2: Save ──────────────────────────────────────
-async function saveAndNext() {
-  clearMsg('msg-2');
-  const values = {};
-  // Collect all inputs
-  document.querySelectorAll('#fields-container input').forEach(inp => {
-    const v = inp.value.trim();
-    if (v && v !== '••••••••') values[inp.name] = v;
-    else if (!v && inp.dataset.default) values[inp.name] = inp.dataset.default;
-  });
-
-  // Apply defaults for empty optional fields
-  for (const net of selectedNets) {
-    for (const f of (fieldDefs[net]||[])) {
-      if (f.default && !values[f.key]) values[f.key] = f.default;
-    }
-  }
-
-  showMsg('msg-2', 'جاري الحفظ…', 'info');
-  const r = await fetch('/api/setup/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ networks: selectedNets, values }),
-  });
-  const data = await r.json();
-  if (!r.ok) { showMsg('msg-2', data.error || 'خطأ في الحفظ'); return; }
-
-  clearMsg('msg-2');
-  // Show summary on step 3
-  document.getElementById('selected-summary').textContent =
-    'الشبكات المختارة: ' + selectedNets.join(' · ');
-  goStep(3);
-}
-
-// ── Step 3: Launch ────────────────────────────────────
-async function launchNetworks() {
-  const btn = document.getElementById('launch-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> جاري التشغيل…';
-  clearMsg('msg-3');
-
-  const r = await fetch('/api/setup/start', { method:'POST' });
-  const data = await r.json().catch(()=>({ error:'خطأ غير معروف' }));
-
-  btn.disabled = false;
-  btn.innerHTML = '🚀 تشغيل الشبكات';
-
-  if (!r.ok) {
-    showMsg('msg-3', '❌ ' + (data.error || 'فشل التشغيل'), 'error');
-    return;
-  }
-  document.getElementById('after-launch').style.display = 'block';
-  btn.style.display = 'none';
+  el.className='msg'; el.innerHTML='';
 }
 
 init();
