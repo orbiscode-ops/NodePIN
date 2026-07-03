@@ -26,14 +26,6 @@ NodePIN/
 ├── Makefile                  ← make up/down/logs/ps/pull
 ├── setup.sh                  ← interactive one-command setup
 │
-├── networks/                 ← 📦 one folder per earning network (docs only)
-│   ├── mysterium/      ├── storj/          ├── honeygain/
-│   ├── bitping/        ├── meson/          ├── huddle01/
-│   ├── traffmonetizer/ ├── iproyal/        ├── peer2profit/
-│   ├── repocket/       ├── earnapp/        ├── packetstream/
-│   ├── proxyrack/      ├── nodepay/        ├── grass/
-│   ├── gradient/       ├── uprock/         └── titan/
-│
 ├── services/                 ← ⚙️  infrastructure only
 │   ├── control-panel/        ← dashboard (Node.js/Express)
 │   └── caddy/                ← HTTPS reverse proxy
