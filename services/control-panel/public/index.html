@@ -102,18 +102,45 @@
       }
     }
 
+    const STATUS_LABELS = {
+      ok: 'يعمل', starting: 'قيد الإقلاع', error: 'خطأ',
+      no_identity: 'بدون هوية'
+    };
+
+    function fmtEarnings(info) {
+      if (info.earnings === null || info.earnings === undefined) return '—';
+      // Storj payout is reported in USD cents; show as dollars.
+      if (info.network === 'storj') return '$' + (info.earnings / 100).toFixed(2);
+      return info.earnings + ' ' + (info.token || '');
+    }
+
     async function loadMetrics() {
       const el = document.getElementById('metrics');
       try {
         const res = await fetch('/api/metrics');
         const data = await res.json();
-        el.innerHTML = Object.entries(data.nodes || {}).map(([name, info]) => `
-          <div class="card">
-            <div class="data-row"><span class="muted">الشبكة</span><span>${name.toUpperCase()}</span></div>
-            <div class="data-row"><span class="muted">الحالة</span><span>${info.status}</span></div>
-            <div class="data-row"><span class="muted">الرمز</span><span>${info.token}</span></div>
-          </div>
-        `).join('');
+        const entries = Object.entries(data.nodes || {});
+        if (entries.length === 0) {
+          el.innerHTML = '<p class="muted">لا توجد شبكات مفعّلة</p>';
+          return;
+        }
+        el.innerHTML = entries.map(([name, info]) => {
+          const state = info.status === 'ok' ? 'running' : 'stopped';
+          const label = STATUS_LABELS[info.status] || info.status;
+          const extra = info.extra || {};
+          const extraRows = Object.entries(extra)
+            .filter(([, v]) => v !== null && v !== undefined && v !== '')
+            .map(([k, v]) => `<div class="data-row"><span class="muted">${k}</span><span>${v}</span></div>`)
+            .join('');
+          return `
+            <div class="card">
+              <div class="badge ${state}">${label}</div>
+              <div class="data-row"><span class="muted">الشبكة</span><span>${name.toUpperCase()}</span></div>
+              <div class="data-row"><span class="muted">الأرباح</span><span>${fmtEarnings(info)}</span></div>
+              ${extraRows}
+            </div>
+          `;
+        }).join('');
       } catch (e) {
         el.innerHTML = `<p style="color:var(--alert)">خطأ: ${e.message}</p>`;
       }
@@ -122,6 +149,7 @@
     loadContainers();
     loadMetrics();
     setInterval(loadContainers, 30000);
+    setInterval(loadMetrics, 30000);
   </script>
 </body>
 </html>
