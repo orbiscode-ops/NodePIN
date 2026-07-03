@@ -14,15 +14,25 @@ const NODEPIN_LABEL = 'com.nodepin.project';
 const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// API Key protection (optional)
-app.use('/api', (req, res, next) => {
-  if (!API_KEY) return next();
-  const key = req.headers['x-api-key'];
-  if (key !== API_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  next();
+app.post('/api/login', (req, res) => {
+  if (!auth.authEnabled()) return res.json({ ok: true, authDisabled: true });
+  const { password } = req.body || {};
+  if (auth.checkPassword(password)) {
+    auth.setSessionCookie(res);
+    return res.json({ ok: true });
+  }
+  return res.status(401).json({ error: 'Invalid password' });
+});
+
+app.post('/api/logout', (_req, res) => {
+  auth.clearSessionCookie(res);
+  res.json({ ok: true });
+});
+
+app.get('/login.html', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // ── Endpoints ───────────────────────────────
