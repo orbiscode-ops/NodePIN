@@ -6,9 +6,13 @@ function mockFetch(handler) {
   global.fetch = async (url, opts) => handler(String(url), opts || {});
 }
 
-test('loadProviders returns no built-in providers after cleanup', () => {
+test('loadProviders returns all 18 built-in providers', () => {
   const providers = loadProviders();
-  assert.deepStrictEqual(Object.keys(providers), []);
+  const keys = Object.keys(providers);
+  assert.strictEqual(keys.length, 18);
+  assert.ok(keys.includes('mysterium'));
+  assert.ok(keys.includes('storj'));
+  assert.ok(keys.includes('honeygain'));
 });
 
 test('collectMetrics returns empty data when no enabled networks exist', async () => {
@@ -18,9 +22,9 @@ test('collectMetrics returns empty data when no enabled networks exist', async (
   assert.deepStrictEqual(data.nodes, {});
 });
 
-test('collectMetrics keeps enabled network names even when providers are missing', async () => {
-  process.env.ENABLED_NETWORKS = 'customnetwork';
+test('collectMetrics keeps enabled network names even when some are enabled', async () => {
+  process.env.ENABLED_NETWORKS = 'mysterium';
   const data = await collectMetrics();
-  assert.deepStrictEqual(data.enabled, ['customnetwork']);
-  assert.deepStrictEqual(data.nodes, {});
+  assert.deepStrictEqual(data.enabled, ['mysterium']);
+  assert.ok('mysterium' in data.nodes);
 });

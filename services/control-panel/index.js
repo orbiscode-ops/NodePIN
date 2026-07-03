@@ -3,8 +3,6 @@ const Docker = require('dockerode');
 const path = require('path');
 const { collectMetrics } = require('./providers');
 const auth = require('./auth');
-const { registerSetupRoutes } = require('./setup');
-const networksDb = require('./networks');
 
 const app = express();
 // Allow tests to inject a mock Docker client via global.__DOCKER_MOCK__.
@@ -48,8 +46,7 @@ app.get('/api/health', (_req, res) => {
 app.use(auth.requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── Setup Wizard routes ─────────────────────────────
-registerSetupRoutes(app, auth.requireAuth);
+
 
 // List NodePIN containers only (filtered by label — ignores other projects)
 app.get('/api/containers', async (_req, res) => {
@@ -100,54 +97,7 @@ app.get('/api/metrics', async (_req, res) => {
   }
 });
 
-// ── Custom Networks CRUD ────────────────────────────────
-// GET  /api/networks          — list all custom networks
-// POST /api/networks          — add a new custom network
-// PUT  /api/networks/:key     — update
-// DELETE /api/networks/:key   — remove
-// POST /api/networks/:key/toggle — enable / disable
 
-app.get('/api/networks', auth.requireAuth, (_req, res) => {
-  res.json({ networks: networksDb.list() });
-});
-
-app.post('/api/networks', auth.requireAuth, (req, res) => {
-  const result = networksDb.add(req.body || {});
-  if (!result.ok) return res.status(400).json({ error: result.error });
-  res.json(result);
-});
-
-app.put('/api/networks/:key', auth.requireAuth, (req, res) => {
-  const result = networksDb.update(req.params.key, req.body || {});
-  if (!result.ok) return res.status(400).json({ error: result.error });
-  res.json(result);
-});
-
-app.delete('/api/networks/:key', auth.requireAuth, (req, res) => {
-  const result = networksDb.remove(req.params.key);
-  if (!result.ok) return res.status(404).json({ error: result.error });
-  res.json(result);
-});
-
-app.post('/api/networks/:key/toggle', auth.requireAuth, (req, res) => {
-  const { enabled } = req.body || {};
-  const result = networksDb.setEnabled(req.params.key, !!enabled);
-  if (!result.ok) return res.status(404).json({ error: result.error });
-  res.json(result);
-});
-
-// GET /api/networks/:key/metrics — live metrics for one custom network
-app.get('/api/networks/:key/metrics', auth.requireAuth, async (req, res) => {
-  const net = networksDb.get(req.params.key);
-  if (!net) return res.status(404).json({ error: 'الشبكة غير موجودة' });
-  const { fetchMetrics } = require('./providers/dynamic');
-  try {
-    const data = await fetchMetrics(net);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Start server only when run directly (not when imported by tests).
 if (require.main === module) {
