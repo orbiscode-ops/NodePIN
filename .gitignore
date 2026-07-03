@@ -2,6 +2,9 @@
 # NodePIN — .gitignore
 # ═══════════════════════════════════════════
 
+# ── Kiro IDE (local dev tool — not part of the project) ──
+.kiro/
+
 # ── Secrets & Environment ──────────────────
 .env
 .env.local
