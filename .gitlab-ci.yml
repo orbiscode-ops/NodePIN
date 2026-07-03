@@ -1,0 +1,70 @@
+# ═══════════════════════════════════════════
+# NodePIN CI/CD
+# stages: validate → test → build → deploy
+# ═══════════════════════════════════════════
+stages:
+  - validate
+  - test
+  - build
+  - deploy
+
+variables:
+  CONTROL_PANEL_IMAGE: "$CI_REGISTRY_IMAGE/control-panel:$CI_COMMIT_SHORT_SHA"
+  CONTROL_PANEL_LATEST: "$CI_REGISTRY_IMAGE/control-panel:latest"
+
+# ── 1) التحقق من صحة إعداد docker compose ──
+validate:compose:
+  stage: validate
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  variables:
+    # قيم وهمية حتى يمرّ config دون .env حقيقي
+    NODEPIN_VPS_IP: "127.0.0.1"
+  script:
+    - cp .env.example .env
+    - docker compose --profile mysterium --profile storj config >/dev/null
+    - echo "compose configuration is valid"
+
+# ── 2) اختبارات الوحدة للوحة التحكم ──
+test:control-panel:
+  stage: test
+  image: node:20-alpine
+  before_script:
+    - cd services/control-panel
+    - npm install --no-audit --no-fund
+  script:
+    - npm test
+
+# ── 3) بناء ورفع صورة اللوحة (main فقط) ──
+build:control-panel:
+  stage: build
+  image: docker:27-cli
+  services:
+    - docker:27-dind
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t "$CONTROL_PANEL_IMAGE" -t "$CONTROL_PANEL_LATEST" ./services/control-panel
+    - docker push "$CONTROL_PANEL_IMAGE"
+    - docker push "$CONTROL_PANEL_LATEST"
+
+# ── 4) النشر إلى الـ VPS (يدوي، محمي) ──
+# يتطلب CI/CD variables (masked/protected): SSH_PRIVATE_KEY, SSH_USER, SSH_HOST
+deploy:vps:
+  stage: deploy
+  image: alpine:3.20
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - ssh "$SSH_USER@$SSH_HOST" 'cd ~/nodepin && git pull && make pull && make up'
+  environment:
+    name: production
