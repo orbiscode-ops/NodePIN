@@ -126,6 +126,33 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
   # ═══════════════════════════════════════════
+  # 5) Caddy reverse proxy — automatic HTTPS (profile: https)
+  #    Serves the dashboard over TLS via NODEPIN_DOMAIN.
+  #    Enable by adding 'https' to ENABLED_NETWORKS.
+  caddy:
+    image: caddy:2-alpine
+    container_name: nodepin_caddy
+    profiles: ["https"]
+    restart: unless-stopped
+    environment:
+      - NODEPIN_DOMAIN=${NODEPIN_DOMAIN}
+      - DASHBOARD_PORT=${DASHBOARD_PORT:-3000}
+    volumes:
+      - ./services/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - nodepin_caddy_data:/data
+      - nodepin_caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - nodepin-net
+    depends_on:
+      - control-panel
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "caddy"
+      com.centurylinklabs.watchtower.enable: "true"
+
   # — أضف شبكة جديدة أسفل هذا الخط —
   #   تذكّر: profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
