@@ -4,7 +4,8 @@ const path = require('path');
 const { collectMetrics } = require('./providers');
 
 const app = express();
-const docker = new Docker({ socketPath: '/var/run/docker.sock' });
+// Allow tests to inject a mock Docker client via global.__DOCKER_MOCK__.
+const docker = global.__DOCKER_MOCK__ || new Docker({ socketPath: '/var/run/docker.sock' });
 
 // Only surface containers that belong to NodePIN (never other projects).
 const NODEPIN_LABEL = 'com.nodepin.project';
@@ -80,7 +81,11 @@ app.get('/api/metrics', async (_req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`[NodePIN] Control Panel running on http://0.0.0.0:${PORT}`);
-});
+// Start server only when run directly (not when imported by tests).
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`[NodePIN] Control Panel running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = app;
