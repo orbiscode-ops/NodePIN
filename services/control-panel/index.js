@@ -3,6 +3,7 @@ const Docker = require('dockerode');
 const path = require('path');
 const { collectMetrics } = require('./providers');
 const auth = require('./auth');
+const { registerSetupRoutes } = require('./setup');
 
 const app = express();
 // Allow tests to inject a mock Docker client via global.__DOCKER_MOCK__.
@@ -45,6 +46,9 @@ app.get('/api/health', (_req, res) => {
 // Everything below requires auth (if DASHBOARD_PASSWORD is set).
 app.use(auth.requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ── Setup Wizard routes ─────────────────────────────
+registerSetupRoutes(app, auth.requireAuth);
 
 // List NodePIN containers only (filtered by label — ignores other projects)
 app.get('/api/containers', async (_req, res) => {
