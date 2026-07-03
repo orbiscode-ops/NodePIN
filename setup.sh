@@ -127,6 +127,11 @@ collect_vars() {
     prompt "STORJ_WALLET" "Storj payout wallet (Ethereum address)"
     prompt "STORJ_EMAIL"  "Storj email"
   fi
+
+  if [[ ",$SELECTED," == *",packetstream,"* ]]; then
+    echo; info "PacketStream settings"
+    prompt "PACKETSTREAM_CID" "PacketStream CID"
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -146,6 +151,7 @@ validate() {
   check "NODEPIN_VPS_IP"
   if [[ ",$SELECTED," == *",mysterium,"* ]]; then check "MYST_IDENTITY_PASSPHRASE"; fi
   if [[ ",$SELECTED," == *",storj,"* ]]; then check "STORJ_WALLET"; check "STORJ_EMAIL"; fi
+  if [[ ",$SELECTED," == *",packetstream,"* ]]; then check "PACKETSTREAM_CID"; fi
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }
