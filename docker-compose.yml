@@ -27,6 +27,7 @@ volumes:
   nodepin_meson_data:
   nodepin_huddle01_data:
   nodepin_titan_data:
+  nodepin_anyone_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
@@ -496,3 +497,46 @@ services:
   # — أضف شبكة جديدة أسفل هذا الخط —
   #   profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
+
+  # ──────────────────────────────────────────
+  # 22) Anyone Protocol Relay  (profile: anyone)
+  #     Decentralized onion routing network — earns ANYONE
+  #     ❌ no local API — check dashboard.anyone.io
+  # ──────────────────────────────────────────
+  anyone:
+    image: ghcr.io/anyone-protocol/ator-protocol:latest
+    container_name: nodepin_anyone
+    profiles: ["anyone"]
+    restart: unless-stopped
+    init: true
+    user: "100:101"
+    ports:
+      - "${ANYONE_PORT:-9001}:9001"
+    volumes:
+      - nodepin_anyone_data:/var/lib/anon
+    command: >
+      sh -c "
+      cat <<EOF > /var/lib/anon/anonrc
+      User anond
+      DataDirectory /var/lib/anon
+      ControlSocket /var/lib/anon/control
+      ControlSocketsGroupWritable 1
+      CookieAuthentication 1
+      CookieAuthFile /var/lib/anon/control.authcookie
+      CookieAuthFileGroupReadable 1
+      Log notice file /var/lib/anon/notices.log
+      ORPort 9001
+      ExitRelay 0
+      Nickname ${ANYONE_NICKNAME:-nodepin}
+      ContactInfo @anon:${ANYONE_WALLET:-0x0000000000000000000000000000000000000000}
+      AgreeToTerms 1
+      EOF
+      && exec /usr/local/bin/anon -f /var/lib/anon/anonrc
+      "
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "anyone"
+      com.centurylinklabs.watchtower.enable: "true"
+

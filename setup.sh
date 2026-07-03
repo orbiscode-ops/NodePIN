@@ -92,6 +92,7 @@ select_networks() {
   echo "   8) peer2profit   (bandwidth sharing — earns USD)"
   echo "   9) repocket      (bandwidth sharing — earns USD)"
   echo "  10) earnapp       (bandwidth sharing — earns USD)"
+  echo "  11) anyone        (onion relay      — earns ANYONE)"
   echo ""
   local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2 5]: ")" choice
   choice="${choice:-1 2 5}"
@@ -108,6 +109,7 @@ select_networks() {
       8)  nets="${nets}peer2profit,";;
       9)  nets="${nets}repocket,";;
       10) nets="${nets}earnapp,";;
+      11) nets="${nets}anyone,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -188,6 +190,13 @@ collect_vars() {
     info "Get your token at: https://app.nodepay.ai → Settings → API Token"
     prompt "NODEPAY_TOKEN" "Nodepay API token"
   fi
+
+  if [[ ",$SELECTED," == *",anyone,"* ]]; then
+    echo; info "Anyone Protocol settings"
+    prompt "ANYONE_NICKNAME" "Anyone relay nickname (default: nodepin)"
+    prompt "ANYONE_WALLET"   "Anyone payout Ethereum wallet address"
+    prompt "ANYONE_PORT"     "Anyone relay ORPort (default: 9001)"
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -223,6 +232,7 @@ validate() {
   [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }
   [[ ",$SELECTED," == *",huddle01,"*     ]] && check "HUDDLE01_API_KEY"
   [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
+  [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }
