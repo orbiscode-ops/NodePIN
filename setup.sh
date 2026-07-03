@@ -84,6 +84,7 @@ select_networks() {
   echo "   1) mysterium    (shares bandwidth — earns MYST)"
   echo "   2) storj        (shares storage   — earns STORJ)"
   echo "   3) packetstream (shares bandwidth — light, any device)"
+  echo "   4) grass        (shares bandwidth — light, any device)"
   local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2]: ")" choice
   choice="${choice:-1 2}"
   local nets=""
@@ -92,6 +93,7 @@ select_networks() {
       1) nets="${nets}mysterium,";;
       2) nets="${nets}storj,";;
       3) nets="${nets}packetstream,";;
+      4) nets="${nets}grass,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -132,6 +134,12 @@ collect_vars() {
     echo; info "PacketStream settings"
     prompt "PACKETSTREAM_CID" "PacketStream CID"
   fi
+
+  if [[ ",$SELECTED," == *",grass,"* ]]; then
+    echo; info "Grass settings"
+    prompt "GRASS_USER" "Grass email"
+    prompt "GRASS_PASS" "Grass password" silent
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -152,6 +160,7 @@ validate() {
   if [[ ",$SELECTED," == *",mysterium,"* ]]; then check "MYST_IDENTITY_PASSPHRASE"; fi
   if [[ ",$SELECTED," == *",storj,"* ]]; then check "STORJ_WALLET"; check "STORJ_EMAIL"; fi
   if [[ ",$SELECTED," == *",packetstream,"* ]]; then check "PACKETSTREAM_CID"; fi
+  if [[ ",$SELECTED," == *",grass,"* ]]; then check "GRASS_USER"; check "GRASS_PASS"; fi
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }

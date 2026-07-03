@@ -178,6 +178,25 @@ services:
       com.nodepin.network: "packetstream"
       com.centurylinklabs.watchtower.enable: "true"
 
+  # ──────────────────────────────────────────
+  # 7) Grass  (profile: grass)
+  #    يشارك عرض النطاق (bandwidth) — شبكة خفيفة تناسب أي جهاز.
+  # ──────────────────────────────────────────
+  grass:
+    image: mrcolorrain/grass:latest
+    container_name: nodepin_grass
+    profiles: ["grass"]
+    restart: unless-stopped
+    environment:
+      - GRASS_USER=${GRASS_USER}
+      - GRASS_PASS=${GRASS_PASS}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "grass"
+      com.centurylinklabs.watchtower.enable: "true"
+
   # — أضف شبكة جديدة أسفل هذا الخط —
   #   تذكّر: profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
