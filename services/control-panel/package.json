@@ -1,7 +1,7 @@
 {
-  "name": "nodeyield-control-panel",
+  "name": "nodepin-control-panel",
   "version": "1.0.0",
-  "description": "Pluggable dashboard for NodeYield node management",
+  "description": "Pluggable dashboard for NodePIN node management",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

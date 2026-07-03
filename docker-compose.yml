@@ -1,37 +1,38 @@
 # ═══════════════════════════════════════════
-# NodeYield — Decentralized Node Yield Orchestrator
+# NodePIN — Decentralized Node Earning Orchestrator
+#
+# عزل: كل الموارد تبدأ بـ nodepin ولا تتعارض مع مشاريع أخرى.
+# اختيار الشبكات: تُتحكم عبر profiles + ENABLED_NETWORKS في .env.
+#
 # كيف تضيف أو تحذف شبكة؟
-#   1. أضف service جديد أسفل هذه القائمة.
+#   1. أضف service جديد أسفل هذه القائمة مع profiles: [<name>].
 #   2. أنشئ مجلد خاص تحت services/
-#   3. أضف متغيراته في .env.example و .env
-#   4. أضف شبكته (networks) حسب الحاجة.
+#   3. أضف متغيراته في .env.example و .env، وأضف اسمه في ENABLED_NETWORKS.
 # ═══════════════════════════════════════════
-
-version: "3.8"
 
 # ━━━━━━━━━━━ NETWORKS ━━━━━━━━━━━
 networks:
-  # شبكة داخلية يتواصل عليها كل شيء
-  nodeyield-net:
+  # شبكة داخلية معزولة خاصة بـ NodePIN فقط
+  nodepin-net:
+    name: nodepin-net
     driver: bridge
 
 # ━━━━━━━━━━━ VOLUMES ━━━━━━━━━━━
 volumes:
-  # مكان ثابت خارج الحاويات لحفظ البيانات
-  myst-data:
-  storj-data:
-  control-db:
+  nodepin_myst_data:
+  nodepin_storj_data:
+  nodepin_control_db:
   # أضف هنا عند إضافة شبكة جديدة
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
   # ──────────────────────────────────────────
-  # 1) Mysterium Network Client
-  #    وظيفة: بروكسي/نود لامركزي مع تدوير هويات.
+  # 1) Mysterium Network Client  (profile: mysterium)
   # ──────────────────────────────────────────
   myst_client:
     image: mysteriumnetwork/myst:latest
-    container_name: myst_client
+    container_name: nodepin_myst
+    profiles: ["mysterium"]
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -40,89 +41,91 @@ services:
       - MYST_COUNTRY_FILTER=${MYST_COUNTRY_FILTER:-us}
       - MYST_MAX_SESSION_MINUTES=${MYST_MAX_SESSION_MINUTES:-30}
     volumes:
-      - myst-data:/var/lib/mysterium-node
+      - nodepin_myst_data:/var/lib/mysterium-node
     ports:
-      - "4050:4050"   # TequilAPI
-      - "4449:4449"   # Web UI
+      - "${MYST_TEQUILAPI_PORT:-4050}:4050"   # TequilAPI
+      - "${MYST_UI_PORT:-4449}:4449"          # Web UI
     networks:
-      - nodeyield-net
-    # ملاحظة: consumer_mode أو provider_mode تحدده identity/تهيئة.
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "mysterium"
 
   # ──────────────────────────────────────────
-  # 2) Storj Node
-  #    وظيفة: مشاركة مساحة التخزين مقابل STORJ.
+  # 2) Storj Node  (profile: storj)
   # ──────────────────────────────────────────
   storj-node:
     image: storjlabs/storagenode:latest
-    container_name: storj_node
+    container_name: nodepin_storj
+    profiles: ["storj"]
     restart: unless-stopped
     environment:
       - WALLET=${STORJ_WALLET}
       - EMAIL=${STORJ_EMAIL}
-      - ADDRESS=${NODEYIELD_VPS_IP}:28967
+      - ADDRESS=${NODEPIN_VPS_IP}:${STORJ_PORT:-28967}
       - STORAGE=${STORJ_STORAGE_SIZE:-500GB}
       - BANDWIDTH=${STORJ_BANDWIDTH:-100TB}
     volumes:
-      - storj-data:/app/config
+      - nodepin_storj_data:/app/config
       - /mnt/storj-storage:/app/storage
     ports:
-      - "28967:28967/tcp"
-      - "28967:28967/udp"
-      - "14002:14002"  # Storj Web Dashboard
+      - "${STORJ_PORT:-28967}:28967/tcp"
+      - "${STORJ_PORT:-28967}:28967/udp"
+      - "${STORJ_DASHBOARD_PORT:-14002}:14002"  # Storj Web Dashboard
     networks:
-      - nodeyield-net
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "storj"
 
   # ──────────────────────────────────────────
-  # 3) Control Panel (Dashboard)
-  #    وظيفة: مراقبة كل الحاويات والعائد.
+  # 3) Control Panel (Dashboard) — دائماً يعمل (بدون profile)
   # ──────────────────────────────────────────
   control-panel:
     build:
       context: ./services/control-panel
       dockerfile: Dockerfile
-    container_name: control_panel
+    container_name: nodepin_control_panel
     restart: unless-stopped
     environment:
       - PORT=${DASHBOARD_PORT:-3000}
       - API_KEY=${DASHBOARD_API_KEY:-}
-      - MYST_API_URL=${MYST_API_URL:-http://myst_client:4050}
+      - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - control-db:/app/data
+      - nodepin_control_db:/app/data
     ports:
       - "${DASHBOARD_PORT:-3000}:${DASHBOARD_PORT:-3000}"
     networks:
-      - nodeyield-net
-    depends_on:
-      - myst_client
-      - storj-node
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "control-panel"
 
   # ──────────────────────────────────────────
-  # 4) Watchtower (اختياري)
-  #    وظيفة: تحديث صور Docker تلقائياً.
+  # 4) Watchtower (اختياري) — دائماً يعمل
+  #    محصور على حاويات NodePIN فقط حتى لا يلمس مشاريع أخرى.
   # ──────────────────────────────────────────
   watchtower:
     image: containrrr/watchtower:latest
-    container_name: watchtower
+    container_name: nodepin_watchtower
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=3600
+      # يراقب فقط الحاويات ذات label نفعّلها، لا كل السيرفر
+      - WATCHTOWER_LABEL_ENABLE=true
     networks:
-      - nodeyield-net
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "watchtower"
+      com.centurylinklabs.watchtower.enable: "true"
 
   # ═══════════════════════════════════════════
   # — أضف شبكة جديدة أسفل هذا الخط —
+  #   تذكّر: profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
-  # مثال:
-  # packetstream:
-  #   image: packetstream/psclient:latest
-  #   container_name: packetstream
-  #   restart: unless-stopped
-  #   environment:
-  #     - CID=${PACKETSTREAM_CID}
-  #   networks:
-  #     - nodeyield-net
