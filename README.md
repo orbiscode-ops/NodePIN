@@ -65,25 +65,25 @@ make up
 
 ---
 
+## 🌐 Supported networks
+
+| Key | Type | Earns | Local earnings API |
+|---|---|---|---|
+| `mysterium` | bandwidth | MYST | ✅ (dashboard shows earnings) |
+| `storj` | storage | STORJ | ✅ (dashboard shows earnings) |
+| `packetstream` | bandwidth | USD | ❌ (see provider dashboard) |
+| `grass` | bandwidth | GRASS | ❌ (see provider dashboard) |
+
+Enable any combination via `ENABLED_NETWORKS`.
+
+---
+
 ## ➕ How to add a new network
 
-Just 3 steps:
+Adding a network is a repeatable 6-step pattern (compose service → provider module
+→ docs → env vars → setup wiring → test). See the full guide:
 
-1. **Add a `service`** in `docker-compose.yml` above the `# ═══...` marker.
-2. **Create a folder** under `services/{network-name}/` with a `README.md`.
-3. **Add its variables** to `.env.example` and `.env`.
-
-Example:
-```yaml
-  packetstream:
-    image: packetstream/psclient:latest
-    container_name: packetstream
-    restart: unless-stopped
-    environment:
-      - CID=${PACKETSTREAM_CID}
-    networks:
-      - nodepin-net
-```
+👉 **[docs/adding-a-network.md](docs/adding-a-network.md)**
 
 ---
 
