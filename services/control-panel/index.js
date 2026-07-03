@@ -37,10 +37,14 @@ app.get('/login.html', (_req, res) => {
 
 // ── Endpoints ───────────────────────────────
 
-// Health check
+// Health check (public)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Everything below requires auth (if DASHBOARD_PASSWORD is set).
+app.use(auth.requireAuth);
+app.use(express.static(path.join(__dirname, 'public')));
 
 // List NodePIN containers only (filtered by label — ignores other projects)
 app.get('/api/containers', async (_req, res) => {
