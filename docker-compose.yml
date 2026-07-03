@@ -496,25 +496,7 @@ services:
       - "${ANYONE_PORT:-9001}:9001"
     volumes:
       - nodepin_anyone_data:/var/lib/anon
-    command: >
-      sh -c "
-      cat <<EOF > /var/lib/anon/anonrc
-      User anond
-      DataDirectory /var/lib/anon
-      ControlSocket /var/lib/anon/control
-      ControlSocketsGroupWritable 1
-      CookieAuthentication 1
-      CookieAuthFile /var/lib/anon/control.authcookie
-      CookieAuthFileGroupReadable 1
-      Log notice file /var/lib/anon/notices.log
-      ORPort 9001
-      ExitRelay 0
-      Nickname ${ANYONE_NICKNAME:-nodepin}
-      ContactInfo @anon:${ANYONE_WALLET:-0x0000000000000000000000000000000000000000}
-      AgreeToTerms 1
-      EOF
-      && exec /usr/local/bin/anon -f /var/lib/anon/anonrc
-      "
+      - ./services/anyone/anonrc:/etc/anon/anonrc:ro
     networks:
       - nodepin-net
     labels:

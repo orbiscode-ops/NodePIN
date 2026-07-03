@@ -234,6 +234,31 @@ validate() {
 
 launch() {
   echo
+  if [[ ",$SELECTED," == *",anyone,"* ]]; then
+    local nick; nick=$(get_val "ANYONE_NICKNAME")
+    local wallet; wallet=$(get_val "ANYONE_WALLET")
+    nick="${nick:-nodepin}"
+    wallet="${wallet:-0x0000000000000000000000000000000000000000}"
+
+    mkdir -p services/anyone
+    cat <<EOF > services/anyone/anonrc
+User anond
+DataDirectory /var/lib/anon
+ControlSocket /var/lib/anon/control
+ControlSocketsGroupWritable 1
+CookieAuthentication 1
+CookieAuthFile /var/lib/anon/control.authcookie
+CookieAuthFileGroupReadable 1
+Log notice file /var/lib/anon/notices.log
+ORPort 9001
+ExitRelay 0
+Nickname ${nick}
+ContactInfo @anon:${wallet}
+AgreeToTerms 1
+EOF
+    ok "Generated Anyone Protocol anonrc configuration."
+  fi
+
   info "Starting NodePIN..."
   if command -v make >/dev/null 2>&1; then
     make up
