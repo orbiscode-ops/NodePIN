@@ -34,19 +34,34 @@ NodePIN/
 
 ## 🚀 Quick start
 
+### Recommended: one command
+
 ```bash
-# 1) copy variables
+./setup.sh
+```
+
+The interactive script checks Docker, creates `.env`, lets you pick which networks
+to run, asks only for the values those networks need, validates them, and launches
+the stack — then prints your dashboard URL.
+
+### Manual (advanced)
+
+```bash
+# 1) copy variables and edit them
 cp .env.example .env
+nano .env   # set ENABLED_NETWORKS, wallets, passphrases, ports...
 
-# 2) edit .env with your data (wallets, passphrases...)
-nano .env
+# 2) run only the networks listed in ENABLED_NETWORKS
+make up
 
-# 3) run
-sudo docker compose up -d
-
-# 4) open the dashboard
+# 3) open the dashboard
 # http://YOUR_SERVER_IP:3000
 ```
+
+> **Run one network or many:** set `ENABLED_NETWORKS=mysterium` for a single
+> network, or `ENABLED_NETWORKS=mysterium,storj` for several. Only the listed
+> networks start; everything is isolated under the `nodepin` project so it won't
+> clash with other apps on the same server. Ports are configurable in `.env`.
 
 ---
 
