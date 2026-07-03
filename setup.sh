@@ -81,8 +81,9 @@ SELECTED=""
 select_networks() {
   echo
   info "Which networks do you want to run? (space-separated numbers)"
-  echo "   1) mysterium  (shares bandwidth — earns MYST)"
-  echo "   2) storj      (shares storage   — earns STORJ)"
+  echo "   1) mysterium    (shares bandwidth — earns MYST)"
+  echo "   2) storj        (shares storage   — earns STORJ)"
+  echo "   3) packetstream (shares bandwidth — light, any device)"
   local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2]: ")" choice
   choice="${choice:-1 2}"
   local nets=""
@@ -90,6 +91,7 @@ select_networks() {
     case "$c" in
       1) nets="${nets}mysterium,";;
       2) nets="${nets}storj,";;
+      3) nets="${nets}packetstream,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -125,6 +127,11 @@ collect_vars() {
     prompt "STORJ_WALLET" "Storj payout wallet (Ethereum address)"
     prompt "STORJ_EMAIL"  "Storj email"
   fi
+
+  if [[ ",$SELECTED," == *",packetstream,"* ]]; then
+    echo; info "PacketStream settings"
+    prompt "PACKETSTREAM_CID" "PacketStream CID"
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -144,6 +151,7 @@ validate() {
   check "NODEPIN_VPS_IP"
   if [[ ",$SELECTED," == *",mysterium,"* ]]; then check "MYST_IDENTITY_PASSPHRASE"; fi
   if [[ ",$SELECTED," == *",storj,"* ]]; then check "STORJ_WALLET"; check "STORJ_EMAIL"; fi
+  if [[ ",$SELECTED," == *",packetstream,"* ]]; then check "PACKETSTREAM_CID"; fi
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }
