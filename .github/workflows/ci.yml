@@ -1,0 +1,74 @@
+name: CI — Validate & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 1) التحقق من صحة docker compose ──
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy env example
+        run: cp .env.example .env
+
+      - name: Validate compose config
+        env:
+          NODEPIN_VPS_IP: "127.0.0.1"
+        run: |
+          docker compose --profile mysterium --profile storj config > /dev/null
+          echo "✅ docker compose configuration is valid"
+
+  # ── 2) اختبارات الوحدة للوحة التحكم ──
+  test-control-panel:
+    name: Test Control Panel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/control-panel/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+        working-directory: services/control-panel
+
+      - name: Run tests
+        run: npm test
+        working-directory: services/control-panel
+
+  # ── 3) بناء صورة اللوحة (main فقط) ──
+  build-control-panel:
+    name: Build Control Panel Image
+    runs-on: ubuntu-latest
+    needs: [validate-compose, test-control-panel]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/control-panel
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/nodepin-control-panel:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/nodepin-control-panel:latest

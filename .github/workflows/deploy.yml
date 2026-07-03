@@ -1,0 +1,129 @@
+name: Deploy to VPS
+
+on:
+  # يدوي: اختر الشبكة من واجهة GitHub
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "الشبكة المراد نشرها"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - mysterium
+          - storj
+          - packetstream
+          - grass
+          - monitoring
+
+  # تلقائي عند تغيير ملفات شبكة محددة
+  push:
+    branches: [main]
+    paths:
+      - "services/mysterium/**"
+      - "services/storj/**"
+      - "services/packetstream/**"
+      - "services/grass/**"
+      - "services/control-panel/**"
+      - "docker-compose.yml"
+      - ".env.example"
+      - "Makefile"
+
+jobs:
+  deploy:
+    name: Deploy — ${{ github.event.inputs.network || 'auto' }}
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── تحديد الشبكة المستهدفة ──
+      # إذا كان push تلقائي: نكتشف أي ملفات تغيرت
+      - name: Detect target network
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "network=${{ github.event.inputs.network }}" >> $GITHUB_OUTPUT
+          else
+            # تحقق من الملفات المتغيرة وحدد الشبكة
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+
+            HAS_MYST=$(echo "$CHANGED"    | grep -c "services/mysterium\|MYST" || true)
+            HAS_STORJ=$(echo "$CHANGED"   | grep -c "services/storj\|STORJ"   || true)
+            HAS_PS=$(echo "$CHANGED"      | grep -c "services/packetstream"    || true)
+            HAS_GRASS=$(echo "$CHANGED"   | grep -c "services/grass"           || true)
+            HAS_PANEL=$(echo "$CHANGED"   | grep -c "services/control-panel\|docker-compose\|Makefile\|\.env\.example" || true)
+
+            COUNT=$(( (HAS_MYST>0) + (HAS_STORJ>0) + (HAS_PS>0) + (HAS_GRASS>0) ))
+
+            if [ "$COUNT" -gt 1 ] || [ "$HAS_PANEL" -gt 0 ]; then
+              echo "network=all" >> $GITHUB_OUTPUT
+            elif [ "$HAS_MYST"  -gt 0 ]; then echo "network=mysterium"    >> $GITHUB_OUTPUT
+            elif [ "$HAS_STORJ" -gt 0 ]; then echo "network=storj"        >> $GITHUB_OUTPUT
+            elif [ "$HAS_PS"    -gt 0 ]; then echo "network=packetstream"  >> $GITHUB_OUTPUT
+            elif [ "$HAS_GRASS" -gt 0 ]; then echo "network=grass"         >> $GITHUB_OUTPUT
+            else echo "network=all" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Show deploy target
+        run: echo "🎯 Deploying network → ${{ steps.target.outputs.network }}"
+
+      # ── الاتصال بالـ VPS ──
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # ── التحقق من بيئة الـ VPS ──
+      - name: Check VPS environment
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            if ! command -v docker &>/dev/null; then
+              echo "❌ Docker not found on VPS"; exit 1
+            fi
+            if ! docker compose version &>/dev/null; then
+              echo "❌ Docker Compose not found on VPS"; exit 1
+            fi
+            echo "✅ Docker $(docker --version)"
+            echo "✅ $(docker compose version)"
+          '
+
+      # ── تحديث الكود ونشر الشبكة المختارة ──
+      - name: Deploy
+        run: |
+          NETWORK="${{ steps.target.outputs.network }}"
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            set -e
+            cd ~/nodepin
+
+            echo '📥 Pulling latest code...'
+            git pull origin main
+
+            if [ '$NETWORK' = 'all' ]; then
+              echo '🚀 Deploying all networks...'
+              make pull
+              make up
+            else
+              echo '🚀 Deploying $NETWORK...'
+              docker compose --profile $NETWORK pull
+              docker compose --profile $NETWORK up -d
+            fi
+
+            echo '📊 Container status:'
+            docker compose ps
+          "
+
+      # ── تقرير النتيجة ──
+      - name: Deploy summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Deploy of [${{ steps.target.outputs.network }}] completed successfully"
+          else
+            echo "❌ Deploy of [${{ steps.target.outputs.network }}] failed — check logs above"
+          fi
