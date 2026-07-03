@@ -13,13 +13,17 @@ async function getMetrics() {
     extra: {},
   };
 
+  const headers = {
+    Authorization: 'Basic ' + Buffer.from('myst:mystberry').toString('base64'),
+  };
+
   try {
     // Identities list → pick the first registered identity.
-    const ids = await getJson(`${BASE}/tequilapi/identities`, { timeoutMs: 4000 });
+    const ids = await getJson(`${BASE}/tequilapi/identities`, { timeoutMs: 4000, headers });
     const identity = ids?.identities?.[0]?.id;
     if (!identity) return { ...base, status: 'no_identity' };
 
-    const info = await getJson(`${BASE}/tequilapi/identities/${identity}`, { timeoutMs: 4000 });
+    const info = await getJson(`${BASE}/tequilapi/identities/${identity}`, { timeoutMs: 4000, headers });
 
     // Balance is returned in the smallest unit; expose both raw + a human value.
     const balanceRaw = info?.balance ?? 0;
