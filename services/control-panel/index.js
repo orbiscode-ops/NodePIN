@@ -12,7 +12,6 @@ const docker = global.__DOCKER_MOCK__ || new Docker({ socketPath: '/var/run/dock
 const NODEPIN_LABEL = 'com.nodepin.project';
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.API_KEY || '';
 
 // ── Middleware ──────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
