@@ -119,23 +119,27 @@ jobs:
             echo '📥 Pulling latest code...'
             git pull origin main
 
+            echo '🔨 Rebuilding control-panel image...'
+            docker compose build --no-cache control-panel
+
             if [ '$NETWORK' = 'all' ]; then
               echo '🚀 Deploying all networks...'
-              # قراءة ENABLED_NETWORKS من .env
-              ENABLED=$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
-              if [ -z "$ENABLED" ]; then
-                echo 'ℹ️  No ENABLED_NETWORKS set — starting control-panel only'
+              ENABLED=\$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
+              if [ -z \"\$ENABLED\" ]; then
+                echo 'ℹ️  No ENABLED_NETWORKS — starting control-panel + watchtower'
                 docker compose up -d control-panel watchtower
               else
-                PROFILE_FLAGS=$(echo "$ENABLED" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
-                docker compose $PROFILE_FLAGS pull
-                docker compose $PROFILE_FLAGS up -d
+                PROFILE_FLAGS=\$(echo \"\$ENABLED\" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
+                docker compose \$PROFILE_FLAGS up -d --build
               fi
             else
               echo '🚀 Deploying: $NETWORK'
               docker compose --profile $NETWORK pull
               docker compose --profile $NETWORK up -d
             fi
+
+            echo '🔄 Restarting control-panel...'
+            docker compose restart control-panel
 
             echo '📊 Status:'
             docker compose ps
