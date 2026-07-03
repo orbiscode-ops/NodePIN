@@ -6,150 +6,340 @@
   <title>NodePIN Dashboard</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #22d3ee;
-      --alert: #f87171;
-      --ok: #34d399;
+      --bg:       #0b1120;
+      --surface:  #111827;
+      --card:     #1e293b;
+      --border:   #1e3a5f;
+      --text:     #f1f5f9;
+      --muted:    #64748b;
+      --accent:   #38bdf8;
+      --green:    #34d399;
+      --red:      #f87171;
+      --yellow:   #fbbf24;
+      --purple:   #a78bfa;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
     body {
-      font-family: "Segoe UI", Tahoma, sans-serif;
+      font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 2rem;
+      min-height: 100vh;
     }
-    h1 { margin-bottom: 1.5rem; font-size: 1.8rem; }
-    h2 { font-size: 1.2rem; color: var(--muted); margin-bottom: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+
+    /* ── Top bar ── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: .5px; }
+    .logo span { color: var(--text); }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    #last-update { font-size: .8rem; color: var(--muted); }
+    .btn {
+      background: var(--accent); color: #0b1120; border: none;
+      padding: .4rem .9rem; border-radius: 6px; font-weight: 700;
+      cursor: pointer; font-size: .85rem; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-ghost {
+      background: transparent; color: var(--muted); border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Layout ── */
+    main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Summary strip ── */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem; margin-bottom: 1.75rem;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem 1.25rem;
+    }
+    .stat-card .label { font-size: .75rem; color: var(--muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-card .value { font-size: 1.6rem; font-weight: 700; }
+    .stat-card .value.green  { color: var(--green); }
+    .stat-card .value.yellow { color: var(--yellow); }
+    .stat-card .value.accent { color: var(--accent); }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: .85rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 1.75rem 0 .9rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Cards grid ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+
     .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1.25rem;
-      border: 1px solid #334155;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      transition: border-color .2s;
     }
-    .card .badge {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      margin-bottom: 0.6rem;
+    .card:hover { border-color: var(--accent); }
+
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+    .card-title { font-weight: 700; font-size: 1rem; }
+    .card-subtitle { font-size: .75rem; color: var(--muted); margin-top: .15rem; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .2rem .65rem; border-radius: 999px;
+      font-size: .75rem; font-weight: 700;
     }
-    .badge.running { background: #064e3b; color: var(--ok); }
-    .badge.stopped { background: #450a0a; color: var(--alert); }
-    .data-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #334155; }
-    .data-row:last-child { border-bottom: none; }
-    .muted { color: var(--muted); font-size: 0.9rem; }
-    .refresh { margin-bottom: 1.5rem; }
-    button {
-      background: var(--accent);
-      color: #0f172a;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+    .badge::before { content: '●'; font-size: .6rem; }
+    .badge.running  { background: #052e16; color: var(--green); }
+    .badge.stopped  { background: #450a0a; color: var(--red); }
+    .badge.starting { background: #1c1109; color: var(--yellow); }
+    .badge.error    { background: #3b0a0a; color: var(--red); }
+    .badge.ok       { background: #052e16; color: var(--green); }
+
+    /* Rows inside card */
+    .row { display: flex; justify-content: space-between; align-items: center;
+           padding: .4rem 0; border-bottom: 1px solid #1e3a5f22; font-size: .875rem; }
+    .row:last-child { border-bottom: none; }
+    .row .key { color: var(--muted); }
+    .row .val { text-align: left; word-break: break-all; max-width: 55%; }
+
+    /* Earnings highlight */
+    .earnings-box {
+      margin-top: .9rem; padding: .75rem; border-radius: 8px;
+      background: #0d1f11; border: 1px solid #1a3a23;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    button:hover { opacity: 0.9; }
-    .footer { margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+    .earnings-box .earn-label { font-size: .75rem; color: var(--muted); }
+    .earnings-box .earn-value { font-size: 1.25rem; font-weight: 700; color: var(--green); }
+
+    /* Empty / loading states */
+    .placeholder { color: var(--muted); font-size: .9rem; padding: 2rem; text-align: center; }
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-left: .4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    footer {
+      text-align: center; padding: 2rem; color: var(--muted); font-size: .8rem;
+      border-top: 1px solid var(--border); margin-top: 2rem;
+    }
+
+    /* Logout */
+    #logout-btn { display: none; }
+
+    @media (max-width: 600px) {
+      header, main { padding-left: 1rem; padding-right: 1rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>🌐 NodePIN Dashboard</h1>
-  <div class="refresh">
-    <button onclick="loadContainers()">⟳ تحديث البيانات</button>
+
+<header>
+  <div class="logo">Node<span>PIN</span> <span style="font-size:.75rem;color:var(--muted);font-weight:400">Dashboard</span></div>
+  <div class="header-right">
+    <span id="last-update"></span>
+    <button class="btn" onclick="refreshAll()">⟳ تحديث</button>
+    <button class="btn btn-ghost" id="logout-btn" onclick="doLogout()">خروج</button>
+  </div>
+</header>
+
+<main>
+  <!-- Summary strip -->
+  <div class="summary" id="summary">
+    <div class="stat-card"><div class="label">الحاويات</div><div class="value accent" id="s-total">—</div></div>
+    <div class="stat-card"><div class="label">تعمل</div><div class="value green" id="s-running">—</div></div>
+    <div class="stat-card"><div class="label">متوقفة</div><div class="value" id="s-stopped">—</div></div>
+    <div class="stat-card"><div class="label">الشبكات المفعّلة</div><div class="value accent" id="s-networks">—</div></div>
   </div>
 
-  <section>
-    <h2>الحاويات النشطة</h2>
-    <div id="containers" class="grid">جاري التحميل...</div>
-  </section>
+  <!-- Containers -->
+  <div class="section-title">الحاويات</div>
+  <div id="containers" class="grid"><div class="placeholder">جاري التحميل… <span class="spinner"></span></div></div>
 
-  <section style="margin-top: 2rem;">
-    <h2>الدخل والمقاييس (تجريبي)</h2>
-    <div id="metrics" class="grid">جاري التحميل...</div>
-  </section>
+  <!-- Metrics -->
+  <div class="section-title">الأرباح والشبكات</div>
+  <div id="metrics" class="grid"><div class="placeholder">جاري التحميل… <span class="spinner"></span></div></div>
+</main>
 
-  <div class="footer">
-    NodePIN — بنية Node لامركزية قابلة للتوسيع
-  </div>
+<footer>NodePIN — بنية node لامركزية قابلة للتوسيع 💡</footer>
 
-  <script>
-    async function loadContainers() {
-      const el = document.getElementById('containers');
-      el.innerHTML = 'جاري التحميل...';
-      try {
-        const res = await fetch('/api/containers');
-        const data = await res.json();
-        if (!data.containers || data.containers.length === 0) {
-          el.innerHTML = '<p class="muted">لا توجد حاويات</p>';
-          return;
-        }
-        el.innerHTML = data.containers.map(c => `
-          <div class="card">
-            <div class="badge ${c.state}">${c.state === 'running' ? 'يعمل' : 'متوقف'}</div>
-            <div class="data-row"><span class="muted">الاسم</span><span>${c.name}</span></div>
-            <div class="data-row"><span class="muted">الصورة</span><span>${c.image}</span></div>
-            <div class="data-row"><span class="muted">الحالة</span><span>${c.status}</span></div>
-            <div class="data-row"><span class="muted">المنافذ</span><span>${c.ports || '—'}</span></div>
+<script>
+// ── helpers ──────────────────────────────────────────
+function badge(state) {
+  const map = { running:'running', exited:'stopped', stopped:'stopped', starting:'starting', error:'error', ok:'running', no_identity:'stopped' };
+  const cls = map[state] || 'stopped';
+  const labels = { running:'يعمل', stopped:'متوقف', starting:'قيد الإقلاع', error:'خطأ', no_identity:'بدون هوية' };
+  return `<span class="badge ${cls}">${labels[state] || state}</span>`;
+}
+
+function row(key, val) {
+  if (val === null || val === undefined || val === '') return '';
+  return `<div class="row"><span class="key">${key}</span><span class="val">${val}</span></div>`;
+}
+
+function fmt(n, unit='') {
+  if (n === null || n === undefined) return '—';
+  if (typeof n === 'number') return n.toLocaleString('en') + (unit ? ' ' + unit : '');
+  return n;
+}
+
+function fmtBytes(b) {
+  if (!b) return '—';
+  const units = ['B','KB','MB','GB','TB'];
+  let i = 0; let v = b;
+  while (v >= 1024 && i < units.length-1) { v /= 1024; i++; }
+  return v.toFixed(1) + ' ' + units[i];
+}
+
+function fmtEarnings(info) {
+  if (info.earnings === null || info.earnings === undefined) return null;
+  if (info.network === 'storj') return '$' + (info.earnings / 100).toFixed(2);
+  return info.earnings + ' ' + (info.token || '');
+}
+
+function ts() { return new Date().toLocaleTimeString('ar-SA'); }
+
+// ── logout ────────────────────────────────────────────
+async function doLogout() {
+  await fetch('/api/logout', { method:'POST' });
+  location.reload();
+}
+
+// Check auth status to show/hide logout btn
+async function checkAuth() {
+  const r = await fetch('/api/health').catch(() => null);
+  if (r && r.ok) {
+    const h = r.headers.get('x-auth-disabled');
+    if (!h) document.getElementById('logout-btn').style.display = 'inline-flex';
+  }
+}
+
+// ── containers ────────────────────────────────────────
+async function loadContainers() {
+  const el = document.getElementById('containers');
+  try {
+    const res = await fetch('/api/containers');
+    if (!res.ok) throw new Error(res.statusText);
+    const data = await res.json();
+    const cs = data.containers || [];
+
+    // update summary
+    document.getElementById('s-total').textContent   = cs.length;
+    document.getElementById('s-running').textContent = cs.filter(c=>c.state==='running').length;
+    document.getElementById('s-stopped').textContent = cs.filter(c=>c.state!=='running').length;
+
+    if (!cs.length) { el.innerHTML = '<div class="placeholder">لا توجد حاويات NodePIN</div>'; return; }
+
+    el.innerHTML = cs.map(c => `
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${c.name}</div>
+            <div class="card-subtitle">${c.image}</div>
           </div>
-        `).join('');
-      } catch (e) {
-        el.innerHTML = `<p style="color:var(--alert)">خطأ: ${e.message}</p>`;
+          ${badge(c.state)}
+        </div>
+        ${row('الحالة', c.status)}
+        ${row('المنافذ', c.ports || '—')}
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="placeholder" style="color:var(--red)">فشل تحميل الحاويات: ${e.message}</div>`;
+  }
+}
+
+// ── metrics ───────────────────────────────────────────
+async function loadMetrics() {
+  const el = document.getElementById('metrics');
+  try {
+    const res = await fetch('/api/metrics');
+    if (!res.ok) throw new Error(res.statusText);
+    const data = await res.json();
+    const entries = Object.entries(data.nodes || {});
+
+    document.getElementById('s-networks').textContent = entries.length;
+
+    if (!entries.length) { el.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة</div>'; return; }
+
+    el.innerHTML = entries.map(([name, info]) => {
+      const x = info.extra || {};
+      const earned = fmtEarnings(info);
+      let extraRows = '';
+
+      if (name === 'mysterium') {
+        extraRows = [
+          row('الهوية', x.identity ? x.identity.slice(0,16)+'…' : null),
+          row('حالة التسجيل', x.registrationStatus),
+          row('الرصيد', x.balance !== undefined ? fmt(x.balance)+' MYST (wei)' : null),
+          row('أرباح غير مستوفاة', x.earningsUnsettled !== undefined ? fmt(x.earningsUnsettled)+' wei' : null),
+        ].join('');
+      } else if (name === 'storj') {
+        extraRows = [
+          row('Node ID', x.nodeID ? x.nodeID.slice(0,16)+'…' : null),
+          row('الإصدار', x.version),
+          row('محدّث', x.upToDate ? '✅ نعم' : x.upToDate === false ? '⚠️ لا' : null),
+          row('مساحة مستخدمة', fmtBytes(x.diskSpaceUsed)),
+          row('مساحة متاحة', fmtBytes(x.diskSpaceAvailable)),
+          row('البيانات المنقولة', fmtBytes(x.bandwidthUsed)),
+          row('الأقمار الصناعية', x.satellitesCount),
+        ].join('');
+      } else if (name === 'packetstream') {
+        extraRows = x.dashboardUrl ? row('لوحة التحكم', `<a href="${x.dashboardUrl}" target="_blank" style="color:var(--accent)">${x.dashboardUrl}</a>`) : '';
+      } else if (name === 'grass') {
+        extraRows = x.dashboardUrl ? row('لوحة التحكم', `<a href="${x.dashboardUrl}" target="_blank" style="color:var(--accent)">${x.dashboardUrl}</a>`) : '';
+      } else {
+        extraRows = Object.entries(x)
+          .filter(([,v]) => v !== null && v !== undefined && v !== '')
+          .map(([k,v]) => row(k, v)).join('');
       }
-    }
 
-    const STATUS_LABELS = {
-      ok: 'يعمل', starting: 'قيد الإقلاع', error: 'خطأ',
-      no_identity: 'بدون هوية'
-    };
-
-    function fmtEarnings(info) {
-      if (info.earnings === null || info.earnings === undefined) return '—';
-      // Storj payout is reported in USD cents; show as dollars.
-      if (info.network === 'storj') return '$' + (info.earnings / 100).toFixed(2);
-      return info.earnings + ' ' + (info.token || '');
-    }
-
-    async function loadMetrics() {
-      const el = document.getElementById('metrics');
-      try {
-        const res = await fetch('/api/metrics');
-        const data = await res.json();
-        const entries = Object.entries(data.nodes || {});
-        if (entries.length === 0) {
-          el.innerHTML = '<p class="muted">لا توجد شبكات مفعّلة</p>';
-          return;
-        }
-        el.innerHTML = entries.map(([name, info]) => {
-          const state = info.status === 'ok' ? 'running' : 'stopped';
-          const label = STATUS_LABELS[info.status] || info.status;
-          const extra = info.extra || {};
-          const extraRows = Object.entries(extra)
-            .filter(([, v]) => v !== null && v !== undefined && v !== '')
-            .map(([k, v]) => `<div class="data-row"><span class="muted">${k}</span><span>${v}</span></div>`)
-            .join('');
-          return `
-            <div class="card">
-              <div class="badge ${state}">${label}</div>
-              <div class="data-row"><span class="muted">الشبكة</span><span>${name.toUpperCase()}</span></div>
-              <div class="data-row"><span class="muted">الأرباح</span><span>${fmtEarnings(info)}</span></div>
-              ${extraRows}
+      return `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${name.toUpperCase()}</div>
+              <div class="card-subtitle">${info.token || ''}</div>
             </div>
-          `;
-        }).join('');
-      } catch (e) {
-        el.innerHTML = `<p style="color:var(--alert)">خطأ: ${e.message}</p>`;
-      }
-    }
+            ${badge(info.status)}
+          </div>
+          ${extraRows}
+          ${earned ? `
+            <div class="earnings-box">
+              <span class="earn-label">إجمالي الأرباح</span>
+              <span class="earn-value">${earned}</span>
+            </div>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="placeholder" style="color:var(--red)">فشل تحميل المقاييس: ${e.message}</div>`;
+  }
+}
 
-    loadContainers();
-    loadMetrics();
-    setInterval(loadContainers, 30000);
-    setInterval(loadMetrics, 30000);
-  </script>
+// ── main loop ─────────────────────────────────────────
+async function refreshAll() {
+  document.getElementById('last-update').textContent = 'آخر تحديث: ' + ts();
+  await Promise.all([loadContainers(), loadMetrics()]);
+}
+
+checkAuth();
+refreshAll();
+setInterval(refreshAll, 30_000);
+</script>
 </body>
 </html>
