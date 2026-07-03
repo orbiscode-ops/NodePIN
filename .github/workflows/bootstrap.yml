@@ -86,7 +86,7 @@ jobs:
           ENABLED_NETWORKS=${{ github.event.inputs.networks }}
 
           # ── Global ──
-          NODEPIN_VPS_IP=${{ secrets.NODEPIN_VPS_IP }}
+          NODEPIN_VPS_IP=${{ secrets.VPS_HOST }}
           NODEPIN_DOMAIN=${{ secrets.NODEPIN_DOMAIN }}
           NODEPIN_TIMEZONE=Asia/Riyadh
 
@@ -171,5 +171,5 @@ jobs:
       - name: Summary
         run: |
           echo "✅ Bootstrap complete!"
-          echo "Dashboard: http://${{ secrets.NODEPIN_VPS_IP }}:3000"
+          echo "Dashboard: http://${{ secrets.VPS_HOST }}:3000"
           echo "Networks: ${{ github.event.inputs.networks }}"
