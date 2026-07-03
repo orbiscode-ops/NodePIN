@@ -102,14 +102,34 @@ sudo docker compose up -d
 - All keys and wallets stay in `.env` only.
 - The repository structure is open-source and safe to publish publicly.
 
+### Dashboard authentication
+
+Set `DASHBOARD_PASSWORD` in `.env` to require login (session cookie, signed with
+`SESSION_SECRET`). Leave it empty to disable auth (not recommended in production).
+A `DASHBOARD_API_KEY` is also supported for programmatic access via the
+`x-api-key` header.
+
+### HTTPS (recommended for public servers)
+
+Run the built-in **Caddy** reverse proxy for automatic TLS:
+
+1. Point `NODEPIN_DOMAIN` (DNS A record) to your server.
+2. Add `https` to `ENABLED_NETWORKS`, e.g. `ENABLED_NETWORKS=mysterium,storj,https`.
+3. Set `COOKIE_SECURE=true`.
+4. `make up` — Caddy obtains a certificate and serves the dashboard over HTTPS.
+
+Behind HTTPS, you can stop publishing the dashboard port directly and reach it
+only through `https://your-domain`.
+
 ---
 
 ## 📌 Roadmap
 
-- [ ] CI/CD auto-deploy (GitHub Actions / GitLab CI).
-- [ ] Wire the dashboard to each network's native API (MYST earnings, STORJ stats...).
-- [ ] Add authentication to the control panel.
-- [ ] Custom domain + HTTPS.
+- [x] CI/CD auto-deploy (GitLab CI).
+- [x] Wire the dashboard to each network's native API (MYST earnings, STORJ stats...).
+- [x] Add authentication to the control panel.
+- [x] Custom domain + HTTPS (Caddy).
+- [ ] More lightweight bandwidth-sharing networks (Phase 2).
 
 ---
 

@@ -105,6 +105,16 @@ collect_vars() {
   info "Global settings"
   prompt "NODEPIN_VPS_IP" "Your server public IP"
 
+  echo; info "Dashboard security"
+  prompt "DASHBOARD_PASSWORD" "Dashboard login password (leave empty to disable auth)" silent
+  # ولّد سر جلسة عشوائي تلقائياً
+  if command -v openssl >/dev/null 2>&1; then
+    set_env_var "SESSION_SECRET" "$(openssl rand -hex 32)"
+  else
+    set_env_var "SESSION_SECRET" "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  fi
+  ok "Generated a random SESSION_SECRET."
+
   if [[ ",$SELECTED," == *",mysterium,"* ]]; then
     echo; info "Mysterium settings"
     prompt "MYST_IDENTITY_PASSPHRASE" "Mysterium identity passphrase" silent

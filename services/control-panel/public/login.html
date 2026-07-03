@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodePIN — Login</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, sans-serif; background: #0f172a; color: #f8fafc;
+           display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
+    .box { background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; width: 320px; }
+    h1 { font-size: 1.3rem; margin: 0 0 1.25rem; text-align: center; }
+    input { width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #334155;
+            background: #0f172a; color: #f8fafc; box-sizing: border-box; margin-bottom: 1rem; }
+    button { width: 100%; padding: 0.6rem; border: none; border-radius: 6px; background: #22d3ee;
+             color: #0f172a; font-weight: bold; cursor: pointer; }
+    .err { color: #f87171; font-size: 0.9rem; margin-bottom: 0.75rem; min-height: 1.1em; text-align: center; }
+  </style>
+</head>
+<body>
+  <form class="box" onsubmit="return doLogin(event)">
+    <h1>🌐 NodePIN</h1>
+    <div class="err" id="err"></div>
+    <input type="password" id="password" placeholder="كلمة المرور / Password" autofocus required>
+    <button type="submit">دخول / Login</button>
+  </form>
+  <script>
+    async function doLogin(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      const err = document.getElementById('err');
+      err.textContent = '';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        if (res.ok) { window.location.href = '/'; }
+        else { err.textContent = 'كلمة المرور غير صحيحة'; }
+      } catch (_) { err.textContent = 'خطأ في الاتصال'; }
+      return false;
+    }
+  </script>
+</body>
+</html>
