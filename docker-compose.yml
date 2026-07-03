@@ -92,7 +92,12 @@ services:
     environment:
       - PORT=${DASHBOARD_PORT:-3000}
       - API_KEY=${DASHBOARD_API_KEY:-}
+      - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD:-}
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      - COOKIE_SECURE=${COOKIE_SECURE:-false}
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
+      - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
+      - ENABLED_NETWORKS=${ENABLED_NETWORKS:-mysterium,storj}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
