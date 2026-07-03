@@ -160,6 +160,24 @@ services:
       com.nodepin.network: "caddy"
       com.centurylinklabs.watchtower.enable: "true"
 
+  # ──────────────────────────────────────────
+  # 6) PacketStream  (profile: packetstream)
+  #    يشارك عرض النطاق (bandwidth) — شبكة خفيفة تناسب أي جهاز.
+  # ──────────────────────────────────────────
+  packetstream:
+    image: packetstream/psclient:latest
+    container_name: nodepin_packetstream
+    profiles: ["packetstream"]
+    restart: unless-stopped
+    environment:
+      - CID=${PACKETSTREAM_CID}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "packetstream"
+      com.centurylinklabs.watchtower.enable: "true"
+
   # — أضف شبكة جديدة أسفل هذا الخط —
   #   تذكّر: profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
