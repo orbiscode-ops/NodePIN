@@ -22,6 +22,8 @@ volumes:
   nodepin_myst_data:
   nodepin_storj_data:
   nodepin_control_db:
+  nodepin_caddy_data:
+  nodepin_caddy_config:
   # أضف هنا عند إضافة شبكة جديدة
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
