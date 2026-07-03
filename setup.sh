@@ -86,7 +86,7 @@ select_networks() {
   echo "   4) nodepay       (AI bandwidth     — earns NC tokens)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
-  echo "   5) honeygain     (bandwidth sharing — earns USD) ✅ live earnings"
+
   echo "   6) traffmonetizer(bandwidth sharing — earns USD)"
   echo "   7) iproyal       (bandwidth sharing — earns USD)"
   echo "   8) peer2profit   (bandwidth sharing — earns USD)"
@@ -94,8 +94,8 @@ select_networks() {
   echo "  10) earnapp       (bandwidth sharing — earns USD)"
   echo "  11) anyone        (onion relay      — earns ANYONE)"
   echo ""
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2 5]: ")" choice
-  choice="${choice:-1 2 5}"
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2 11]: ")" choice
+  choice="${choice:-1 2 11}"
   local nets=""
   for c in $choice; do
     case "$c" in
@@ -103,7 +103,7 @@ select_networks() {
       2)  nets="${nets}storj,";;
       3)  nets="${nets}bitping,";;
       4)  nets="${nets}nodepay,";;
-      5)  nets="${nets}honeygain,";;
+
       6)  nets="${nets}traffmonetizer,";;
       7)  nets="${nets}iproyal,";;
       8)  nets="${nets}peer2profit,";;
@@ -145,11 +145,6 @@ collect_vars() {
     prompt "STORJ_EMAIL"  "Storj email"
   fi
 
-  if [[ ",$SELECTED," == *",honeygain,"* ]]; then
-    echo; info "Honeygain settings"
-    prompt "HONEYGAIN_EMAIL" "Honeygain email"
-    prompt "HONEYGAIN_PASS"  "Honeygain password" silent
-  fi
 
   if [[ ",$SELECTED," == *",traffmonetizer,"* ]]; then
     echo; info "Traffmonetizer settings"
@@ -216,7 +211,7 @@ validate() {
   check "NODEPIN_VPS_IP"
   [[ ",$SELECTED," == *",mysterium,"*    ]] && check "MYST_IDENTITY_PASSPHRASE"
   [[ ",$SELECTED," == *",storj,"*        ]] && { check "STORJ_WALLET"; check "STORJ_EMAIL"; }
-  [[ ",$SELECTED," == *",honeygain,"*    ]] && { check "HONEYGAIN_EMAIL"; check "HONEYGAIN_PASS"; }
+
   [[ ",$SELECTED," == *",traffmonetizer,"* ]] && check "TRAFFMONETIZER_TOKEN"
   [[ ",$SELECTED," == *",iproyal,"*      ]] && { check "IPROYAL_EMAIL"; check "IPROYAL_PASS"; }
   [[ ",$SELECTED," == *",peer2profit,"*  ]] && check "PEER2PROFIT_EMAIL"

@@ -90,23 +90,6 @@ services:
       com.nodepin.network: "storj"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 3) Honeygain  (profile: honeygain)
-  #    مشاركة bandwidth — يكسب USD
-  #    ✅ أرباح حية عبر Honeygain web API
-  # ──────────────────────────────────────────
-  honeygain:
-    image: honeygain/honeygain:latest
-    container_name: nodepin_honeygain
-    profiles: ["honeygain"]
-    restart: unless-stopped
-    command: -tou-accept -email ${HONEYGAIN_EMAIL} -pass ${HONEYGAIN_PASS} -device ${HONEYGAIN_DEVICE:-nodepin}
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "honeygain"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 4) Traffmonetizer  (profile: traffmonetizer)
@@ -200,8 +183,7 @@ services:
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
       - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
-      - HONEYGAIN_EMAIL=${HONEYGAIN_EMAIL:-}
-      - HONEYGAIN_PASS=${HONEYGAIN_PASS:-}
+
       - BITPING_API_URL=${BITPING_API_URL:-http://nodepin_bitping:9090}
       - MESON_API_URL=${MESON_API_URL:-http://nodepin_meson:19090}
       - HUDDLE01_API_URL=${HUDDLE01_API_URL:-http://nodepin_huddle01:4001}
