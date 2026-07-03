@@ -104,7 +104,7 @@
     .grid-3{display:grid;grid-template-columns:1fr 1fr 28px;gap:.5rem;align-items:center}
 
     /* earn type selector */
-    .earn-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem}
+    .earn-sel{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-bottom:1rem}
     .earn-opt{padding:.6rem .4rem;border-radius:8px;border:2px solid var(--border);background:var(--surface);cursor:pointer;text-align:center;transition:all .15s}
     .earn-opt:hover,.earn-opt.sel{border-color:var(--accent);background:#0c2233}
     .earn-opt .eo-icon{font-size:1.2rem;margin-bottom:.2rem}
@@ -114,14 +114,6 @@
     /* section label */
     .sec-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .6rem;display:flex;align-items:center;gap:.5rem}
     .sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
-
-    /* creds */
-    .creds-box{border:1px solid var(--border);border-radius:8px;padding:.85rem;background:#0b1120;margin-bottom:.75rem}
-    .cred-row{display:grid;grid-template-columns:1fr 1fr 80px 24px;gap:.4rem;margin-bottom:.45rem;align-items:center}
-    .cred-row input,.cred-row select{padding:.38rem .6rem;font-size:.8rem}
-    .rm-btn{background:#450a0a;border:none;border-radius:6px;color:var(--red);cursor:pointer;width:24px;height:24px;font-size:.85rem;display:flex;align-items:center;justify-content:center}
-    .add-cred{width:100%;padding:.4rem;background:transparent;border:1px dashed var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:.78rem;margin-top:.35rem;transition:all .15s}
-    .add-cred:hover{border-color:var(--accent);color:var(--accent)}
 
     /* toggle row */
     .tog-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:#0b1120;border:1px solid var(--border);border-radius:8px;margin-bottom:.6rem}
@@ -202,22 +194,9 @@
       <label>Docker Image *</label>
       <input id="f-image" type="text" placeholder="vendor/node:latest">
     </div>
-    <div class="grid-2" style="gap:.4rem">
-      <div class="field">
-        <label>العملة *</label>
-        <input id="f-token" type="text" placeholder="USD أو MYST">
-      </div>
-      <div class="field">
-        <label>نوع الكسب</label>
-        <select id="f-earn-cat">
-          <option value="Bandwidth sharing">Bandwidth</option>
-          <option value="Storage sharing">Storage</option>
-          <option value="AI / Inference">AI</option>
-          <option value="CDN">CDN</option>
-          <option value="Web scraping">Scraping</option>
-          <option value="Other">أخرى</option>
-        </select>
-      </div>
+    <div class="field">
+      <label>العملة *</label>
+      <input id="f-token" type="text" placeholder="USD أو MYST">
     </div>
   </div>
 
@@ -227,17 +206,12 @@
     <div class="earn-opt sel" data-type="local" onclick="setEarnType('local',this)">
       <div class="eo-icon">🔌</div>
       <div class="eo-label">API محلي</div>
-      <div class="eo-sub">بورت داخل Docker</div>
-    </div>
-    <div class="earn-opt" data-type="web" onclick="setEarnType('web',this)">
-      <div class="eo-icon">🌐</div>
-      <div class="eo-label">API خارجي</div>
-      <div class="eo-sub">موقع المنصة</div>
+      <div class="eo-sub">يربط بالكونتينر داخل Docker</div>
     </div>
     <div class="earn-opt" data-type="link" onclick="setEarnType('link',this)">
       <div class="eo-icon">🔗</div>
       <div class="eo-label">رابط فقط</div>
-      <div class="eo-sub">لا يوجد API</div>
+      <div class="eo-sub">عرض لوحة تحكم خارجية</div>
     </div>
   </div>
 
@@ -251,41 +225,17 @@
     <div class="field">
       <label>مسار الأرباح في JSON</label>
       <input id="f-earn-path" type="text" placeholder="مثال: data.balance أو earnings">
-      <div class="hint">اتركه فارغاً للكشف التلقائي</div>
+      <div class="hint">اتركه فارغاً للتوقع التلقائي</div>
     </div>
   </div>
 
-  <!-- Web API fields -->
-  <div id="grp-web" style="display:none">
-    <div class="field">
-      <label>رابط Login API *</label>
-      <input id="f-login-url" type="text" placeholder="https://api.example.com/v1/auth/login">
-    </div>
-    <div class="field">
-      <label>رابط Balance API *</label>
-      <input id="f-balance-url" type="text" placeholder="https://api.example.com/v1/balance">
-    </div>
-    <div class="field">
-      <label>مسار الأرباح في JSON</label>
-      <input id="f-earn-path-web" type="text" placeholder="مثال: data.balance">
-    </div>
-  </div>
-
-  <!-- Dashboard link (shown for web+link) -->
+  <!-- Dashboard link (shown for link only) -->
   <div id="grp-dashboard" style="display:none">
     <div class="field">
       <label>رابط Dashboard الخارجي *</label>
       <input id="f-dashboard-url" type="text" placeholder="https://app.mynetwork.io/dashboard">
-      <div class="hint">سيظهر كزر انتقال مباشر من لوحتك</div>
+      <div class="hint">يكون مطلوباً فقط لنوع الرابط</div>
     </div>
-  </div>
-
-  <!-- Credentials -->
-  <div class="sec-label">بيانات الاعتماد</div>
-  <div class="creds-box">
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">الحقول التي سيُطلب من المستخدم إدخالها</div>
-    <div id="creds-list"></div>
-    <button class="add-cred" onclick="addCredRow()">＋ إضافة حقل</button>
   </div>
 
   <!-- Options -->
@@ -296,13 +246,6 @@
       <div class="ts">يُضاف مباشرة لقائمة الشبكات النشطة</div>
     </div>
     <label class="toggle"><input type="checkbox" id="f-enabled" checked><span class="slider"></span></label>
-  </div>
-  <div class="tog-row">
-    <div class="tog-text">
-      <div class="tl">تحديث تلقائي (Watchtower)</div>
-      <div class="ts">يُحدَّث الكونتينر تلقائياً عند توفر إصدار جديد</div>
-    </div>
-    <label class="toggle"><input type="checkbox" id="f-watchtower" checked><span class="slider"></span></label>
   </div>
 
   <div class="btn-row">
@@ -396,7 +339,7 @@ function renderGrid() {
 }
 
 function earnTypeLabel(t) {
-  return { local: 'API محلي ✅', web: 'API خارجي ✅', link: 'رابط 🔗' }[t] || t;
+  return { local: 'API محلي ✅', link: 'رابط 🔗' }[t] || t;
 }
 
 // ── Fetch live metrics ────────────────────────────────
@@ -438,37 +381,7 @@ function setEarnType(type, el) {
   document.querySelectorAll('.earn-opt').forEach(e => e.classList.remove('sel'));
   el.classList.add('sel');
   document.getElementById('grp-local').style.display     = type === 'local' ? '' : 'none';
-  document.getElementById('grp-web').style.display       = type === 'web'   ? '' : 'none';
-  document.getElementById('grp-dashboard').style.display = type !== 'local' ? '' : 'none';
-}
-
-// ── Credentials ───────────────────────────────────────
-function addCredRow(label='', key='', type='text') {
-  const row = document.createElement('div');
-  row.className = 'cred-row';
-  row.innerHTML = `
-    <input type="text" placeholder="اسم الحقل" value="${label}">
-    <input type="text" placeholder="مفتاح .env" value="${key}">
-    <select>
-      <option value="text"     ${type==='text'    ?'selected':''}>نص</option>
-      <option value="email"    ${type==='email'   ?'selected':''}>إيميل</option>
-      <option value="password" ${type==='password'?'selected':''}>باسورد</option>
-    </select>
-    <button class="rm-btn" onclick="this.closest('.cred-row').remove()">×</button>`;
-  document.getElementById('creds-list').appendChild(row);
-}
-
-function getCredentials() {
-  const rows = document.querySelectorAll('#creds-list .cred-row');
-  const creds = [];
-  rows.forEach(r => {
-    const inputs = r.querySelectorAll('input');
-    const sel    = r.querySelector('select');
-    const label  = inputs[0].value.trim();
-    const key    = inputs[1].value.trim().toUpperCase().replace(/\s+/g,'_');
-    if (label && key) creds.push({ label, key, type: sel.value });
-  });
-  return creds;
+  document.getElementById('grp-dashboard').style.display = type === 'link'  ? '' : 'none';
 }
 
 // ── Open / close modal ────────────────────────────────
@@ -496,18 +409,13 @@ function openEdit(key) {
   document.getElementById('f-image').value = net.image || '';
   document.getElementById('f-token').value = net.token || '';
   document.getElementById('f-earn-path').value = net.earningsPath || '';
-  document.getElementById('f-earn-path-web').value = net.earningsPath || '';
   document.getElementById('f-local-url').value = net.localApiUrl || '';
-  document.getElementById('f-login-url').value = net.loginUrl || '';
-  document.getElementById('f-balance-url').value = net.balanceUrl || '';
   document.getElementById('f-dashboard-url').value = net.dashboardUrl || '';
   document.getElementById('f-enabled').checked = net.enabled !== false;
 
-  const et = net.earnType || 'link';
-  const opt = document.querySelector(`.earn-opt[data-type="${et}"]`);
+  const et = net.earnType || 'local';
+  const opt = document.querySelector(`.earn-opt[data-type="${et}"]`) || document.querySelector('.earn-opt[data-type="local"]');
   if (opt) setEarnType(et, opt);
-
-  (net.credentials || []).forEach(c => addCredRow(c.label, c.key, c.type));
 
   document.getElementById('modal').style.display = 'flex';
 }
@@ -516,11 +424,10 @@ function closeModal() { document.getElementById('modal').style.display = 'none';
 function bgClick(e) { if (e.target === document.getElementById('modal')) closeModal(); }
 
 function resetForm() {
-  ['f-key','f-name','f-icon','f-image','f-token','f-earn-path','f-earn-path-web',
-   'f-local-url','f-login-url','f-balance-url','f-dashboard-url']
+  ['f-key','f-name','f-icon','f-image','f-token','f-earn-path',
+   'f-local-url','f-dashboard-url']
     .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-enabled').checked = true;
-  document.getElementById('creds-list').innerHTML = '';
   document.getElementById('form-msg').classList.remove('show');
   setEarnType('local', document.querySelector('.earn-opt[data-type="local"]'));
 }
@@ -530,9 +437,7 @@ async function saveNetwork() {
   const msgEl = document.getElementById('form-msg');
   msgEl.classList.remove('show');
 
-  const earnPathVal = earnType === 'web'
-    ? document.getElementById('f-earn-path-web').value.trim()
-    : document.getElementById('f-earn-path').value.trim();
+  const earnPathVal = document.getElementById('f-earn-path').value.trim();
 
   const body = {
     key:          document.getElementById('f-key').value.trim().toLowerCase(),
@@ -542,11 +447,8 @@ async function saveNetwork() {
     token:        document.getElementById('f-token').value.trim(),
     earnType,
     localApiUrl:  document.getElementById('f-local-url').value.trim() || null,
-    loginUrl:     document.getElementById('f-login-url').value.trim() || null,
-    balanceUrl:   document.getElementById('f-balance-url').value.trim() || null,
     dashboardUrl: document.getElementById('f-dashboard-url').value.trim() || null,
     earningsPath: earnPathVal || null,
-    credentials:  getCredentials(),
     enabled:      document.getElementById('f-enabled').checked,
   };
 

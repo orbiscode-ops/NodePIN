@@ -1,10 +1,27 @@
-name: CI — Validate & Test
+name: CI & Deploy
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "الشبكة المراد نشرها"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - mysterium
+          - storj
+          - honeygain
+          - traffmonetizer
+          - iproyal
+          - peer2profit
+          - repocket
+          - monitoring
 
 jobs:
   # ── 1) التحقق من صحة docker compose ──
@@ -28,6 +45,7 @@ jobs:
   test-control-panel:
     name: Test Control Panel
     runs-on: ubuntu-latest
+    needs: validate-compose
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +68,7 @@ jobs:
     name: Build Control Panel Image
     runs-on: ubuntu-latest
     needs: [validate-compose, test-control-panel]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
@@ -72,3 +90,125 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/nodepin-control-panel:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/nodepin-control-panel:latest
+
+  # ── 4) تحديد الشبكة المستهدفة للتوزيع ──
+  detect-target:
+    name: Detect target network
+    runs-on: ubuntu-latest
+    needs: [validate-compose, test-control-panel]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    outputs:
+      network: ${{ steps.set-target.outputs.network }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine network target
+        id: set-target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "network=${{ github.event.inputs.network }}" >> $GITHUB_OUTPUT
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+            echo "Changed files: $CHANGED"
+
+            HAS_MYST=$(echo "$CHANGED"    | grep -c "services/mysterium"    || true)
+            HAS_STORJ=$(echo "$CHANGED"   | grep -c "services/storj"        || true)
+            HAS_HG=$(echo "$CHANGED"      | grep -c "services/honeygain"    || true)
+            HAS_TM=$(echo "$CHANGED"      | grep -c "services/traffmonetizer" || true)
+            HAS_IP=$(echo "$CHANGED"      | grep -c "services/iproyal"      || true)
+            HAS_P2P=$(echo "$CHANGED"     | grep -c "services/peer2profit"  || true)
+            HAS_RP=$(echo "$CHANGED"      | grep -c "services/repocket"     || true)
+            HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
+
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_HG>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_P2P>0)+(HAS_RP>0) ))
+
+            if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
+              echo "network=all" >> $GITHUB_OUTPUT
+            elif [ "$HAS_MYST"  -gt 0 ]; then echo "network=mysterium"      >> $GITHUB_OUTPUT
+            elif [ "$HAS_STORJ" -gt 0 ]; then echo "network=storj"          >> $GITHUB_OUTPUT
+            elif [ "$HAS_HG"    -gt 0 ]; then echo "network=honeygain"      >> $GITHUB_OUTPUT
+            elif [ "$HAS_TM"    -gt 0 ]; then echo "network=traffmonetizer" >> $GITHUB_OUTPUT
+            elif [ "$HAS_IP"    -gt 0 ]; then echo "network=iproyal"        >> $GITHUB_OUTPUT
+            elif [ "$HAS_P2P"   -gt 0 ]; then echo "network=peer2profit"    >> $GITHUB_OUTPUT
+            elif [ "$HAS_RP"    -gt 0 ]; then echo "network=repocket"       >> $GITHUB_OUTPUT
+            else echo "network=all" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  # ── 5) نشر على VPS ──
+  deploy:
+    name: Deploy — ${{ needs.detect-target.outputs.network }}
+    runs-on: ubuntu-latest
+    needs: [build-control-panel, detect-target]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Check VPS environment
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            if ! command -v docker &>/dev/null; then
+              echo "❌ Docker not found — run the bootstrap workflow first"; exit 1
+            fi
+            if ! docker compose version &>/dev/null; then
+              echo "❌ Docker Compose not found"; exit 1
+            fi
+            echo "✅ $(docker --version)"
+            echo "✅ $(docker compose version)"
+          '
+
+      - name: Deploy
+        run: |
+          NETWORK="${{ needs.detect-target.outputs.network }}"
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            set -e
+            cd ~/nodepin
+
+            echo '📥 Pulling latest code...'
+            git pull origin main
+
+            echo '🔨 Rebuilding control-panel image...'
+            docker compose build --no-cache control-panel
+
+            if [ '$NETWORK' = 'all' ]; then
+              echo '🚀 Deploying all networks...'
+              ENABLED=\$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
+              if [ -z "\$ENABLED" ]; then
+                echo 'ℹ️  No ENABLED_NETWORKS — starting control-panel + watchtower'
+                docker compose up -d control-panel watchtower
+              else
+                PROFILE_FLAGS=\$(echo "\$ENABLED" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
+                docker compose \$PROFILE_FLAGS up -d --build
+              fi
+            else
+              echo '🚀 Deploying: $NETWORK'
+              docker compose --profile $NETWORK pull
+              docker compose --profile $NETWORK up -d
+            fi
+
+            echo '🔄 Restarting control-panel...'
+            docker compose restart control-panel
+
+            echo '📊 Status:'
+            docker compose ps
+          "
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Deploy [${{ needs.detect-target.outputs.network }}] — SUCCESS"
+          else
+            echo "❌ Deploy [${{ needs.detect-target.outputs.network }}] — FAILED"
+          fi
