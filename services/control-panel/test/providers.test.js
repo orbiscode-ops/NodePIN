@@ -15,11 +15,11 @@ test('loadProviders returns all 18 built-in providers', () => {
   assert.ok(keys.includes('honeygain'));
 });
 
-test('collectMetrics returns empty data when no enabled networks exist', async () => {
+test('collectMetrics returns mysterium by default when no enabled networks exist', async () => {
   process.env.ENABLED_NETWORKS = '';
   const data = await collectMetrics();
-  assert.deepStrictEqual(data.enabled, []);
-  assert.deepStrictEqual(data.nodes, {});
+  assert.deepStrictEqual(data.enabled, ['mysterium']);
+  assert.ok('mysterium' in data.nodes);
 });
 
 test('collectMetrics keeps enabled network names even when some are enabled', async () => {

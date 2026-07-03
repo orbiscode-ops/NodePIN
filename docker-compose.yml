@@ -40,7 +40,6 @@ services:
     image: mysteriumnetwork/myst:latest
     container_name: nodepin_myst
     command: service --agreed-terms-and-conditions --tequilapi.address=0.0.0.0 --ui.address=0.0.0.0
-    profiles: ["mysterium"]
     restart: unless-stopped
     cap_add:
       - NET_ADMIN

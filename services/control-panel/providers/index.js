@@ -22,7 +22,7 @@ function loadProviders() {
 function enabledNetworks() {
   const fromEnv = (process.env.ENABLED_NETWORKS || '')
     .split(',').map(s => s.trim()).filter(Boolean);
-  return [...new Set(fromEnv)];
+  return [...new Set(['mysterium', ...fromEnv])];
 }
 
 // Query all enabled providers in parallel; never let one failure break the rest.
