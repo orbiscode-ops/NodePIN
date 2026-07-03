@@ -125,11 +125,12 @@ only through `https://your-domain`.
 
 ## 📌 Roadmap
 
-- [x] CI/CD auto-deploy (GitLab CI).
+- [x] CI/CD auto-deploy (GitHub Actions — selective per network).
 - [x] Wire the dashboard to each network's native API (MYST earnings, STORJ stats...).
 - [x] Add authentication to the control panel.
 - [x] Custom domain + HTTPS (Caddy).
 - [ ] More lightweight bandwidth-sharing networks (Phase 2).
+- [ ] Historical earnings charts (SQLite persistence).
 
 ---
 
