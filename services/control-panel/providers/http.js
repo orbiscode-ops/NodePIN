@@ -21,4 +21,29 @@ async function getJson(url, { timeoutMs = 4000, headers = {} } = {}) {
   }
 }
 
-module.exports = { getJson };
+async function postJson(url, body, { timeoutMs = 6000, headers = {} } = {}) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const e = new Error(`HTTP ${res.status} from ${url}`);
+      e.code = 'BAD_STATUS';
+      throw e;
+    }
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') err.code = 'TIMEOUT';
+    if (!err.code) err.code = 'UNREACHABLE';
+    throw err;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+module.exports = { getJson, postJson };

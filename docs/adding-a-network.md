@@ -4,7 +4,7 @@
 
 NodePIN is built to be **pluggable**: every network is a self-contained unit. Adding
 one never requires touching the core. Use `mysterium` (has a local API) or
-`packetstream` (no local API) as reference examples.
+`honeygain` (web API) or `earnapp` (no API) as reference examples.
 
 ---
 
@@ -12,7 +12,7 @@ one never requires touching the core. Use `mysterium` (has a local API) or
 
 - [ ] 1. Compose service
 - [ ] 2. Provider module
-- [ ] 3. Docs folder
+- [ ] 3. Docs folder (`networks/`)
 - [ ] 4. Env variables
 - [ ] 5. Setup script wiring
 - [ ] 6. Unit test
@@ -51,7 +51,7 @@ Create `services/control-panel/providers/mynetwork.js`. It must export
 
 ```js
 // { network, token, status, earnings, extra }
-//   status:   'ok' | 'starting' | 'error' | custom
+//   status:   'ok' | 'starting' | 'error' | 'not_configured'
 //   earnings: number | null   (null if the network has no local API)
 //   extra:    any extra fields (usage, links, ...)
 module.exports = { network: 'mynetwork', getMetrics };
@@ -59,15 +59,19 @@ module.exports = { network: 'mynetwork', getMetrics };
 
 - If the network exposes a **local API**, query it with the `getJson` helper from
   `providers/http.js` and return `status: 'starting'` on timeout (see `mysterium.js`).
+- If it has a **web API** (login required), cache the JWT and query it (see `honeygain.js`).
 - If it has **no local API**, return `status: 'ok'`, `earnings: null`, and a
-  dashboard link in `extra` (see `packetstream.js`). Do **not** fabricate numbers.
+  dashboard link in `extra` (see `earnapp.js`). Do **not** fabricate numbers.
 
 The loader picks the module up automatically — no registration needed.
 
 ## 3) Docs folder
 
-Add `services/mynetwork/README.md`: purpose, enable/disable, required `.env`
+Add `networks/mynetwork/README.md`: purpose, enable/disable, required `.env`
 variables, earnings source, and any notes (ports, persistence).
+
+> **Note:** Only infrastructure services (`control-panel`, `caddy`) live under
+> `services/`. All earning networks belong in `networks/`.
 
 ## 4) Env variables
 
@@ -84,15 +88,19 @@ In `setup.sh`:
 
 ## 6) Unit test
 
-Add `services/control-panel/test/mynetwork.test.js`. Mock `global.fetch` if the
-provider calls an API; otherwise just assert the returned shape. Run `npm test`.
+Add a test case in `services/control-panel/test/providers.new.test.js`.
+Mock `global.fetch` if the provider calls an API; otherwise just assert the
+returned shape. Run:
+
+```bash
+node --test "test/*.test.js"
+```
 
 ---
 
 ## Enable it
 
 Add the network key to `ENABLED_NETWORKS` in `.env`, then `make up`.
-Run one network or many:
 
 ```
 ENABLED_NETWORKS=mysterium,storj,mynetwork

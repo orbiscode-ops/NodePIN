@@ -12,7 +12,6 @@
 
 # ━━━━━━━━━━━ NETWORKS ━━━━━━━━━━━
 networks:
-  # شبكة داخلية معزولة خاصة بـ NodePIN فقط
   nodepin-net:
     name: nodepin-net
     driver: bridge
@@ -24,12 +23,18 @@ volumes:
   nodepin_control_db:
   nodepin_caddy_data:
   nodepin_caddy_config:
-  # أضف هنا عند إضافة شبكة جديدة
+  nodepin_bitping_data:
+  nodepin_meson_data:
+  nodepin_huddle01_data:
+  nodepin_titan_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
+
   # ──────────────────────────────────────────
-  # 1) Mysterium Network Client  (profile: mysterium)
+  # 1) Mysterium Network  (profile: mysterium)
+  #    نود proxy لامركزي — يكسب MYST
+  #    API محلي: TequilAPI :4050  ✅ أرباح حية
   # ──────────────────────────────────────────
   myst_client:
     image: mysteriumnetwork/myst:latest
@@ -45,16 +50,19 @@ services:
     volumes:
       - nodepin_myst_data:/var/lib/mysterium-node
     ports:
-      - "${MYST_TEQUILAPI_PORT:-4050}:4050"   # TequilAPI
-      - "${MYST_UI_PORT:-4449}:4449"          # Web UI
+      - "${MYST_TEQUILAPI_PORT:-4050}:4050"
+      - "${MYST_UI_PORT:-4449}:4449"
     networks:
       - nodepin-net
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "mysterium"
+      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 2) Storj Node  (profile: storj)
+  #    مشاركة تخزين لامركزي — يكسب STORJ
+  #    API محلي: storagenode :14002  ✅ أرباح حية
   # ──────────────────────────────────────────
   storj-node:
     image: storjlabs/storagenode:latest
@@ -73,15 +81,109 @@ services:
     ports:
       - "${STORJ_PORT:-28967}:28967/tcp"
       - "${STORJ_PORT:-28967}:28967/udp"
-      - "${STORJ_DASHBOARD_PORT:-14002}:14002"  # Storj Web Dashboard
+      - "${STORJ_DASHBOARD_PORT:-14002}:14002"
     networks:
       - nodepin-net
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "storj"
+      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
-  # 3) Control Panel (Dashboard) — دائماً يعمل (بدون profile)
+  # 3) Honeygain  (profile: honeygain)
+  #    مشاركة bandwidth — يكسب USD
+  #    ✅ أرباح حية عبر Honeygain web API
+  # ──────────────────────────────────────────
+  honeygain:
+    image: honeygain/honeygain:latest
+    container_name: nodepin_honeygain
+    profiles: ["honeygain"]
+    restart: unless-stopped
+    command: -tou-accept -email ${HONEYGAIN_EMAIL} -pass ${HONEYGAIN_PASS} -device ${HONEYGAIN_DEVICE:-nodepin}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "honeygain"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 4) Traffmonetizer  (profile: traffmonetizer)
+  #    مشاركة bandwidth — يكسب USD
+  #    ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  traffmonetizer:
+    image: traffmonetizer/cli_v2:latest
+    container_name: nodepin_traffmonetizer
+    profiles: ["traffmonetizer"]
+    restart: unless-stopped
+    command: start accept --token ${TRAFFMONETIZER_TOKEN}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "traffmonetizer"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 5) IPRoyal Pawns  (profile: iproyal)
+  #    مشاركة bandwidth — يكسب USD
+  #    ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  iproyal:
+    image: iproyal/pawns-cli:latest
+    container_name: nodepin_iproyal
+    profiles: ["iproyal"]
+    restart: unless-stopped
+    command: -accept-tos -email=${IPROYAL_EMAIL} -password=${IPROYAL_PASS} -device-name=${IPROYAL_DEVICE:-nodepin} -traffic-limit=0
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "iproyal"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 6) Peer2Profit  (profile: peer2profit)
+  #    مشاركة bandwidth — يكسب USD
+  #    ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  peer2profit:
+    image: peer2profit/peer2profit_linux:latest
+    container_name: nodepin_peer2profit
+    profiles: ["peer2profit"]
+    restart: unless-stopped
+    environment:
+      - P2P_EMAIL=${PEER2PROFIT_EMAIL}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "peer2profit"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 7) Repocket  (profile: repocket)
+  #    مشاركة bandwidth — يكسب USD
+  #    ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  repocket:
+    image: repocket/repocket:latest
+    container_name: nodepin_repocket
+    profiles: ["repocket"]
+    restart: unless-stopped
+    environment:
+      - RP_EMAIL=${REPOCKET_EMAIL}
+      - RP_API_KEY=${REPOCKET_API_KEY}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "repocket"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 8) Control Panel — دائماً يعمل (بدون profile)
   # ──────────────────────────────────────────
   control-panel:
     build:
@@ -97,6 +199,11 @@ services:
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
       - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
+      - HONEYGAIN_EMAIL=${HONEYGAIN_EMAIL:-}
+      - HONEYGAIN_PASS=${HONEYGAIN_PASS:-}
+      - BITPING_API_URL=${BITPING_API_URL:-http://nodepin_bitping:9090}
+      - MESON_API_URL=${MESON_API_URL:-http://nodepin_meson:19090}
+      - HUDDLE01_API_URL=${HUDDLE01_API_URL:-http://nodepin_huddle01:4001}
       - ENABLED_NETWORKS=${ENABLED_NETWORKS:-mysterium,storj}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
@@ -111,8 +218,7 @@ services:
       com.nodepin.network: "control-panel"
 
   # ──────────────────────────────────────────
-  # 4) Watchtower (اختياري) — دائماً يعمل
-  #    محصور على حاويات NodePIN فقط حتى لا يلمس مشاريع أخرى.
+  # 9) Watchtower — تحديث تلقائي (دائماً يعمل)
   # ──────────────────────────────────────────
   watchtower:
     image: containrrr/watchtower:latest
@@ -122,8 +228,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=3600
-      # يراقب فقط الحاويات ذات label نفعّلها، لا كل السيرفر
+      - WATCHTOWER_POLL_INTERVAL=${WATCHTOWER_INTERVAL:-3600}
       - WATCHTOWER_LABEL_ENABLE=true
     networks:
       - nodepin-net
@@ -132,10 +237,9 @@ services:
       com.nodepin.network: "watchtower"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ═══════════════════════════════════════════
-  # 5) Caddy reverse proxy — automatic HTTPS (profile: https)
-  #    Serves the dashboard over TLS via NODEPIN_DOMAIN.
-  #    Enable by adding 'https' to ENABLED_NETWORKS.
+  # ──────────────────────────────────────────
+  # 10) Caddy — HTTPS تلقائي  (profile: https)
+  # ──────────────────────────────────────────
   caddy:
     image: caddy:2-alpine
     container_name: nodepin_caddy
@@ -161,8 +265,89 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
-  # 6) PacketStream  (profile: packetstream)
-  #    يشارك عرض النطاق (bandwidth) — شبكة خفيفة تناسب أي جهاز.
+  # 11) EarnApp (Bright Data)  (profile: earnapp)
+  #     مشاركة bandwidth — يكسب USD
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  earnapp:
+    image: mrcolorrain/earnapp:latest
+    container_name: nodepin_earnapp
+    profiles: ["earnapp"]
+    restart: unless-stopped
+    environment:
+      - EARNAPP_UUID=${EARNAPP_UUID}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "earnapp"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 12) Bitping  (profile: bitping)
+  #     network monitoring لامركزي — يكسب NOIA
+  #     ✅ أرباح حية عبر Bitping API
+  # ──────────────────────────────────────────
+  bitping:
+    image: bitping/bitping-node:latest
+    container_name: nodepin_bitping
+    profiles: ["bitping"]
+    restart: unless-stopped
+    environment:
+      - BITPING_EMAIL=${BITPING_EMAIL}
+      - BITPING_PASSWORD=${BITPING_PASSWORD}
+    volumes:
+      - nodepin_bitping_data:/root/.bitping
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "bitping"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 13) Nodepay  (profile: nodepay)
+  #     AI bandwidth network — يكسب NC tokens
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  nodepay:
+    image: anthill/nodepay:latest
+    container_name: nodepin_nodepay
+    profiles: ["nodepay"]
+    restart: unless-stopped
+    environment:
+      - NP_TOKEN=${NODEPAY_TOKEN}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "nodepay"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 14) Grass (Wynd Network)  (profile: grass)
+  #     Web scraping لامركزي — يكسب GRASS tokens
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  grass:
+    image: alexdcox/grass-node:latest
+    container_name: nodepin_grass
+    profiles: ["grass"]
+    restart: unless-stopped
+    environment:
+      - GRASS_USER=${GRASS_USER}
+      - GRASS_PASS=${GRASS_PASS}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "grass"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 15) PacketStream  (profile: packetstream)
+  #     مشاركة bandwidth — يكسب USD
+  #     ❌ لا API محلي — راجع لوحتهم
   # ──────────────────────────────────────────
   packetstream:
     image: packetstream/psclient:latest
@@ -179,24 +364,135 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
-  # 7) Grass  (profile: grass)
-  #    يشارك عرض النطاق (bandwidth) — شبكة خفيفة تناسب أي جهاز.
+  # 16) Meson Network  (profile: meson)
+  #     CDN لامركزي — يكسب MSN tokens
+  #     ✅ أرباح حية عبر Meson local API :19090
   # ──────────────────────────────────────────
-  grass:
-    image: mrcolorrain/grass:latest
-    container_name: nodepin_grass
-    profiles: ["grass"]
+  meson:
+    image: meson/meson-node:latest
+    container_name: nodepin_meson
+    profiles: ["meson"]
     restart: unless-stopped
     environment:
-      - GRASS_USER=${GRASS_USER}
-      - GRASS_PASS=${GRASS_PASS}
+      - TOKEN=${MESON_TOKEN}
+    volumes:
+      - nodepin_meson_data:/root/.meson
+    ports:
+      - "${MESON_PORT:-19090}:19090"
     networks:
       - nodepin-net
     labels:
       com.nodepin.project: "nodepin"
-      com.nodepin.network: "grass"
+      com.nodepin.network: "meson"
       com.centurylinklabs.watchtower.enable: "true"
 
+  # ──────────────────────────────────────────
+  # 17) Gradient Network  (profile: gradient)
+  #     AI bandwidth — يكسب GRAD tokens
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  gradient:
+    image: community/gradient-node:latest
+    container_name: nodepin_gradient
+    profiles: ["gradient"]
+    restart: unless-stopped
+    environment:
+      - GRADIENT_EMAIL=${GRADIENT_EMAIL}
+      - GRADIENT_PASS=${GRADIENT_PASS}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "gradient"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 18) Proxyrack  (profile: proxyrack)
+  #     Proxy network — يكسب USD
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  proxyrack:
+    image: proxyrack/pop:latest
+    container_name: nodepin_proxyrack
+    profiles: ["proxyrack"]
+    restart: unless-stopped
+    environment:
+      - UUID=${PROXYRACK_UUID}
+      - API_KEY=${PROXYRACK_API_KEY}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "proxyrack"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 19) Uprock  (profile: uprock)
+  #     Distributed AI inference — يكسب UPT tokens
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  uprock:
+    image: uprock/node:latest
+    container_name: nodepin_uprock
+    profiles: ["uprock"]
+    restart: unless-stopped
+    environment:
+      - UPROCK_EMAIL=${UPROCK_EMAIL}
+      - UPROCK_PASSWORD=${UPROCK_PASSWORD}
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "uprock"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 20) Huddle01 Media Node  (profile: huddle01)
+  #     WebRTC/media لامركزي — يكسب HUDL tokens
+  #     ✅ أرباح حية عبر Huddle01 local API :4001
+  # ──────────────────────────────────────────
+  huddle01:
+    image: huddle01/media-node:latest
+    container_name: nodepin_huddle01
+    profiles: ["huddle01"]
+    restart: unless-stopped
+    environment:
+      - API_SERVER=${HUDDLE01_API_SERVER:-https://api.huddle01.com}
+      - API_KEY=${HUDDLE01_API_KEY}
+    volumes:
+      - nodepin_huddle01_data:/app/data
+    ports:
+      - "${HUDDLE01_PORT:-4001}:4001"
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "huddle01"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 21) Titan Network  (profile: titan)
+  #     Edge computing + storage — يكسب TTN tokens
+  #     ❌ لا API محلي — راجع لوحتهم
+  # ──────────────────────────────────────────
+  titan:
+    image: nezha123/titan-edge:latest
+    container_name: nodepin_titan
+    profiles: ["titan"]
+    restart: unless-stopped
+    environment:
+      - TITAN_URL=${TITAN_URL:-https://cassini.titannet.io:2345/rpc/v0}
+      - TITAN_HASH=${TITAN_HASH}
+    volumes:
+      - nodepin_titan_data:/root/.titanedge
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "titan"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ═══════════════════════════════════════════
   # — أضف شبكة جديدة أسفل هذا الخط —
-  #   تذكّر: profiles: ["<name>"] + labels + nodepin-net
+  #   profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════

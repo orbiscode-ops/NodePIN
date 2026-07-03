@@ -1,18 +1,11 @@
-// Grass provider.
-// Grass shares bandwidth but exposes no local earnings API — earnings/points are
-// only visible on the web dashboard. We report a running status + a link here.
-// Contract: getMetrics() => { network, token, status, earnings, extra }
+// Grass (Wynd Network) provider — no local API, earnings via web dashboard only.
 async function getMetrics() {
   return {
     network: 'grass',
     token: 'GRASS',
     status: 'ok',
-    earnings: null, // no local API; see Grass dashboard
-    extra: {
-      note: 'Points/earnings are only available on the Grass web dashboard.',
-      dashboard: 'https://app.getgrass.io',
-    },
+    earnings: null,
+    extra: { dashboard: 'https://app.getgrass.io/dashboard' },
   };
 }
-
 module.exports = { network: 'grass', getMetrics };

@@ -22,7 +22,7 @@ echo -e "${CYAN}   NodePIN — Setup${NC}"
 echo -e "${CYAN}══════════════════════════════${NC}"
 
 # ═══════════════════════════════════════════
-# 1) فحص المتطلبات (#9)
+# 1) فحص المتطلبات
 # ═══════════════════════════════════════════
 check_prereqs() {
   info "Checking prerequisites..."
@@ -39,7 +39,7 @@ check_prereqs() {
 }
 
 # ═══════════════════════════════════════════
-# 2) نسخ .env.example → .env إن لم يوجد (#10)
+# 2) نسخ .env.example → .env إن لم يوجد
 # ═══════════════════════════════════════════
 prepare_env() {
   [ -f "$ENV_EXAMPLE" ] || die "$ENV_EXAMPLE not found. Run from the project root."
@@ -54,7 +54,6 @@ prepare_env() {
 # ── أداة مساعدة: اكتب/حدّث متغير داخل .env ──
 set_env_var() {
   local key="$1" value="$2"
-  # هرّب المحارف الخاصة لـ sed
   local esc; esc=$(printf '%s' "$value" | sed -e 's/[\/&]/\\&/g')
   if grep -qE "^${key}=" "$ENV_FILE"; then
     sed -i.bak "s/^${key}=.*/${key}=${esc}/" "$ENV_FILE" && rm -f "${ENV_FILE}.bak"
@@ -64,7 +63,6 @@ set_env_var() {
 }
 
 prompt() {
-  # prompt <var> <message> [silent]
   local var="$1" msg="$2" silent="${3:-}" input=""
   if [ "$silent" = "silent" ]; then
     read -r -s -p "$(echo -e "${CYAN}?${NC} ${msg}: ")" input; echo
@@ -75,25 +73,41 @@ prompt() {
 }
 
 # ═══════════════════════════════════════════
-# 3) اختيار الشبكات + أسئلة ذات صلة فقط (#11)
+# 3) اختيار الشبكات + أسئلة ذات صلة فقط
 # ═══════════════════════════════════════════
 SELECTED=""
 select_networks() {
   echo
-  info "Which networks do you want to run? (space-separated numbers)"
-  echo "   1) mysterium    (shares bandwidth — earns MYST)"
-  echo "   2) storj        (shares storage   — earns STORJ)"
-  echo "   3) packetstream (shares bandwidth — light, any device)"
-  echo "   4) grass        (shares bandwidth — light, any device)"
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2]: ")" choice
-  choice="${choice:-1 2}"
+  info "Which networks do you want to run? (space-separated numbers, e.g: 1 2 3)"
+  echo "   ── Crypto earning networks ──────────────────"
+  echo "   1) mysterium     (bandwidth proxy  — earns MYST)"
+  echo "   2) storj         (storage sharing  — earns STORJ)"
+  echo "   3) bitping       (network monitor  — earns NOIA) ✅ live earnings"
+  echo "   4) nodepay       (AI bandwidth     — earns NC tokens)"
+  echo ""
+  echo "   ── USD earning networks ─────────────────────"
+  echo "   5) honeygain     (bandwidth sharing — earns USD) ✅ live earnings"
+  echo "   6) traffmonetizer(bandwidth sharing — earns USD)"
+  echo "   7) iproyal       (bandwidth sharing — earns USD)"
+  echo "   8) peer2profit   (bandwidth sharing — earns USD)"
+  echo "   9) repocket      (bandwidth sharing — earns USD)"
+  echo "  10) earnapp       (bandwidth sharing — earns USD)"
+  echo ""
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2 5]: ")" choice
+  choice="${choice:-1 2 5}"
   local nets=""
   for c in $choice; do
     case "$c" in
-      1) nets="${nets}mysterium,";;
-      2) nets="${nets}storj,";;
-      3) nets="${nets}packetstream,";;
-      4) nets="${nets}grass,";;
+      1)  nets="${nets}mysterium,";;
+      2)  nets="${nets}storj,";;
+      3)  nets="${nets}bitping,";;
+      4)  nets="${nets}nodepay,";;
+      5)  nets="${nets}honeygain,";;
+      6)  nets="${nets}traffmonetizer,";;
+      7)  nets="${nets}iproyal,";;
+      8)  nets="${nets}peer2profit,";;
+      9)  nets="${nets}repocket,";;
+      10) nets="${nets}earnapp,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -111,7 +125,6 @@ collect_vars() {
 
   echo; info "Dashboard security"
   prompt "DASHBOARD_PASSWORD" "Dashboard login password (leave empty to disable auth)" silent
-  # ولّد سر جلسة عشوائي تلقائياً
   if command -v openssl >/dev/null 2>&1; then
     set_env_var "SESSION_SECRET" "$(openssl rand -hex 32)"
   else
@@ -130,20 +143,55 @@ collect_vars() {
     prompt "STORJ_EMAIL"  "Storj email"
   fi
 
-  if [[ ",$SELECTED," == *",packetstream,"* ]]; then
-    echo; info "PacketStream settings"
-    prompt "PACKETSTREAM_CID" "PacketStream CID"
+  if [[ ",$SELECTED," == *",honeygain,"* ]]; then
+    echo; info "Honeygain settings"
+    prompt "HONEYGAIN_EMAIL" "Honeygain email"
+    prompt "HONEYGAIN_PASS"  "Honeygain password" silent
   fi
 
-  if [[ ",$SELECTED," == *",grass,"* ]]; then
-    echo; info "Grass settings"
-    prompt "GRASS_USER" "Grass email"
-    prompt "GRASS_PASS" "Grass password" silent
+  if [[ ",$SELECTED," == *",traffmonetizer,"* ]]; then
+    echo; info "Traffmonetizer settings"
+    prompt "TRAFFMONETIZER_TOKEN" "Traffmonetizer token (from dashboard)"
+  fi
+
+  if [[ ",$SELECTED," == *",iproyal,"* ]]; then
+    echo; info "IPRoyal Pawns settings"
+    prompt "IPROYAL_EMAIL" "IPRoyal email"
+    prompt "IPROYAL_PASS"  "IPRoyal password" silent
+  fi
+
+  if [[ ",$SELECTED," == *",peer2profit,"* ]]; then
+    echo; info "Peer2Profit settings"
+    prompt "PEER2PROFIT_EMAIL" "Peer2Profit email"
+  fi
+
+  if [[ ",$SELECTED," == *",repocket,"* ]]; then
+    echo; info "Repocket settings"
+    prompt "REPOCKET_EMAIL"   "Repocket email"
+    prompt "REPOCKET_API_KEY" "Repocket API key"
+  fi
+
+  if [[ ",$SELECTED," == *",earnapp,"* ]]; then
+    echo; info "EarnApp settings"
+    info "Generate your UUID at: https://earnapp.com/i/sdk-node-uuid"
+    prompt "EARNAPP_UUID" "EarnApp UUID (sdk-node-...)"
+  fi
+
+  if [[ ",$SELECTED," == *",bitping,"* ]]; then
+    echo; info "Bitping settings"
+    prompt "BITPING_EMAIL"    "Bitping email"
+    prompt "BITPING_PASSWORD" "Bitping password" silent
+  fi
+
+  if [[ ",$SELECTED," == *",nodepay,"* ]]; then
+    echo; info "Nodepay settings"
+    info "Get your token at: https://app.nodepay.ai → Settings → API Token"
+    prompt "NODEPAY_TOKEN" "Nodepay API token"
   fi
 }
 
 # ═══════════════════════════════════════════
-# 4) التحقق ثم التشغيل (#12)
+# 4) التحقق ثم التشغيل
 # ═══════════════════════════════════════════
 get_val() { grep -E "^$1=" "$ENV_FILE" | head -n1 | cut -d= -f2-; }
 
@@ -157,10 +205,24 @@ validate() {
     fi
   }
   check "NODEPIN_VPS_IP"
-  if [[ ",$SELECTED," == *",mysterium,"* ]]; then check "MYST_IDENTITY_PASSPHRASE"; fi
-  if [[ ",$SELECTED," == *",storj,"* ]]; then check "STORJ_WALLET"; check "STORJ_EMAIL"; fi
-  if [[ ",$SELECTED," == *",packetstream,"* ]]; then check "PACKETSTREAM_CID"; fi
-  if [[ ",$SELECTED," == *",grass,"* ]]; then check "GRASS_USER"; check "GRASS_PASS"; fi
+  [[ ",$SELECTED," == *",mysterium,"*    ]] && check "MYST_IDENTITY_PASSPHRASE"
+  [[ ",$SELECTED," == *",storj,"*        ]] && { check "STORJ_WALLET"; check "STORJ_EMAIL"; }
+  [[ ",$SELECTED," == *",honeygain,"*    ]] && { check "HONEYGAIN_EMAIL"; check "HONEYGAIN_PASS"; }
+  [[ ",$SELECTED," == *",traffmonetizer,"* ]] && check "TRAFFMONETIZER_TOKEN"
+  [[ ",$SELECTED," == *",iproyal,"*      ]] && { check "IPROYAL_EMAIL"; check "IPROYAL_PASS"; }
+  [[ ",$SELECTED," == *",peer2profit,"*  ]] && check "PEER2PROFIT_EMAIL"
+  [[ ",$SELECTED," == *",repocket,"*     ]] && { check "REPOCKET_EMAIL"; check "REPOCKET_API_KEY"; }
+  [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
+  [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
+  [[ ",$SELECTED," == *",nodepay,"*      ]] && check "NODEPAY_TOKEN"
+  [[ ",$SELECTED," == *",grass,"*        ]] && { check "GRASS_USER"; check "GRASS_PASS"; }
+  [[ ",$SELECTED," == *",packetstream,"* ]] && check "PACKETSTREAM_CID"
+  [[ ",$SELECTED," == *",meson,"*        ]] && check "MESON_TOKEN"
+  [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
+  [[ ",$SELECTED," == *",proxyrack,"*    ]] && { check "PROXYRACK_UUID"; check "PROXYRACK_API_KEY"; }
+  [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }
+  [[ ",$SELECTED," == *",huddle01,"*     ]] && check "HUDDLE01_API_KEY"
+  [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }

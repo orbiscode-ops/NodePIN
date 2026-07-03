@@ -1,16 +1,17 @@
 # NodePIN 🌐
 
-> **NodePIN** — a pluggable, Dockerized infrastructure to run and manage **decentralized nodes** on any VPS and earn **passive income** from DePIN networks (Mysterium, Storj, and more).
+> **NodePIN** — a pluggable, Dockerized infrastructure to run and manage **decentralized nodes** on any VPS and earn **passive income** from DePIN networks.
 >
-> بنية تحتية مرنة (Dockerized) لتشغيل وإدارة **عُقد لامركزية** على أي VPS بهدف توليد **دخل سلبي** من شبكات DePIN مثل Mysterium و Storj وغيرها.
+> بنية تحتية مرنة (Dockerized) لتشغيل وإدارة **عُقد لامركزية** على أي VPS بهدف توليد **دخل سلبي** من شبكات DePIN.
 
 ---
 
 ## ✨ Why NodePIN?
 
 - **Plug-and-play:** clone, set one `.env`, run one command, start earning.
-- **Pluggable networks:** add or remove any earning network in 3 steps without breaking the rest.
-- **Unified dashboard:** monitor all containers, node status, and earnings in one place.
+- **Pluggable networks:** add or remove any earning network without breaking the rest.
+- **Unified dashboard:** monitor all containers, node status, and live earnings in one place.
+- **Custom networks UI:** add any new network directly from the dashboard — no coding needed.
 - **Secure by default:** all secrets live in `.env` (never committed).
 
 ---
@@ -19,15 +20,26 @@
 
 ```
 NodePIN/
-├── .env.example          ← all variables (copy to .env)
-├── .gitignore            ← keeps secrets out of Git
-├── docker-compose.yml    ← all services (easy to add/remove a network)
-├── services/
-│   ├── control-panel/    ← dashboard (Node.js/Express)
-│   ├── mysterium/        ← Mysterium docs
-│   └── storj/            ← Storj docs
-└── .github/
-    └── workflows/        ← CI/CD (later)
+├── .env.example              ← all variables (copy to .env)
+├── .gitignore
+├── docker-compose.yml        ← all services + networks (easy to add/remove)
+├── Makefile                  ← make up/down/logs/ps/pull
+├── setup.sh                  ← interactive one-command setup
+│
+├── networks/                 ← 📦 one folder per earning network (docs only)
+│   ├── mysterium/      ├── storj/          ├── honeygain/
+│   ├── bitping/        ├── meson/          ├── huddle01/
+│   ├── traffmonetizer/ ├── iproyal/        ├── peer2profit/
+│   ├── repocket/       ├── earnapp/        ├── packetstream/
+│   ├── proxyrack/      ├── nodepay/        ├── grass/
+│   ├── gradient/       ├── uprock/         └── titan/
+│
+├── services/                 ← ⚙️  infrastructure only
+│   ├── control-panel/        ← dashboard (Node.js/Express)
+│   └── caddy/                ← HTTPS reverse proxy
+│
+└── docs/
+    └── adding-a-network.md   ← how to plug in a new network
 ```
 
 ---
@@ -49,7 +61,7 @@ the stack — then prints your dashboard URL.
 ```bash
 # 1) copy variables and edit them
 cp .env.example .env
-nano .env   # set ENABLED_NETWORKS, wallets, passphrases, ports...
+nano .env   # set ENABLED_NETWORKS, credentials, ports...
 
 # 2) run only the networks listed in ENABLED_NETWORKS
 make up
@@ -58,40 +70,62 @@ make up
 # http://YOUR_SERVER_IP:3000
 ```
 
-> **Run one network or many:** set `ENABLED_NETWORKS=mysterium` for a single
-> network, or `ENABLED_NETWORKS=mysterium,storj` for several. Only the listed
-> networks start; everything is isolated under the `nodepin` project so it won't
-> clash with other apps on the same server. Ports are configurable in `.env`.
+---
+
+## 🌐 Supported networks — 18 شبكة جاهزة
+
+### 🟢 Crypto / Token networks — أرباح بالعملات الرقمية
+
+| # | الشبكة | Key في `.env` | العملة | الأرباح في اللوحة | التسجيل |
+|---|--------|--------------|--------|-------------------|---------|
+| 1 | **Mysterium** | `mysterium` | MYST | ✅ حية | [mysterium.network](https://mysterium.network) |
+| 2 | **Storj** | `storj` | STORJ | ✅ حية | [storj.io](https://storj.io) |
+| 3 | **Bitping** | `bitping` | NOIA | ✅ حية | [app.bitping.com](https://app.bitping.com) |
+| 4 | **Meson Network** | `meson` | MSN | ✅ حية | [dashboard.meson.network](https://dashboard.meson.network) |
+| 5 | **Huddle01** | `huddle01` | HUDL | ✅ حية | [node.huddle01.com](https://node.huddle01.com) |
+| 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
+| 7 | **Gradient** | `gradient` | GRAD | 🔗 موقعهم | [app.gradient.network](https://app.gradient.network) |
+| 8 | **Nodepay** | `nodepay` | NC | 🔗 موقعهم | [app.nodepay.ai](https://app.nodepay.ai) |
+| 9 | **Uprock** | `uprock` | UPT | 🔗 موقعهم | [uprock.com](https://uprock.com) |
+| 10 | **Titan Network** | `titan` | TTN | 🔗 موقعهم | [storage.titannet.io](https://storage.titannet.io) |
+
+### 💵 USD networks — أرباح بالدولار
+
+| # | الشبكة | Key في `.env` | الدفع | الأرباح في اللوحة | التسجيل |
+|---|--------|--------------|-------|-------------------|---------|
+| 11 | **Honeygain** | `honeygain` | USD | ✅ حية | [r.honeygain.me](https://r.honeygain.me) |
+| 12 | **Traffmonetizer** | `traffmonetizer` | USD/BTC | 🔗 موقعهم | [traffmonetizer.com](https://traffmonetizer.com) |
+| 13 | **IPRoyal Pawns** | `iproyal` | USD | 🔗 موقعهم | [pawns.app](https://pawns.app) |
+| 14 | **Peer2Profit** | `peer2profit` | USD | 🔗 موقعهم | [peer2profit.com](https://peer2profit.com) |
+| 15 | **Repocket** | `repocket` | USD | 🔗 موقعهم | [repocket.co](https://link.repocket.co) |
+| 16 | **EarnApp** | `earnapp` | USD | 🔗 موقعهم | [earnapp.com](https://earnapp.com) |
+| 17 | **PacketStream** | `packetstream` | USD | 🔗 موقعهم | [packetstream.io](https://packetstream.io) |
+| 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
+
+> **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
+> ```
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,meson,huddle01,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,nodepay,grass,gradient,uprock,titan
+> ```
 
 ---
 
-## 🌐 Supported networks
+## ➕ إضافة شبكة جديدة — طريقتان
 
-| Key | Type | Earns | Local earnings API |
-|---|---|---|---|
-| `mysterium` | bandwidth | MYST | ✅ (dashboard shows earnings) |
-| `storj` | storage | STORJ | ✅ (dashboard shows earnings) |
-| `packetstream` | bandwidth | USD | ❌ (see provider dashboard) |
-| `grass` | bandwidth | GRASS | ❌ (see provider dashboard) |
+### 1) من لوحة التحكم (الأسهل) 🆕
+افتح **`/networks.html`** من الداشبورد ← اضغط **＋ إضافة شبكة** ← أدخل التفاصيل ← حفظ.
+لا تحتاج لمس أي كود.
 
-Enable any combination via `ENABLED_NETWORKS`.
-
----
-
-## ➕ How to add a new network
-
-Adding a network is a repeatable 6-step pattern (compose service → provider module
-→ docs → env vars → setup wiring → test). See the full guide:
-
-👉 **[docs/adding-a-network.md](docs/adding-a-network.md)**
+### 2) يدوياً (للمطورين)
+راجع الدليل الكامل: 👉 **[docs/adding-a-network.md](docs/adding-a-network.md)**
 
 ---
 
 ## 🗑️ How to remove a network
 
-Delete its `service` block from `docker-compose.yml`, then:
+Delete its `service` block from `docker-compose.yml`, remove its entry from
+`ENABLED_NETWORKS` in `.env`, then:
 ```bash
-sudo docker compose up -d
+make up
 ```
 
 ---
@@ -99,7 +133,7 @@ sudo docker compose up -d
 ## 🔐 Security
 
 - **Never commit `.env`.** (`.gitignore` already covers it.)
-- All keys and wallets stay in `.env` only.
+- All keys, wallets, and passwords stay in `.env` only.
 - The repository structure is open-source and safe to publish publicly.
 
 ### Dashboard authentication
@@ -118,19 +152,18 @@ Run the built-in **Caddy** reverse proxy for automatic TLS:
 3. Set `COOKIE_SECURE=true`.
 4. `make up` — Caddy obtains a certificate and serves the dashboard over HTTPS.
 
-Behind HTTPS, you can stop publishing the dashboard port directly and reach it
-only through `https://your-domain`.
-
 ---
 
 ## 📌 Roadmap
 
-- [x] CI/CD auto-deploy (GitHub Actions — selective per network).
-- [x] Wire the dashboard to each network's native API (MYST earnings, STORJ stats...).
+- [x] CI/CD auto-deploy (GitHub Actions).
+- [x] Wire the dashboard to each network's native API (live earnings).
 - [x] Add authentication to the control panel.
 - [x] Custom domain + HTTPS (Caddy).
-- [ ] More lightweight bandwidth-sharing networks (Phase 2).
+- [x] 18 earning networks across USD + crypto tokens.
+- [x] Add / manage custom networks from the dashboard UI (no coding).
 - [ ] Historical earnings charts (SQLite persistence).
+- [ ] Telegram / Discord earnings notifications.
 
 ---
 
@@ -144,7 +177,6 @@ connect your wallets, and get you earning. Just reach out:
 
 - 📧 **Email:** `<add-your-email-here>`
 - 💬 **Telegram:** `<add-your-telegram-here>`
-- 💡 **Other:** `<add-any-other-channel-here>`
 
 ---
 

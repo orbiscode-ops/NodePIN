@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodePIN — إدارة الشبكات</title>
+  <style>
+    :root {
+      --bg:#0b1120; --surface:#111827; --card:#1e293b; --border:#1e3a5f;
+      --text:#f1f5f9; --muted:#64748b; --accent:#38bdf8;
+      --green:#34d399; --red:#f87171; --yellow:#fbbf24; --purple:#a78bfa;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* ── header ── */
+    header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.75rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+    .logo{font-size:1.1rem;font-weight:800;color:var(--accent)}
+    .logo span{color:var(--text)}
+    nav{display:flex;gap:1.25rem;align-items:center}
+    nav a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .15s;padding:.3rem .5rem;border-radius:6px}
+    nav a:hover{color:var(--text)}
+    nav a.active{color:var(--accent);background:#0c2233}
+
+    /* ── main ── */
+    main{max-width:1100px;margin:0 auto;padding:1.75rem}
+    .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .page-title{font-size:1.2rem;font-weight:700}
+    .page-sub{color:var(--muted);font-size:.83rem;margin-top:.2rem}
+
+    /* ── buttons ── */
+    .btn{padding:.5rem 1.1rem;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:.875rem;transition:opacity .15s;display:inline-flex;align-items:center;gap:.4rem}
+    .btn:hover{opacity:.85}
+    .btn-primary{background:var(--accent);color:#0b1120}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+    .btn-danger{background:#450a0a;color:var(--red);border:1px solid #7f1d1d}
+    .btn-sm{padding:.3rem .75rem;font-size:.8rem}
+
+    /* ── cards grid ── */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+    .net-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem;position:relative;transition:border-color .15s}
+    .net-card:hover{border-color:var(--accent)}
+    .nc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.65rem}
+    .nc-icon{font-size:1.6rem;margin-left:.6rem}
+    .nc-name{font-weight:700;font-size:.95rem}
+    .nc-type{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+    .nc-earn{font-size:1.15rem;font-weight:800;color:var(--green);margin:.5rem 0 .2rem}
+    .nc-earn.null{color:var(--muted);font-size:.82rem;font-weight:400}
+    .nc-token{font-size:.75rem;color:var(--muted)}
+    .nc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.85rem;flex-wrap:wrap;gap:.4rem}
+    .nc-actions{display:flex;gap:.35rem}
+
+    /* status badge */
+    .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .55rem;border-radius:999px;font-size:.72rem;font-weight:700}
+    .badge::before{content:'●';font-size:.55rem}
+    .badge.ok{background:#052e16;color:var(--green);border:1px solid #166534}
+    .badge.starting{background:#1c1108;color:var(--yellow);border:1px solid #78350f}
+    .badge.error{background:#450a0a;color:var(--red);border:1px solid #7f1d1d}
+    .badge.not_configured{background:#1e1533;color:var(--purple);border:1px solid #5b21b6}
+    .badge.disabled{background:#1e293b;color:var(--muted);border:1px solid var(--border)}
+
+    /* earn type chip */
+    .chip{display:inline-flex;padding:.1rem .5rem;border-radius:999px;font-size:.7rem;font-weight:700;border:1px solid}
+    .chip.local{background:#052e16;color:var(--green);border-color:#166534}
+    .chip.web{background:#0c2233;color:var(--accent);border-color:#1e3a5f}
+    .chip.link{background:#1c1108;color:var(--yellow);border-color:#78350f}
+
+    /* add card */
+    .add-card{background:transparent;border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;cursor:pointer;min-height:150px;transition:all .15s}
+    .add-card:hover{border-color:var(--accent);background:var(--card)}
+    .add-card:hover .add-icon,.add-card:hover .add-label{color:var(--accent)}
+    .add-icon{font-size:2rem;color:var(--muted)}
+    .add-label{font-size:.85rem;color:var(--muted)}
+
+    /* dashboard link button */
+    .dash-link{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:6px;background:#0c2233;color:var(--accent);border:1px solid #1e3a5f;font-size:.75rem;text-decoration:none;font-weight:600}
+    .dash-link:hover{background:#1e3a5f}
+
+    /* toggle switch */
+    .toggle{position:relative;width:34px;height:18px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#1e3a5f;border-radius:20px;cursor:pointer;transition:.2s}
+    .slider:before{content:'';position:absolute;width:12px;height:12px;right:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
+    .toggle input:checked + .slider{background:var(--accent)}
+    .toggle input:checked + .slider:before{background:#0b1120;transform:translateX(-16px)}
+
+    /* ── Modal ── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem;backdrop-filter:blur(2px)}
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.75rem}
+    .modal-title{font-size:1.05rem;font-weight:700;margin-bottom:.2rem}
+    .modal-sub{color:var(--muted);font-size:.82rem;margin-bottom:1.5rem}
+    .modal-close{position:absolute;top:1rem;left:1rem;background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+
+    /* form */
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.3rem;font-weight:600}
+    .field input,.field select,.field textarea{width:100%;padding:.5rem .8rem;background:#0b1120;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.875rem;font-family:inherit;transition:border-color .15s}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+    .field select option{background:#1e293b}
+    .field .hint{font-size:.74rem;color:var(--muted);margin-top:.25rem}
+    .field textarea{resize:vertical;min-height:60px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 28px;gap:.5rem;align-items:center}
+
+    /* earn type selector */
+    .earn-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem}
+    .earn-opt{padding:.6rem .4rem;border-radius:8px;border:2px solid var(--border);background:var(--surface);cursor:pointer;text-align:center;transition:all .15s}
+    .earn-opt:hover,.earn-opt.sel{border-color:var(--accent);background:#0c2233}
+    .earn-opt .eo-icon{font-size:1.2rem;margin-bottom:.2rem}
+    .earn-opt .eo-label{font-size:.75rem;font-weight:700}
+    .earn-opt .eo-sub{font-size:.68rem;color:var(--muted);margin-top:.1rem}
+
+    /* section label */
+    .sec-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .6rem;display:flex;align-items:center;gap:.5rem}
+    .sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* creds */
+    .creds-box{border:1px solid var(--border);border-radius:8px;padding:.85rem;background:#0b1120;margin-bottom:.75rem}
+    .cred-row{display:grid;grid-template-columns:1fr 1fr 80px 24px;gap:.4rem;margin-bottom:.45rem;align-items:center}
+    .cred-row input,.cred-row select{padding:.38rem .6rem;font-size:.8rem}
+    .rm-btn{background:#450a0a;border:none;border-radius:6px;color:var(--red);cursor:pointer;width:24px;height:24px;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+    .add-cred{width:100%;padding:.4rem;background:transparent;border:1px dashed var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:.78rem;margin-top:.35rem;transition:all .15s}
+    .add-cred:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* toggle row */
+    .tog-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:#0b1120;border:1px solid var(--border);border-radius:8px;margin-bottom:.6rem}
+    .tog-text .tl{font-size:.84rem}
+    .tog-text .ts{font-size:.73rem;color:var(--muted);margin-top:.1rem}
+
+    .btn-row{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.25rem}
+
+    .msg{padding:.65rem 1rem;border-radius:8px;margin-bottom:.75rem;font-size:.85rem;display:none}
+    .msg.show{display:block}
+    .msg.error{background:#450a0a;border:1px solid #7f1d1d;color:var(--red)}
+    .msg.success{background:#052e16;border:1px solid #166534;color:var(--green)}
+
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .empty{text-align:center;padding:3rem;color:var(--muted)}
+    .empty .ei{font-size:2.5rem;margin-bottom:.75rem}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Node<span>PIN</span></div>
+  <nav>
+    <a href="/">الرئيسية</a>
+    <a href="/networks.html" class="active">الشبكات</a>
+    <a href="/setup.html">الإعداد</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-head">
+    <div>
+      <div class="page-title">إدارة الشبكات المخصصة</div>
+      <div class="page-sub">أضف أي شبكة ربح جديدة مباشرة من هنا — بدون لمس أي كود</div>
+    </div>
+    <button class="btn btn-primary" onclick="openAdd()">＋ إضافة شبكة</button>
+  </div>
+
+  <!-- شبكات مخصصة -->
+  <div id="nets-grid" class="grid">
+    <div class="empty"><div class="ei">⏳</div><div>جاري التحميل…</div></div>
+  </div>
+</main>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-bg" id="modal" style="display:none" onclick="bgClick(event)">
+<div class="modal" style="position:relative" onclick="event.stopPropagation()">
+  <button class="modal-close" onclick="closeModal()">✕</button>
+  <div class="modal-title" id="modal-title">إضافة شبكة جديدة</div>
+  <div class="modal-sub">أدخل تفاصيل الشبكة وسيتم إضافتها فوراً للداشبورد</div>
+
+  <div id="form-msg" class="msg error"></div>
+
+  <!-- Row 1: key + name -->
+  <div class="grid-2">
+    <div class="field">
+      <label>المفتاح (Key) *</label>
+      <input id="f-key" type="text" placeholder="mynetwork">
+      <div class="hint">حروف صغيرة فقط — يُستخدم كمعرّف</div>
+    </div>
+    <div class="grid-2" style="gap:.4rem">
+      <div class="field">
+        <label>الاسم *</label>
+        <input id="f-name" type="text" placeholder="My Network">
+      </div>
+      <div class="field">
+        <label>أيقونة</label>
+        <input id="f-icon" type="text" placeholder="🌐" maxlength="2">
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: image + token -->
+  <div class="grid-2">
+    <div class="field">
+      <label>Docker Image *</label>
+      <input id="f-image" type="text" placeholder="vendor/node:latest">
+    </div>
+    <div class="grid-2" style="gap:.4rem">
+      <div class="field">
+        <label>العملة *</label>
+        <input id="f-token" type="text" placeholder="USD أو MYST">
+      </div>
+      <div class="field">
+        <label>نوع الكسب</label>
+        <select id="f-earn-cat">
+          <option value="Bandwidth sharing">Bandwidth</option>
+          <option value="Storage sharing">Storage</option>
+          <option value="AI / Inference">AI</option>
+          <option value="CDN">CDN</option>
+          <option value="Web scraping">Scraping</option>
+          <option value="Other">أخرى</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earn type -->
+  <div class="sec-label">كيف نقرأ الأرباح؟</div>
+  <div class="earn-sel">
+    <div class="earn-opt sel" data-type="local" onclick="setEarnType('local',this)">
+      <div class="eo-icon">🔌</div>
+      <div class="eo-label">API محلي</div>
+      <div class="eo-sub">بورت داخل Docker</div>
+    </div>
+    <div class="earn-opt" data-type="web" onclick="setEarnType('web',this)">
+      <div class="eo-icon">🌐</div>
+      <div class="eo-label">API خارجي</div>
+      <div class="eo-sub">موقع المنصة</div>
+    </div>
+    <div class="earn-opt" data-type="link" onclick="setEarnType('link',this)">
+      <div class="eo-icon">🔗</div>
+      <div class="eo-label">رابط فقط</div>
+      <div class="eo-sub">لا يوجد API</div>
+    </div>
+  </div>
+
+  <!-- Local API fields -->
+  <div id="grp-local">
+    <div class="field">
+      <label>رابط API المحلي *</label>
+      <input id="f-local-url" type="text" placeholder="http://nodepin_NETWORK:PORT/api/stat">
+      <div class="hint">اسم الكونتينر داخل Docker + البورت + المسار</div>
+    </div>
+    <div class="field">
+      <label>مسار الأرباح في JSON</label>
+      <input id="f-earn-path" type="text" placeholder="مثال: data.balance أو earnings">
+      <div class="hint">اتركه فارغاً للكشف التلقائي</div>
+    </div>
+  </div>
+
+  <!-- Web API fields -->
+  <div id="grp-web" style="display:none">
+    <div class="field">
+      <label>رابط Login API *</label>
+      <input id="f-login-url" type="text" placeholder="https://api.example.com/v1/auth/login">
+    </div>
+    <div class="field">
+      <label>رابط Balance API *</label>
+      <input id="f-balance-url" type="text" placeholder="https://api.example.com/v1/balance">
+    </div>
+    <div class="field">
+      <label>مسار الأرباح في JSON</label>
+      <input id="f-earn-path-web" type="text" placeholder="مثال: data.balance">
+    </div>
+  </div>
+
+  <!-- Dashboard link (shown for web+link) -->
+  <div id="grp-dashboard" style="display:none">
+    <div class="field">
+      <label>رابط Dashboard الخارجي *</label>
+      <input id="f-dashboard-url" type="text" placeholder="https://app.mynetwork.io/dashboard">
+      <div class="hint">سيظهر كزر انتقال مباشر من لوحتك</div>
+    </div>
+  </div>
+
+  <!-- Credentials -->
+  <div class="sec-label">بيانات الاعتماد</div>
+  <div class="creds-box">
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem">الحقول التي سيُطلب من المستخدم إدخالها</div>
+    <div id="creds-list"></div>
+    <button class="add-cred" onclick="addCredRow()">＋ إضافة حقل</button>
+  </div>
+
+  <!-- Options -->
+  <div class="sec-label">خيارات</div>
+  <div class="tog-row">
+    <div class="tog-text">
+      <div class="tl">تفعيل فوراً</div>
+      <div class="ts">يُضاف مباشرة لقائمة الشبكات النشطة</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="f-enabled" checked><span class="slider"></span></label>
+  </div>
+  <div class="tog-row">
+    <div class="tog-text">
+      <div class="tl">تحديث تلقائي (Watchtower)</div>
+      <div class="ts">يُحدَّث الكونتينر تلقائياً عند توفر إصدار جديد</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="f-watchtower" checked><span class="slider"></span></label>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-primary" id="save-btn" onclick="saveNetwork()">💾 حفظ وإضافة</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ DELETE CONFIRM ══ -->
+<div class="modal-bg" id="del-modal" style="display:none">
+<div class="modal" style="max-width:380px;text-align:center">
+  <div style="font-size:2rem;margin-bottom:.75rem">🗑️</div>
+  <div class="modal-title" style="margin-bottom:.5rem">حذف الشبكة؟</div>
+  <div style="color:var(--muted);font-size:.85rem;margin-bottom:1.25rem">سيتم حذف "<span id="del-name"></span>" نهائياً من قائمتك.</div>
+  <div class="btn-row" style="justify-content:center">
+    <button class="btn btn-ghost" onclick="document.getElementById('del-modal').style.display='none'">إلغاء</button>
+    <button class="btn btn-danger" id="del-confirm-btn">نعم، احذف</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────
+let networks = [];
+let earnType = 'local';
+let editKey  = null;
+
+// ── Init ─────────────────────────────────────────────
+async function loadNetworks() {
+  const r = await fetch('/api/networks').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+  networks = data.networks || [];
+  renderGrid();
+}
+
+// ── Render ───────────────────────────────────────────
+function renderGrid() {
+  const el = document.getElementById('nets-grid');
+  if (!networks.length) {
+    el.innerHTML = `
+      <div class="add-card" onclick="openAdd()">
+        <div class="add-icon">＋</div>
+        <div class="add-label">إضافة أول شبكة مخصصة</div>
+      </div>`;
+    return;
+  }
+
+  const cards = networks.map(n => `
+    <div class="net-card" id="nc-${n.key}">
+      <div class="nc-head">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="nc-icon">${n.icon || '🌐'}</span>
+          <div>
+            <div class="nc-name">${n.name}</div>
+            <div class="nc-type">${n.earnCat || ''} · ${n.token}</div>
+          </div>
+        </div>
+        <span class="chip ${n.earnType}">${earnTypeLabel(n.earnType)}</span>
+      </div>
+
+      <div class="nc-earn null" id="earn-${n.key}">جاري التحميل… <span class="spinner"></span></div>
+
+      <div class="nc-footer">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="badge" id="st-${n.key}">—</span>
+          ${n.dashboardUrl ? `<a href="${n.dashboardUrl}" target="_blank" class="dash-link">🔗 Dashboard</a>` : ''}
+        </div>
+        <div class="nc-actions">
+          <label class="toggle" title="${n.enabled ? 'تعطيل' : 'تفعيل'}">
+            <input type="checkbox" ${n.enabled !== false ? 'checked' : ''}
+              onchange="toggleNet('${n.key}', this.checked)">
+            <span class="slider"></span>
+          </label>
+          <button class="btn btn-ghost btn-sm" onclick="openEdit('${n.key}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${n.key}','${n.name}')">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  el.innerHTML = cards + `
+    <div class="add-card" onclick="openAdd()">
+      <div class="add-icon">＋</div>
+      <div class="add-label">إضافة شبكة جديدة</div>
+    </div>`;
+
+  // Load metrics for each
+  networks.forEach(n => fetchMetrics(n.key));
+}
+
+function earnTypeLabel(t) {
+  return { local: 'API محلي ✅', web: 'API خارجي ✅', link: 'رابط 🔗' }[t] || t;
+}
+
+// ── Fetch live metrics ────────────────────────────────
+async function fetchMetrics(key) {
+  const earnEl = document.getElementById(`earn-${key}`);
+  const stEl   = document.getElementById(`st-${key}`);
+  if (!earnEl) return;
+
+  const r = await fetch(`/api/networks/${key}/metrics`).catch(() => null);
+  if (!r?.ok) {
+    if (earnEl) earnEl.innerHTML = '<span style="color:var(--muted)">—</span>';
+    if (stEl)   stEl.className = 'badge error'; stEl.textContent = 'خطأ';
+    return;
+  }
+  const d = await r.json();
+
+  // Status badge
+  if (stEl) {
+    const map = { ok:'شغّال', starting:'يبدأ…', error:'خطأ', not_configured:'غير مكتمل', disabled:'معطّل' };
+    stEl.className = `badge ${d.status}`;
+    stEl.textContent = map[d.status] || d.status;
+  }
+
+  // Earnings
+  if (earnEl) {
+    if (d.earnings != null) {
+      earnEl.className = 'nc-earn';
+      earnEl.textContent = `${parseFloat(d.earnings).toFixed(4)} ${d.token}`;
+    } else {
+      earnEl.className = 'nc-earn null';
+      earnEl.textContent = 'الأرباح في موقع المنصة';
+    }
+  }
+}
+
+// ── Earn type selector ────────────────────────────────
+function setEarnType(type, el) {
+  earnType = type;
+  document.querySelectorAll('.earn-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('grp-local').style.display     = type === 'local' ? '' : 'none';
+  document.getElementById('grp-web').style.display       = type === 'web'   ? '' : 'none';
+  document.getElementById('grp-dashboard').style.display = type !== 'local' ? '' : 'none';
+}
+
+// ── Credentials ───────────────────────────────────────
+function addCredRow(label='', key='', type='text') {
+  const row = document.createElement('div');
+  row.className = 'cred-row';
+  row.innerHTML = `
+    <input type="text" placeholder="اسم الحقل" value="${label}">
+    <input type="text" placeholder="مفتاح .env" value="${key}">
+    <select>
+      <option value="text"     ${type==='text'    ?'selected':''}>نص</option>
+      <option value="email"    ${type==='email'   ?'selected':''}>إيميل</option>
+      <option value="password" ${type==='password'?'selected':''}>باسورد</option>
+    </select>
+    <button class="rm-btn" onclick="this.closest('.cred-row').remove()">×</button>`;
+  document.getElementById('creds-list').appendChild(row);
+}
+
+function getCredentials() {
+  const rows = document.querySelectorAll('#creds-list .cred-row');
+  const creds = [];
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const sel    = r.querySelector('select');
+    const label  = inputs[0].value.trim();
+    const key    = inputs[1].value.trim().toUpperCase().replace(/\s+/g,'_');
+    if (label && key) creds.push({ label, key, type: sel.value });
+  });
+  return creds;
+}
+
+// ── Open / close modal ────────────────────────────────
+function openAdd() {
+  editKey = null;
+  resetForm();
+  document.getElementById('modal-title').textContent = '➕ إضافة شبكة جديدة';
+  document.getElementById('save-btn').textContent = '💾 حفظ وإضافة';
+  document.getElementById('f-key').disabled = false;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function openEdit(key) {
+  const net = networks.find(n => n.key === key);
+  if (!net) return;
+  editKey = key;
+  resetForm();
+
+  document.getElementById('modal-title').textContent = `✏️ تعديل — ${net.name}`;
+  document.getElementById('save-btn').textContent = '💾 حفظ التعديلات';
+  document.getElementById('f-key').value = net.key;
+  document.getElementById('f-key').disabled = true;
+  document.getElementById('f-name').value = net.name || '';
+  document.getElementById('f-icon').value = net.icon || '';
+  document.getElementById('f-image').value = net.image || '';
+  document.getElementById('f-token').value = net.token || '';
+  document.getElementById('f-earn-path').value = net.earningsPath || '';
+  document.getElementById('f-earn-path-web').value = net.earningsPath || '';
+  document.getElementById('f-local-url').value = net.localApiUrl || '';
+  document.getElementById('f-login-url').value = net.loginUrl || '';
+  document.getElementById('f-balance-url').value = net.balanceUrl || '';
+  document.getElementById('f-dashboard-url').value = net.dashboardUrl || '';
+  document.getElementById('f-enabled').checked = net.enabled !== false;
+
+  const et = net.earnType || 'link';
+  const opt = document.querySelector(`.earn-opt[data-type="${et}"]`);
+  if (opt) setEarnType(et, opt);
+
+  (net.credentials || []).forEach(c => addCredRow(c.label, c.key, c.type));
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+function bgClick(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+function resetForm() {
+  ['f-key','f-name','f-icon','f-image','f-token','f-earn-path','f-earn-path-web',
+   'f-local-url','f-login-url','f-balance-url','f-dashboard-url']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-enabled').checked = true;
+  document.getElementById('creds-list').innerHTML = '';
+  document.getElementById('form-msg').classList.remove('show');
+  setEarnType('local', document.querySelector('.earn-opt[data-type="local"]'));
+}
+
+// ── Save ──────────────────────────────────────────────
+async function saveNetwork() {
+  const msgEl = document.getElementById('form-msg');
+  msgEl.classList.remove('show');
+
+  const earnPathVal = earnType === 'web'
+    ? document.getElementById('f-earn-path-web').value.trim()
+    : document.getElementById('f-earn-path').value.trim();
+
+  const body = {
+    key:          document.getElementById('f-key').value.trim().toLowerCase(),
+    name:         document.getElementById('f-name').value.trim(),
+    icon:         document.getElementById('f-icon').value.trim() || '🌐',
+    image:        document.getElementById('f-image').value.trim(),
+    token:        document.getElementById('f-token').value.trim(),
+    earnType,
+    localApiUrl:  document.getElementById('f-local-url').value.trim() || null,
+    loginUrl:     document.getElementById('f-login-url').value.trim() || null,
+    balanceUrl:   document.getElementById('f-balance-url').value.trim() || null,
+    dashboardUrl: document.getElementById('f-dashboard-url').value.trim() || null,
+    earningsPath: earnPathVal || null,
+    credentials:  getCredentials(),
+    enabled:      document.getElementById('f-enabled').checked,
+  };
+
+  const url    = editKey ? `/api/networks/${editKey}` : '/api/networks';
+  const method = editKey ? 'PUT' : 'POST';
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ…';
+
+  const r = await fetch(url, {
+    method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  }).catch(() => null);
+
+  btn.disabled = false;
+  btn.textContent = editKey ? '💾 حفظ التعديلات' : '💾 حفظ وإضافة';
+
+  if (!r?.ok) {
+    const err = await r?.json().catch(() => ({}));
+    msgEl.textContent = err.error || 'حدث خطأ';
+    msgEl.classList.add('show');
+    return;
+  }
+
+  closeModal();
+  await loadNetworks();
+}
+
+// ── Toggle enable/disable ─────────────────────────────
+async function toggleNet(key, enabled) {
+  await fetch(`/api/networks/${key}/toggle`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ enabled }),
+  });
+  await loadNetworks();
+}
+
+// ── Delete ────────────────────────────────────────────
+function confirmDelete(key, name) {
+  document.getElementById('del-name').textContent = name;
+  document.getElementById('del-confirm-btn').onclick = async () => {
+    await fetch(`/api/networks/${key}`, { method: 'DELETE' });
+    document.getElementById('del-modal').style.display = 'none';
+    await loadNetworks();
+  };
+  document.getElementById('del-modal').style.display = 'flex';
+}
+
+// ── Boot ──────────────────────────────────────────────
+loadNetworks();
+// Refresh metrics every 30s
+setInterval(() => networks.forEach(n => fetchMetrics(n.key)), 30_000);
+</script>
+</body>
+</html>
