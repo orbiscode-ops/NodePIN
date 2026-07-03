@@ -81,8 +81,9 @@ SELECTED=""
 select_networks() {
   echo
   info "Which networks do you want to run? (space-separated numbers)"
-  echo "   1) mysterium  (shares bandwidth — earns MYST)"
-  echo "   2) storj      (shares storage   — earns STORJ)"
+  echo "   1) mysterium    (shares bandwidth — earns MYST)"
+  echo "   2) storj        (shares storage   — earns STORJ)"
+  echo "   3) packetstream (shares bandwidth — light, any device)"
   local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2]: ")" choice
   choice="${choice:-1 2}"
   local nets=""
@@ -90,6 +91,7 @@ select_networks() {
     case "$c" in
       1) nets="${nets}mysterium,";;
       2) nets="${nets}storj,";;
+      3) nets="${nets}packetstream,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
