@@ -2,6 +2,7 @@ const express = require('express');
 const Docker = require('dockerode');
 const path = require('path');
 const { collectMetrics } = require('./providers');
+const auth = require('./auth');
 
 const app = express();
 // Allow tests to inject a mock Docker client via global.__DOCKER_MOCK__.
