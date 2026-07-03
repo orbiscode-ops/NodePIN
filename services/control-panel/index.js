@@ -1,9 +1,13 @@
 const express = require('express');
 const Docker = require('dockerode');
 const path = require('path');
+const { collectMetrics } = require('./providers');
 
 const app = express();
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
+
+// Only surface containers that belong to NodePIN (never other projects).
+const NODEPIN_LABEL = 'com.nodepin.project';
 
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.API_KEY || '';
@@ -27,10 +31,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// List all containers (NodeYield services)
+// List NodePIN containers only (filtered by label — ignores other projects)
 app.get('/api/containers', async (_req, res) => {
   try {
-    const containers = await docker.listContainers({ all: true });
+    const containers = await docker.listContainers({
+      all: true,
+      filters: { label: [`${NODEPIN_LABEL}=nodepin`] },
+    });
     const formatted = containers.map(c => ({
       id: c.Id.slice(0, 12),
       name: c.Names[0]?.replace('/', ''),
@@ -63,16 +70,14 @@ app.get('/api/containers/:name', async (req, res) => {
   }
 });
 
-// Placeholder: earnings & metrics
-// TODO: integrate with each node's native API for real stats
-app.get('/api/metrics', (_req, res) => {
-  res.json({
-    message: 'Placeholder — implement per-node API here',
-    nodes: {
-      mysterium: { status: 'not_implemented', token: 'MYST' },
-      storj: { status: 'not_implemented', token: 'STORJ' }
-    }
-  });
+// Real earnings & metrics — aggregated from enabled providers.
+app.get('/api/metrics', async (_req, res) => {
+  try {
+    const data = await collectMetrics();
+    res.json({ ...data, timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Start server
