@@ -94,6 +94,7 @@ jobs:
 
           # ── Global ──
           NODEPIN_VPS_IP=${{ secrets.VPS_HOST }}
+          NODEPIN_DOMAIN=${{ secrets.NODEPIN_DOMAIN }}
           NODEPIN_TIMEZONE=Asia/Riyadh
 
           # ── Ports ──
