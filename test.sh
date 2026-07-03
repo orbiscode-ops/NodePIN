@@ -13,7 +13,7 @@ warn() { echo -e "${YELLOW}⚠${NC} $*"; }
 
 # حمّل .env
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
-ENABLED_NETWORKS="${ENABLED_NETWORKS:-mysterium,storj}"
+ENABLED_NETWORKS="${ENABLED_NETWORKS:-}"
 DASHBOARD_PORT="${DASHBOARD_PORT:-3000}"
 HOST="127.0.0.1"
 

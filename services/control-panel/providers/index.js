@@ -28,7 +28,7 @@ function loadProviders() {
 
 function enabledNetworks() {
   const { list } = require('../networks');
-  const fromEnv = (process.env.ENABLED_NETWORKS || 'mysterium,storj')
+  const fromEnv = (process.env.ENABLED_NETWORKS || '')
     .split(',').map(s => s.trim()).filter(Boolean);
   // Also include enabled custom networks not already in the env list
   const customKeys = list().filter(n => n.enabled !== false).map(n => n.key);

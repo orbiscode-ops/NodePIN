@@ -21,7 +21,7 @@ export
 endif
 
 # الشبكات المفعّلة (افتراضياً mysterium,storj)
-ENABLED_NETWORKS ?= mysterium,storj
+ENABLED_NETWORKS ?= 
 
 # حوّل "mysterium,storj" إلى "--profile mysterium --profile storj"
 comma := ,
