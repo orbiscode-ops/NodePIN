@@ -175,7 +175,8 @@ jobs:
             set -e
             cd ~/nodepin
 
-            echo '📥 Pulling latest code...'
+            echo '📥 Resetting local changes and pulling latest code...'
+            git reset --hard
             git pull origin main
 
             echo '🔨 Rebuilding control-panel image...'
