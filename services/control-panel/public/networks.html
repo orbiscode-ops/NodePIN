@@ -169,6 +169,31 @@
 
   <div id="form-msg" class="msg error"></div>
 
+  <!-- Raw JSON import -->
+  <div style="margin-bottom:1rem">
+    <button class="btn btn-ghost" type="button" onclick="toggleJsonBox()">لصق JSON كامل</button>
+  </div>
+  <div id="raw-json-box" style="display:none;margin-bottom:1rem">
+    <div class="field">
+      <label>الصق JSON هنا (هيكل الشبكة الكامل)</label>
+      <textarea id="f-raw-json" placeholder='{
+  "key":"mynetwork",
+  "name":"My Network",
+  "image":"vendor/node:latest",
+  "token":"USD",
+  "earnType":"local",
+  "localApiUrl":"http://nodepin_mynetwork:3000/api/stat",
+  "earningsPath":"data.balance",
+  "credentials":[],
+  "enabled":true
+}' style="width:100%;min-height:120px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" type="button" onclick="importFromJson()">استيراد JSON إلى الحقول</button>
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('f-raw-json').value=''">مسح</button>
+    </div>
+  </div>
+
   <!-- Row 1: key + name -->
   <div class="grid-2">
     <div class="field">
@@ -384,6 +409,38 @@ function setEarnType(type, el) {
   document.getElementById('grp-dashboard').style.display = type === 'link'  ? '' : 'none';
 }
 
+// ── Raw JSON import helpers ─────────────────────────
+function toggleJsonBox() {
+  const b = document.getElementById('raw-json-box');
+  b.style.display = (b.style.display === 'none' || !b.style.display) ? '' : 'none';
+}
+
+function importFromJson() {
+  const msg = document.getElementById('form-msg');
+  msg.classList.remove('show');
+  const raw = document.getElementById('f-raw-json').value.trim();
+  if (!raw) {
+    msg.textContent = 'لا يوجد JSON للصق'; msg.classList.add('show'); return;
+  }
+  let obj;
+  try { obj = JSON.parse(raw); } catch (e) {
+    msg.textContent = 'خطأ في JSON: ' + e.message; msg.classList.add('show'); return;
+  }
+  if (obj.key) document.getElementById('f-key').value = obj.key;
+  if (obj.name) document.getElementById('f-name').value = obj.name;
+  if (obj.icon) document.getElementById('f-icon').value = obj.icon;
+  if (obj.image) document.getElementById('f-image').value = obj.image;
+  if (obj.token) document.getElementById('f-token').value = obj.token;
+  if (obj.localApiUrl) document.getElementById('f-local-url').value = obj.localApiUrl;
+  if (obj.dashboardUrl) document.getElementById('f-dashboard-url').value = obj.dashboardUrl;
+  if (obj.earningsPath) document.getElementById('f-earn-path').value = obj.earningsPath;
+  if (typeof obj.enabled === 'boolean') document.getElementById('f-enabled').checked = obj.enabled;
+  const et = obj.earnType || (obj.localApiUrl ? 'local' : (obj.dashboardUrl ? 'link' : 'local'));
+  const opt = document.querySelector(`.earn-opt[data-type="${et}"]`);
+  if (opt) setEarnType(et, opt);
+  msg.textContent = 'تم استيراد JSON إلى الحقول — اضغط حفظ لإرساله'; msg.classList.add('show');
+}
+
 // ── Open / close modal ────────────────────────────────
 function openAdd() {
   editKey = null;
@@ -436,22 +493,35 @@ function resetForm() {
 async function saveNetwork() {
   const msgEl = document.getElementById('form-msg');
   msgEl.classList.remove('show');
-
-  const earnPathVal = document.getElementById('f-earn-path').value.trim();
-
-  const body = {
-    key:          document.getElementById('f-key').value.trim().toLowerCase(),
-    name:         document.getElementById('f-name').value.trim(),
-    icon:         document.getElementById('f-icon').value.trim() || '🌐',
-    image:        document.getElementById('f-image').value.trim(),
-    token:        document.getElementById('f-token').value.trim(),
-    earnType,
-    localApiUrl:  document.getElementById('f-local-url').value.trim() || null,
-    dashboardUrl: document.getElementById('f-dashboard-url').value.trim() || null,
-    earningsPath: earnPathVal || null,
-    credentials:  [],
-    enabled:      document.getElementById('f-enabled').checked,
-  };
+  // If user pasted raw JSON, prefer that payload (but normalise a few fields)
+  const raw = document.getElementById('f-raw-json')?.value.trim();
+  let body;
+  if (raw) {
+    try {
+      body = JSON.parse(raw);
+    } catch (e) {
+      msgEl.textContent = 'خطأ في JSON: ' + e.message; msgEl.classList.add('show'); return;
+    }
+    body.key = (body.key || '').toString().trim().toLowerCase();
+    body.credentials = body.credentials || [];
+    if (editKey) body.key = editKey;
+    if (typeof body.enabled !== 'boolean') body.enabled = document.getElementById('f-enabled').checked;
+  } else {
+    const earnPathVal = document.getElementById('f-earn-path').value.trim();
+    body = {
+      key:          document.getElementById('f-key').value.trim().toLowerCase(),
+      name:         document.getElementById('f-name').value.trim(),
+      icon:         document.getElementById('f-icon').value.trim() || '🌐',
+      image:        document.getElementById('f-image').value.trim(),
+      token:        document.getElementById('f-token').value.trim(),
+      earnType,
+      localApiUrl:  document.getElementById('f-local-url').value.trim() || null,
+      dashboardUrl: document.getElementById('f-dashboard-url').value.trim() || null,
+      earningsPath: earnPathVal || null,
+      credentials:  [],
+      enabled:      document.getElementById('f-enabled').checked,
+    };
+  }
 
   const url    = editKey ? `/api/networks/${editKey}` : '/api/networks';
   const method = editKey ? 'PUT' : 'POST';
