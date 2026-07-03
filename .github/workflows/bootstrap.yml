@@ -1,0 +1,106 @@
+name: Bootstrap VPS (First Time Setup)
+
+# يُشغَّل مرة واحدة فقط لإعداد الـ VPS من الصفر:
+# - تثبيت Docker
+# - استنساخ المشروع
+# - إنشاء .env من .env.example
+# لا يُشغَّل تلقائياً — يدوي فقط من GitHub UI
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "اكتب 'yes' للتأكيد (يُعدّل السيرفر)"
+        required: true
+        type: string
+
+jobs:
+  bootstrap:
+    name: Bootstrap VPS
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ github.event.inputs.confirm == 'yes' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── إعداد SSH ──
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # ── تثبيت Docker ──
+      - name: Install Docker
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            if command -v docker &>/dev/null; then
+              echo "✅ Docker already installed: $(docker --version)"
+            else
+              echo "📦 Installing Docker..."
+              curl -fsSL https://get.docker.com | sh
+              systemctl enable docker
+              systemctl start docker
+              echo "✅ Docker installed: $(docker --version)"
+            fi
+
+            if ! docker compose version &>/dev/null; then
+              echo "📦 Installing Docker Compose plugin..."
+              apt-get install -y docker-compose-plugin 2>/dev/null || \
+              curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+                -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+              chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            fi
+            echo "✅ $(docker compose version)"
+          '
+
+      # ── استنساخ المشروع ──
+      - name: Clone repository
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            if [ -d ~/nodepin ]; then
+              echo "📁 ~/nodepin already exists — pulling latest..."
+              cd ~/nodepin && git pull origin main
+            else
+              echo "📥 Cloning NodePIN..."
+              git clone https://github.com/${{ github.repository }}.git ~/nodepin
+              echo "✅ Cloned to ~/nodepin"
+            fi
+          '
+
+      # ── إنشاء .env ──
+      - name: Create .env from template
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            set -e
+            cd ~/nodepin
+            if [ -f .env ]; then
+              echo "⚠️  .env already exists — keeping existing secrets"
+            else
+              cp .env.example .env
+              echo "✅ Created .env from template"
+              echo "⚠️  Edit ~/nodepin/.env with your real values before running deploy"
+            fi
+          '
+
+      # ── إنشاء مجلد التخزين لـ Storj ──
+      - name: Create storage directories
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} '
+            mkdir -p /mnt/storj-storage
+            echo "✅ /mnt/storj-storage ready"
+          '
+
+      # ── ملخص ──
+      - name: Bootstrap summary
+        run: |
+          echo "✅ VPS Bootstrap complete!"
+          echo ""
+          echo "Next steps:"
+          echo "1. SSH to your VPS: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
+          echo "2. Edit .env:        nano ~/nodepin/.env"
+          echo "3. Come back to GitHub and run the Deploy workflow"
