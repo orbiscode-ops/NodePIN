@@ -3,11 +3,6 @@ name: Manage Multiple Services (Manual Control)
 on:
   workflow_dispatch:
     inputs:
-      networks:
-        description: "اكتب أسماء الشبكات مفصولة بفاصلة (مثال: mysterium, traffmonetizer, urnetwork)"
-        required: true
-        default: "mysterium, traffmonetizer, urnetwork"
-        type: string
       action:
         description: "الإجراء المطلوب"
         required: true
@@ -17,10 +12,74 @@ on:
           - start
           - stop
           - restart
+      mysterium:
+        description: "Mysterium (mystnodes)"
+        type: boolean
+        default: false
+      anyone:
+        description: "Anyone Protocol (ATOR)"
+        type: boolean
+        default: false
+      bitping:
+        description: "Bitping"
+        type: boolean
+        default: false
+      traffmonetizer:
+        description: "Traffmonetizer"
+        type: boolean
+        default: false
+      urnetwork:
+        description: "URnetwork (BringYour)"
+        type: boolean
+        default: false
+      storj:
+        description: "Storj"
+        type: boolean
+        default: false
+      iproyal:
+        description: "IPRoyal Pawns"
+        type: boolean
+        default: false
+      peer2profit:
+        description: "Peer2Profit"
+        type: boolean
+        default: false
+      repocket:
+        description: "Repocket"
+        type: boolean
+        default: false
+      earnapp:
+        description: "EarnApp"
+        type: boolean
+        default: false
+      packetstream:
+        description: "PacketStream"
+        type: boolean
+        default: false
+      meson:
+        description: "Meson / GaGaNode"
+        type: boolean
+        default: false
+      gradient:
+        description: "Gradient Network"
+        type: boolean
+        default: false
+      proxyrack:
+        description: "Proxyrack"
+        type: boolean
+        default: false
+      uprock:
+        description: "Uprock"
+        type: boolean
+        default: false
+      titan:
+        description: "Titan Network"
+        type: boolean
+        default: false
 
 jobs:
   manage-multiple:
-    name: ${{ github.event.inputs.action }} — Multiple Networks
+    name: ${{ github.event.inputs.action }} — Selected Networks
     runs-on: ubuntu-latest
     steps:
       - name: Setup SSH
@@ -30,11 +89,35 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Execute Action on VPS for Multiple Networks
+      - name: Execute Action on VPS for Selected Networks
         run: |
-          NETWORKS_INPUT="${{ github.event.inputs.networks }}"
           ACTION="${{ github.event.inputs.action }}"
           
+          # بناء قائمة الشبكات المختارة بناءً على الشيك بوكس
+          ITEMS=""
+          if [ "${{ github.event.inputs.mysterium }}" = "true" ]; then ITEMS="$ITEMS mysterium:myst_client"; fi
+          if [ "${{ github.event.inputs.anyone }}" = "true" ]; then ITEMS="$ITEMS anyone:anyone"; fi
+          if [ "${{ github.event.inputs.bitping }}" = "true" ]; then ITEMS="$ITEMS bitping:bitping"; fi
+          if [ "${{ github.event.inputs.traffmonetizer }}" = "true" ]; then ITEMS="$ITEMS traffmonetizer:traffmonetizer"; fi
+          if [ "${{ github.event.inputs.urnetwork }}" = "true" ]; then ITEMS="$ITEMS urnetwork:urnetwork"; fi
+          if [ "${{ github.event.inputs.storj }}" = "true" ]; then ITEMS="$ITEMS storj:storj-node"; fi
+          if [ "${{ github.event.inputs.iproyal }}" = "true" ]; then ITEMS="$ITEMS iproyal:iproyal"; fi
+          if [ "${{ github.event.inputs.peer2profit }}" = "true" ]; then ITEMS="$ITEMS peer2profit:peer2profit"; fi
+          if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
+          if [ "${{ github.event.inputs.earnapp }}" = "true" ]; then ITEMS="$ITEMS earnapp:earnapp"; fi
+          if [ "${{ github.event.inputs.packetstream }}" = "true" ]; then ITEMS="$ITEMS packetstream:packetstream"; fi
+          if [ "${{ github.event.inputs.meson }}" = "true" ]; then ITEMS="$ITEMS meson:meson"; fi
+          if [ "${{ github.event.inputs.gradient }}" = "true" ]; then ITEMS="$ITEMS gradient:gradient"; fi
+          if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
+          if [ "${{ github.event.inputs.uprock }}" = "true" ]; then ITEMS="$ITEMS uprock:uprock"; fi
+          if [ "${{ github.event.inputs.titan }}" = "true" ]; then ITEMS="$ITEMS titan:titan"; fi
+
+          # التحقق من اختيار شبكة واحدة على الأقل
+          if [ -z "$ITEMS" ]; then
+            echo "❌ No networks selected! Please check at least one box."
+            exit 1
+          fi
+
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             set -e
             cd ~/nodepin
@@ -42,43 +125,19 @@ jobs:
             echo '📥 Pulling latest configuration from GitHub...'
             git pull origin main
 
-            # تقسيم المدخلات بناءً على الفاصلة
-            IFS=',' read -ra NETS <<< \"$NETWORKS_INPUT\"
-            for net in \"\${NETS[@]}\"; do
-              # إزالة الفراغات الزائدة
-              net=\$(echo \"\$net\" | xargs)
-              if [ -z \"\$net\" ]; then continue; fi
-
-              # خريطة لربط اسم الشبكة باسم الـ Service في docker-compose
-              case \"\$net\" in
-                mysterium)      SERVICE=\"myst_client\" ;;
-                storj)          SERVICE=\"storj-node\" ;;
-                traffmonetizer) SERVICE=\"traffmonetizer\" ;;
-                iproyal)        SERVICE=\"iproyal\" ;;
-                peer2profit)    SERVICE=\"peer2profit\" ;;
-                repocket)       SERVICE=\"repocket\" ;;
-                earnapp)        SERVICE=\"earnapp\" ;;
-                bitping)        SERVICE=\"bitping\" ;;
-                packetstream)   SERVICE=\"packetstream\" ;;
-                meson)          SERVICE=\"meson\" ;;
-                gradient)       SERVICE=\"gradient\" ;;
-                proxyrack)      SERVICE=\"proxyrack\" ;;
-                uprock)         SERVICE=\"uprock\" ;;
-                titan)          SERVICE=\"titan\" ;;
-                anyone)         SERVICE=\"anyone\" ;;
-                urnetwork)      SERVICE=\"urnetwork\" ;;
-                *)              echo \"⚠️ Unknown network: \$net\"; continue ;;
-              esac
+            for item in $ITEMS; do
+              net=\${item%%:*}
+              service=\${item##*:}
 
               if [ '$ACTION' = 'start' ]; then
-                echo \"🚀 Starting \$net (\$SERVICE)...\"
-                docker compose --profile \$net up -d \$SERVICE
+                echo \"🚀 Starting \$net (\$service)...\"
+                docker compose --profile \$net up -d \$service
               elif [ '$ACTION' = 'stop' ]; then
-                echo \"🛑 Stopping \$net (\$SERVICE)...\"
-                docker compose --profile \$net stop \$SERVICE
+                echo \"🛑 Stopping \$net (\$service)...\"
+                docker compose --profile \$net stop \$service
               elif [ '$ACTION' = 'restart' ]; then
-                echo \"🔄 Restarting \$net (\$SERVICE)...\"
-                docker compose --profile \$net restart \$SERVICE
+                echo \"🔄 Restarting \$net (\$service)...\"
+                docker compose --profile \$net restart \$service
               fi
             done
 
