@@ -426,7 +426,7 @@ services:
     container_name: nodepin_urnetwork
     profiles: ["urnetwork"]
     restart: "no"
-    entrypoint: ["sh", "-c", "if [ -z \"$$UR_AUTH_TOKEN\" ] || [ \"$$UR_AUTH_TOKEN\" = \"your_ur_auth_token_here\" ]; then echo '❌ Error: UR_AUTH_TOKEN is missing or empty! Exiting...' && exit 1; fi; if [ -f /root/provider ]; then exec /root/provider provide; elif [ -f /provider ]; then exec /provider provide; else exec provider provide; fi"]
+    entrypoint: ["sh", "-c", "if [ -z \"$$UR_AUTH_TOKEN\" ] || [ \"$$UR_AUTH_TOKEN\" = \"your_ur_auth_token_here\" ]; then echo '❌ Error: UR_AUTH_TOKEN is missing or empty! Exiting...' && exit 1; fi; exec /usr/local/sbin/bringyour-provider provide"]
     cap_add:
       - NET_ADMIN
     devices:
