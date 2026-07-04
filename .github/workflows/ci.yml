@@ -151,7 +151,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-control-panel, detect-target]
     if: github.event_name == 'workflow_dispatch'
-    environment: production
     steps:
       - uses: actions/checkout@v4
         with:

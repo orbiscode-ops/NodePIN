@@ -19,7 +19,6 @@ jobs:
   bootstrap:
     name: Bootstrap VPS
     runs-on: ubuntu-latest
-    environment: production
     if: ${{ github.event.inputs.confirm == 'yes' }}
 
     steps:
