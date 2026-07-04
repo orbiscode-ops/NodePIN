@@ -41,7 +41,7 @@ services:
     image: mysteriumnetwork/myst:latest
     container_name: nodepin_myst
     command: --tequilapi.address=0.0.0.0 --tequilapi.port=4050 --ui.address=0.0.0.0 service --agreed-terms-and-conditions
-    restart: unless-stopped
+    restart: "no"
     cap_add:
       - NET_ADMIN
     environment:
@@ -69,7 +69,7 @@ services:
     image: storjlabs/storagenode:latest
     container_name: nodepin_storj
     profiles: ["storj"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - WALLET=${STORJ_WALLET}
       - EMAIL=${STORJ_EMAIL}
@@ -100,7 +100,7 @@ services:
     image: traffmonetizer/cli_v2:latest
     container_name: nodepin_traffmonetizer
     profiles: ["traffmonetizer"]
-    restart: unless-stopped
+    restart: "no"
     command: start accept --token ${TRAFFMONETIZER_TOKEN}
     networks:
       - nodepin-net
@@ -118,7 +118,7 @@ services:
     image: iproyal/pawns-cli:latest
     container_name: nodepin_iproyal
     profiles: ["iproyal"]
-    restart: unless-stopped
+    restart: "no"
     command: -accept-tos -email=${IPROYAL_EMAIL} -password=${IPROYAL_PASS} -device-name=${IPROYAL_DEVICE:-nodepin} -traffic-limit=0
     networks:
       - nodepin-net
@@ -136,7 +136,7 @@ services:
     image: peer2profit/peer2profit_linux:latest
     container_name: nodepin_peer2profit
     profiles: ["peer2profit"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - P2P_EMAIL=${PEER2PROFIT_EMAIL}
     networks:
@@ -155,7 +155,7 @@ services:
     image: repocket/repocket:latest
     container_name: nodepin_repocket
     profiles: ["repocket"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - RP_EMAIL=${REPOCKET_EMAIL}
       - RP_API_KEY=${REPOCKET_API_KEY}
@@ -174,7 +174,7 @@ services:
       context: ./services/control-panel
       dockerfile: Dockerfile
     container_name: nodepin_control_panel
-    restart: unless-stopped
+    restart: "no"
     environment:
       - PORT=${DASHBOARD_PORT:-3000}
       - API_KEY=${DASHBOARD_API_KEY:-}
@@ -207,7 +207,7 @@ services:
     profiles: ["watchtower"]
     image: ghcr.io/nicholas-fedor/watchtower:latest
     container_name: nodepin_watchtower
-    restart: unless-stopped
+    restart: "no"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -227,7 +227,7 @@ services:
     image: caddy:2-alpine
     container_name: nodepin_caddy
     profiles: ["https"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - NODEPIN_DOMAIN=${NODEPIN_DOMAIN}
       - DASHBOARD_PORT=${DASHBOARD_PORT:-3000}
@@ -256,7 +256,7 @@ services:
     image: mrcolorrain/earnapp:latest
     container_name: nodepin_earnapp
     profiles: ["earnapp"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - EARNAPP_UUID=${EARNAPP_UUID}
     networks:
@@ -275,7 +275,7 @@ services:
     image: bitping/bitping-node:latest
     container_name: nodepin_bitping
     profiles: ["bitping"]
-    restart: unless-stopped
+    restart: "no"
     command: /bitping-node --server --email ${BITPING_EMAIL} --password ${BITPING_PASSWORD}
     volumes:
       - nodepin_bitping_data:/root/.bitping
@@ -296,7 +296,7 @@ services:
     image: packetstream/psclient:latest
     container_name: nodepin_packetstream
     profiles: ["packetstream"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - CID=${PACKETSTREAM_CID}
     networks:
@@ -315,7 +315,7 @@ services:
     image: meson/meson-node:latest
     container_name: nodepin_meson
     profiles: ["meson"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - TOKEN=${MESON_TOKEN}
     volumes:
@@ -338,7 +338,7 @@ services:
     image: community/gradient-node:latest
     container_name: nodepin_gradient
     profiles: ["gradient"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - GRADIENT_EMAIL=${GRADIENT_EMAIL}
       - GRADIENT_PASS=${GRADIENT_PASS}
@@ -358,7 +358,7 @@ services:
     image: proxyrack/pop:latest
     container_name: nodepin_proxyrack
     profiles: ["proxyrack"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - UUID=${PROXYRACK_UUID}
       - API_KEY=${PROXYRACK_API_KEY}
@@ -378,7 +378,7 @@ services:
     image: uprock/node:latest
     container_name: nodepin_uprock
     profiles: ["uprock"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - UPROCK_EMAIL=${UPROCK_EMAIL}
       - UPROCK_PASSWORD=${UPROCK_PASSWORD}
@@ -398,7 +398,7 @@ services:
     image: nezha123/titan-edge:latest
     container_name: nodepin_titan
     profiles: ["titan"]
-    restart: unless-stopped
+    restart: "no"
     environment:
       - TITAN_URL=${TITAN_URL:-https://cassini.titannet.io:2345/rpc/v0}
       - TITAN_HASH=${TITAN_HASH}
@@ -451,7 +451,7 @@ services:
     image: ghcr.io/anyone-protocol/ator-protocol:latest
     container_name: nodepin_anyone
     profiles: ["anyone"]
-    restart: unless-stopped
+    restart: "no"
     init: true
     user: "0:0"
     ports:
