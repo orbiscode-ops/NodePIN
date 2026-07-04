@@ -1,0 +1,95 @@
+name: Manage Services (Manual Control)
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "الشبكة المراد إدارتها"
+        required: true
+        type: choice
+        options:
+          - mysterium
+          - anyone
+          - bitping
+          - traffmonetizer
+          - storj
+          - iproyal
+          - peer2profit
+          - repocket
+          - earnapp
+          - nodepay
+          - packetstream
+          - meson
+          - gradient
+          - proxyrack
+          - uprock
+          - huddle01
+          - titan
+      action:
+        description: "الإجراء المطلوب"
+        required: true
+        default: "start"
+        type: choice
+        options:
+          - start
+          - stop
+          - restart
+
+jobs:
+  manage:
+    name: ${{ github.event.inputs.action }} — ${{ github.event.inputs.network }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Execute Action on VPS
+        run: |
+          NETWORK="${{ github.event.inputs.network }}"
+          ACTION="${{ github.event.inputs.action }}"
+          
+          # خريطة لربط اسم الشبكة باسم الـ Service في docker-compose
+          case "$NETWORK" in
+            mysterium)      SERVICE="myst_client" ;;
+            storj)          SERVICE="storj-node" ;;
+            traffmonetizer) SERVICE="traffmonetizer" ;;
+            iproyal)        SERVICE="iproyal" ;;
+            peer2profit)    SERVICE="peer2profit" ;;
+            repocket)       SERVICE="repocket" ;;
+            earnapp)        SERVICE="earnapp" ;;
+            bitping)        SERVICE="bitping" ;;
+            nodepay)        SERVICE="nodepay" ;;
+            packetstream)   SERVICE="packetstream" ;;
+            meson)          SERVICE="meson" ;;
+            gradient)       SERVICE="gradient" ;;
+            proxyrack)      SERVICE="proxyrack" ;;
+            uprock)         SERVICE="uprock" ;;
+            huddle01)       SERVICE="huddle01" ;;
+            titan)          SERVICE="titan" ;;
+            anyone)         SERVICE="anyone" ;;
+            *)              SERVICE="" ;;
+          esac
+
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            set -e
+            cd ~/nodepin
+
+            if [ '$ACTION' = 'start' ]; then
+              echo '🚀 Starting $NETWORK ($SERVICE)...'
+              docker compose --profile $NETWORK up -d $SERVICE
+            elif [ '$ACTION' = 'stop' ]; then
+              echo '🛑 Stopping $NETWORK ($SERVICE)...'
+              docker compose --profile $NETWORK stop $SERVICE
+            elif [ '$ACTION' = 'restart' ]; then
+              echo '🔄 Restarting $NETWORK ($SERVICE)...'
+              docker compose --profile $NETWORK restart $SERVICE
+            fi
+
+            echo '📊 Status:'
+            docker compose ps
+          "
