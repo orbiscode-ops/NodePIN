@@ -29,6 +29,7 @@ on:
           - uprock
           - titan
           - anyone
+          - urnetwork
 
 jobs:
   # ── 1) التحقق من صحة docker compose ──
@@ -316,6 +317,11 @@ jobs:
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           TITAN_HASH=${{ secrets.TITAN_HASH }}
           TITAN_URL=https://cassini.titannet.io:2345/rpc/v0
+
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # 23) URnetwork
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          UR_AUTH_TOKEN=${{ secrets.UR_AUTH_TOKEN }}
           ENVEOF
 
             chmod 600 .env

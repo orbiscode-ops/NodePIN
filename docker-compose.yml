@@ -26,6 +26,7 @@ volumes:
   nodepin_bitping_data:
   nodepin_meson_data:
   nodepin_titan_data:
+  nodepin_urnetwork_data:
   nodepin_anyone_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
@@ -414,6 +415,32 @@ services:
   # — أضف شبكة جديدة أسفل هذا الخط —
   #   profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
+
+  # ──────────────────────────────────────────
+  # 23) URnetwork Egress Node (profile: urnetwork)
+  #     Decentralized VPN & bandwidth-sharing network — earns USDC/UR
+  #     ❌ no local API — check dashboard at ur.io
+  # ──────────────────────────────────────────
+  urnetwork:
+    image: bringyour/community-provider:g4-latest
+    container_name: nodepin_urnetwork
+    profiles: ["urnetwork"]
+    restart: unless-stopped
+    command: provide
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - UR_AUTH_TOKEN=${UR_AUTH_TOKEN}
+    volumes:
+      - nodepin_urnetwork_data:/root/.urnetwork
+    networks:
+      - nodepin-net
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "urnetwork"
+      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 22) Anyone Protocol Relay  (profile: anyone)

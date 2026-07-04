@@ -83,6 +83,7 @@ select_networks() {
   echo "   1) mysterium     (bandwidth proxy  — earns MYST)"
   echo "   2) storj         (storage sharing  — earns STORJ)"
   echo "   3) bitping       (network monitor  — earns NOIA) ✅ live earnings"
+  echo "   5) urnetwork     (decentralized VPN — earns USDC/UR)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
 
@@ -101,6 +102,7 @@ select_networks() {
       1)  nets="${nets}mysterium,";;
       2)  nets="${nets}storj,";;
       3)  nets="${nets}bitping,";;
+      5)  nets="${nets}urnetwork,";;
 
       6)  nets="${nets}traffmonetizer,";;
       7)  nets="${nets}iproyal,";;
@@ -185,6 +187,12 @@ collect_vars() {
     prompt "ANYONE_WALLET"   "Anyone payout Ethereum wallet address"
     prompt "ANYONE_PORT"     "Anyone relay ORPort (default: 9001)"
   fi
+
+  if [[ ",$SELECTED," == *",urnetwork,"* ]]; then
+    echo; info "URnetwork settings"
+    info "Get your token at: https://ur.io"
+    prompt "UR_AUTH_TOKEN" "URnetwork Auth Token"
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -218,6 +226,7 @@ validate() {
   [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }
   [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
+  [[ ",$SELECTED," == *",urnetwork,"*    ]] && check "UR_AUTH_TOKEN"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }

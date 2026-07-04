@@ -23,6 +23,7 @@ on:
           - proxyrack
           - uprock
           - titan
+          - urnetwork
       action:
         description: "الإجراء المطلوب"
         required: true
@@ -68,6 +69,7 @@ jobs:
             uprock)         SERVICE="uprock" ;;
             titan)          SERVICE="titan" ;;
             anyone)         SERVICE="anyone" ;;
+            urnetwork)      SERVICE="urnetwork" ;;
             *)              SERVICE="" ;;
           esac
 
