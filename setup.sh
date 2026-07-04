@@ -216,7 +216,6 @@ validate() {
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && { check "PROXYRACK_UUID"; check "PROXYRACK_API_KEY"; }
   [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }
-  [[ ",$SELECTED," == *",huddle01,"*     ]] && check "HUDDLE01_API_KEY"
   [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."

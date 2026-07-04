@@ -25,7 +25,6 @@ volumes:
   nodepin_caddy_config:
   nodepin_bitping_data:
   nodepin_meson_data:
-  nodepin_huddle01_data:
   nodepin_titan_data:
   nodepin_anyone_data:
 
@@ -187,7 +186,6 @@ services:
 
       - BITPING_API_URL=${BITPING_API_URL:-http://nodepin_bitping:9090}
       - MESON_API_URL=${MESON_API_URL:-http://nodepin_meson:19090}
-      - HUDDLE01_API_URL=${HUDDLE01_API_URL:-http://nodepin_huddle01:4001}
       - ENABLED_NETWORKS=${ENABLED_NETWORKS:-}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
@@ -388,30 +386,6 @@ services:
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "uprock"
-      com.centurylinklabs.watchtower.enable: "true"
-
-  # ──────────────────────────────────────────
-  # 20) Huddle01 Media Node  (profile: huddle01)
-  #     WebRTC/media لامركزي — يكسب HUDL tokens
-  #     ✅ أرباح حية عبر Huddle01 local API :4001
-  # ──────────────────────────────────────────
-  huddle01:
-    image: huddle01/media-node:latest
-    container_name: nodepin_huddle01
-    profiles: ["huddle01"]
-    restart: unless-stopped
-    environment:
-      - API_SERVER=${HUDDLE01_API_SERVER:-https://api.huddle01.com}
-      - API_KEY=${HUDDLE01_API_KEY}
-    volumes:
-      - nodepin_huddle01_data:/app/data
-    ports:
-      - "${HUDDLE01_PORT:-4001}:4001"
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "huddle01"
       com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────

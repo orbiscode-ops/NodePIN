@@ -27,7 +27,6 @@ on:
           - gradient
           - proxyrack
           - uprock
-          - huddle01
           - titan
           - anyone
 
@@ -311,13 +310,6 @@ jobs:
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           UPROCK_EMAIL=${{ secrets.UPROCK_EMAIL }}
           UPROCK_PASSWORD=${{ secrets.UPROCK_PASSWORD }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 16) Huddle01
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          HUDDLE01_API_KEY=${{ secrets.HUDDLE01_API_KEY }}
-          HUDDLE01_API_URL=http://nodepin_huddle01:4001
-          HUDDLE01_PORT=4001
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 17) Titan

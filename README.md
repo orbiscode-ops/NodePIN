@@ -74,7 +74,6 @@ make up
 | 2 | **Storj** | `storj` | STORJ | ✅ حية | [storj.io](https://storj.io) |
 | 3 | **Bitping** | `bitping` | NOIA | ✅ حية | [app.bitping.com](https://app.bitping.com) |
 | 4 | **Meson Network** | `meson` | MSN | ✅ حية | [dashboard.meson.network](https://dashboard.meson.network) |
-| 5 | **Huddle01** | `huddle01` | HUDL | ✅ حية | [node.huddle01.com](https://node.huddle01.com) |
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
 | 7 | **Gradient** | `gradient` | GRAD | 🔗 موقعهم | [app.gradient.network](https://app.gradient.network) |
 | 9 | **Uprock** | `uprock` | UPT | 🔗 موقعهم | [uprock.com](https://uprock.com) |
@@ -95,7 +94,7 @@ make up
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,meson,huddle01,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,grass,gradient,uprock,titan
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,meson,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,grass,gradient,uprock,titan
 > ```
 
 ---

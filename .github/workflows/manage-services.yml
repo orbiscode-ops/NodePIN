@@ -22,7 +22,6 @@ on:
           - gradient
           - proxyrack
           - uprock
-          - huddle01
           - titan
       action:
         description: "الإجراء المطلوب"
@@ -67,7 +66,6 @@ jobs:
             gradient)       SERVICE="gradient" ;;
             proxyrack)      SERVICE="proxyrack" ;;
             uprock)         SERVICE="uprock" ;;
-            huddle01)       SERVICE="huddle01" ;;
             titan)          SERVICE="titan" ;;
             anyone)         SERVICE="anyone" ;;
             *)              SERVICE="" ;;
