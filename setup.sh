@@ -220,7 +220,6 @@ validate() {
   [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
   [[ ",$SELECTED," == *",packetstream,"* ]] && check "PACKETSTREAM_CID"
-  [[ ",$SELECTED," == *",meson,"*        ]] && check "MESON_TOKEN"
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && { check "PROXYRACK_UUID"; check "PROXYRACK_API_KEY"; }
   [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }

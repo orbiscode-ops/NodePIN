@@ -18,7 +18,6 @@ on:
           - repocket
           - earnapp
           - packetstream
-          - meson
           - gradient
           - proxyrack
           - uprock
@@ -62,7 +61,6 @@ jobs:
             earnapp)        SERVICE="earnapp" ;;
             bitping)        SERVICE="bitping" ;;
             packetstream)   SERVICE="packetstream" ;;
-            meson)          SERVICE="meson" ;;
             gradient)       SERVICE="gradient" ;;
             proxyrack)      SERVICE="proxyrack" ;;
             uprock)         SERVICE="uprock" ;;

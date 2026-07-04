@@ -23,7 +23,6 @@ on:
           - earnapp
           - bitping
           - packetstream
-          - meson
           - gradient
           - proxyrack
           - uprock
@@ -285,13 +284,6 @@ jobs:
           # 11) PacketStream
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           PACKETSTREAM_CID=${{ secrets.PACKETSTREAM_CID }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 12) Meson Network
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          MESON_TOKEN=${{ secrets.MESON_TOKEN }}
-          MESON_API_URL=http://nodepin_meson:19090
-          MESON_PORT=19090
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 13) Gradient

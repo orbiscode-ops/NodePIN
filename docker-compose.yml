@@ -24,7 +24,6 @@ volumes:
   nodepin_caddy_data:
   nodepin_caddy_config:
   nodepin_bitping_data:
-  nodepin_meson_data:
   nodepin_titan_data:
   nodepin_urnetwork_data:
   nodepin_anyone_data:
@@ -306,28 +305,6 @@ services:
       com.nodepin.network: "packetstream"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 16) Meson Network  (profile: meson)
-  #     CDN لامركزي — يكسب MSN tokens
-  #     ✅ أرباح حية عبر Meson local API :19090
-  # ──────────────────────────────────────────
-  meson:
-    image: meson/meson-node:latest
-    container_name: nodepin_meson
-    profiles: ["meson"]
-    restart: "no"
-    environment:
-      - TOKEN=${MESON_TOKEN}
-    volumes:
-      - nodepin_meson_data:/root/.meson
-    ports:
-      - "${MESON_PORT:-19090}:19090"
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "meson"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 17) Gradient Network  (profile: gradient)
