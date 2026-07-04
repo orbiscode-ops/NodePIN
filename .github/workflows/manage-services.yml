@@ -76,6 +76,9 @@ jobs:
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             set -e
             cd ~/nodepin
+            
+            echo '📥 Pulling latest configuration from GitHub...'
+            git pull origin main
 
             if [ '$ACTION' = 'start' ]; then
               echo '🚀 Starting $NETWORK ($SERVICE)...'
