@@ -283,7 +283,7 @@ async function loadMetrics() {
 
       if (name === 'mysterium') {
         extraRows = [
-          row('الخطأ', x.error),
+          row('الخطأ', x.message || x.error),
           row('الهوية', x.identity ? x.identity.slice(0,16)+'…' : null),
           row('حالة التسجيل', x.registrationStatus),
           row('الرصيد', x.balance !== undefined ? fmt(x.balance)+' MYST (wei)' : null),
