@@ -17,7 +17,6 @@ on:
           - peer2profit
           - repocket
           - earnapp
-          - nodepay
           - packetstream
           - meson
           - gradient
@@ -63,7 +62,6 @@ jobs:
             repocket)       SERVICE="repocket" ;;
             earnapp)        SERVICE="earnapp" ;;
             bitping)        SERVICE="bitping" ;;
-            nodepay)        SERVICE="nodepay" ;;
             packetstream)   SERVICE="packetstream" ;;
             meson)          SERVICE="meson" ;;
             gradient)       SERVICE="gradient" ;;

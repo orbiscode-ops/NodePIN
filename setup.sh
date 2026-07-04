@@ -83,7 +83,6 @@ select_networks() {
   echo "   1) mysterium     (bandwidth proxy  — earns MYST)"
   echo "   2) storj         (storage sharing  — earns STORJ)"
   echo "   3) bitping       (network monitor  — earns NOIA) ✅ live earnings"
-  echo "   4) nodepay       (AI bandwidth     — earns NC tokens)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
 
@@ -102,7 +101,6 @@ select_networks() {
       1)  nets="${nets}mysterium,";;
       2)  nets="${nets}storj,";;
       3)  nets="${nets}bitping,";;
-      4)  nets="${nets}nodepay,";;
 
       6)  nets="${nets}traffmonetizer,";;
       7)  nets="${nets}iproyal,";;
@@ -181,12 +179,6 @@ collect_vars() {
     prompt "BITPING_PASSWORD" "Bitping password" silent
   fi
 
-  if [[ ",$SELECTED," == *",nodepay,"* ]]; then
-    echo; info "Nodepay settings"
-    info "Get your token at: https://app.nodepay.ai → Settings → API Token"
-    prompt "NODEPAY_TOKEN" "Nodepay API token"
-  fi
-
   if [[ ",$SELECTED," == *",anyone,"* ]]; then
     echo; info "Anyone Protocol settings"
     prompt "ANYONE_NICKNAME" "Anyone relay nickname (default: nodepin)"
@@ -219,7 +211,6 @@ validate() {
   [[ ",$SELECTED," == *",repocket,"*     ]] && { check "REPOCKET_EMAIL"; check "REPOCKET_API_KEY"; }
   [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
-  [[ ",$SELECTED," == *",nodepay,"*      ]] && check "NODEPAY_TOKEN"
   [[ ",$SELECTED," == *",packetstream,"* ]] && check "PACKETSTREAM_CID"
   [[ ",$SELECTED," == *",meson,"*        ]] && check "MESON_TOKEN"
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }

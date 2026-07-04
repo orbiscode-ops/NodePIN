@@ -287,25 +287,6 @@ services:
       com.nodepin.network: "bitping"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 13) Nodepay  (profile: nodepay)
-  #     AI bandwidth network — يكسب NC tokens
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  nodepay:
-    image: anthill/nodepay:latest
-    container_name: nodepin_nodepay
-    profiles: ["nodepay"]
-    restart: unless-stopped
-    environment:
-      - NP_TOKEN=${NODEPAY_TOKEN}
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "nodepay"
-      com.centurylinklabs.watchtower.enable: "true"
-
 
   # ──────────────────────────────────────────
   # 15) PacketStream  (profile: packetstream)

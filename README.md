@@ -77,7 +77,6 @@ make up
 | 5 | **Huddle01** | `huddle01` | HUDL | ✅ حية | [node.huddle01.com](https://node.huddle01.com) |
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
 | 7 | **Gradient** | `gradient` | GRAD | 🔗 موقعهم | [app.gradient.network](https://app.gradient.network) |
-| 8 | **Nodepay** | `nodepay` | NC | 🔗 موقعهم | [app.nodepay.ai](https://app.nodepay.ai) |
 | 9 | **Uprock** | `uprock` | UPT | 🔗 موقعهم | [uprock.com](https://uprock.com) |
 | 10 | **Titan Network** | `titan` | TTN | 🔗 موقعهم | [storage.titannet.io](https://storage.titannet.io) |
 
@@ -96,7 +95,7 @@ make up
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,meson,huddle01,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,nodepay,grass,gradient,uprock,titan
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,meson,huddle01,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,grass,gradient,uprock,titan
 > ```
 
 ---
