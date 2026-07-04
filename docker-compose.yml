@@ -425,8 +425,8 @@ services:
     image: bringyour/community-provider:g4-latest
     container_name: nodepin_urnetwork
     profiles: ["urnetwork"]
-    restart: unless-stopped
-    command: provide
+    restart: "no"
+    entrypoint: ["sh", "-c", "if [ -z \"$$UR_AUTH_TOKEN\" ] || [ \"$$UR_AUTH_TOKEN\" = \"your_ur_auth_token_here\" ]; then echo '❌ Error: UR_AUTH_TOKEN is missing or empty! Exiting...' && exit 1; fi; exec provider provide"]
     cap_add:
       - NET_ADMIN
     devices:
