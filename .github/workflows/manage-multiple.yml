@@ -136,8 +136,8 @@ jobs:
                 echo \"🛑 Stopping \$net (\$service)...\"
                 docker compose --profile \$net stop \$service
               elif [ '$ACTION' = 'restart' ]; then
-                echo \"🔄 Restarting \$net (\$service)...\"
-                docker compose --profile \$net restart \$service
+                echo \"🔄 Restarting \$net (\$service) with configuration refresh...\"
+                docker compose --profile \$net up -d --force-recreate \$service
               fi
             done
 

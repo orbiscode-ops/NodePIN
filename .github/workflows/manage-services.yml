@@ -86,8 +86,8 @@ jobs:
               echo '🛑 Stopping $NETWORK ($SERVICE)...'
               docker compose --profile $NETWORK stop $SERVICE
             elif [ '$ACTION' = 'restart' ]; then
-              echo '🔄 Restarting $NETWORK ($SERVICE)...'
-              docker compose --profile $NETWORK restart $SERVICE
+              echo '🔄 Restarting $NETWORK ($SERVICE) with configuration refresh...'
+              docker compose --profile $NETWORK up -d --force-recreate $SERVICE
             fi
 
             echo '📊 Status:'
