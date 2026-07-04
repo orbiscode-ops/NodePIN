@@ -472,7 +472,6 @@ services:
     profiles: ["anyone"]
     restart: unless-stopped
     init: true
-    user: "100:101"
     ports:
       - "${ANYONE_PORT:-9001}:9001"
     volumes:
