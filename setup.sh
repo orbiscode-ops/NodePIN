@@ -219,7 +219,6 @@ validate() {
   [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
   [[ ",$SELECTED," == *",nodepay,"*      ]] && check "NODEPAY_TOKEN"
-  [[ ",$SELECTED," == *",grass,"*        ]] && { check "GRASS_USER"; check "GRASS_PASS"; }
   [[ ",$SELECTED," == *",packetstream,"* ]] && check "PACKETSTREAM_CID"
   [[ ",$SELECTED," == *",meson,"*        ]] && check "MESON_TOKEN"
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }

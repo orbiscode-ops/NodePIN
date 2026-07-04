@@ -307,25 +307,6 @@ services:
       com.nodepin.network: "nodepay"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 14) Grass (Wynd Network)  (profile: grass)
-  #     Web scraping لامركزي — يكسب GRASS tokens
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  grass:
-    image: alexdcox/grass-node:latest
-    container_name: nodepin_grass
-    profiles: ["grass"]
-    restart: unless-stopped
-    environment:
-      - GRASS_USER=${GRASS_USER}
-      - GRASS_PASS=${GRASS_PASS}
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "grass"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 15) PacketStream  (profile: packetstream)

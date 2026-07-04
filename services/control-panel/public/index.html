@@ -298,7 +298,7 @@ async function loadMetrics() {
           row('البيانات المنقولة', fmtBytes(x.bandwidthUsed)),
           row('الأقمار الصناعية', x.satellitesCount),
         ].join('');
-      } else if (name === 'packetstream' || name === 'grass') {
+      } else if (name === 'packetstream') {
         extraRows = x.dashboardUrl ? row('لوحة التحكم', `<a href="${x.dashboardUrl}" target="_blank" style="color:var(--accent)">${x.dashboardUrl}</a>`) : '';
       } else if (name === 'anyone') {
         extraRows = x.dashboard ? row('لوحة التحكم', `<a href="${x.dashboard}" target="_blank" style="color:var(--accent)">${x.dashboard}</a>`) : '';
