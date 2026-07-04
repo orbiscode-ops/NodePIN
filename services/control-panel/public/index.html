@@ -139,6 +139,20 @@
       border-top: 1px solid var(--border); margin-top: 2rem;
     }
 
+    /* Inline Config Input */
+    .inline-input-group {
+      display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;
+    }
+    .inline-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.35rem 0.6rem; color: var(--text);
+      font-size: 0.8rem; outline: none; transition: border-color 0.15s;
+    }
+    .inline-input:focus { border-color: var(--accent); }
+    .btn-sm {
+      padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px;
+    }
+
     /* Logout */
     #logout-btn { display: none; }
 
@@ -282,12 +296,19 @@ async function loadMetrics() {
       let extraRows = '';
 
       if (name === 'mysterium') {
+        const errorRow = x.message || x.error;
         extraRows = [
-          row('الخطأ', x.message || x.error),
+          row('الخطأ', errorRow),
           row('الهوية', x.identity ? x.identity.slice(0,16)+'…' : null),
           row('حالة التسجيل', x.registrationStatus),
           row('الرصيد', x.balance !== undefined ? fmt(x.balance)+' MYST (wei)' : null),
           row('أرباح غير مستوفاة', x.earningsUnsettled !== undefined ? fmt(x.earningsUnsettled)+' wei' : null),
+          (info.status === 'error' && errorRow && errorRow.includes('403')) ? `
+            <div class="inline-input-group">
+              <input type="password" id="myst-pwd-input" class="inline-input" placeholder="أدخل كلمة مرور Mysterium">
+              <button class="btn btn-sm" onclick="saveMysteriumPassword()">حفظ</button>
+            </div>
+          ` : ''
         ].join('');
       } else if (name === 'storj') {
         extraRows = [
@@ -329,6 +350,27 @@ async function loadMetrics() {
     }).join('');
   } catch(e) {
     el.innerHTML = `<div class="placeholder" style="color:var(--red)">فشل تحميل المقاييس: ${e.message}</div>`;
+  }
+}
+
+async function saveMysteriumPassword() {
+  const pwd = document.getElementById('myst-pwd-input').value;
+  if (!pwd) return alert('الرجاء كتابة كلمة المرور');
+  try {
+    const res = await fetch('/api/mysterium/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert('تم حفظ كلمة المرور وتحديث اللوحة بنجاح!');
+      refreshAll();
+    } else {
+      alert('خطأ أثناء الحفظ: ' + data.error);
+    }
+  } catch (e) {
+    alert('فشل الاتصال: ' + e.message);
   }
 }
 

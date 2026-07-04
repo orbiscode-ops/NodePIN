@@ -97,6 +97,33 @@ app.get('/api/metrics', async (_req, res) => {
   }
 });
 
+// Update Mysterium API Password in the host's .env file directly from UI
+app.post('/api/mysterium/password', async (req, res) => {
+  const { password } = req.body || {};
+  if (!password) return res.status(400).json({ error: 'Password required' });
+
+  const fs = require('fs');
+  const path = require('path');
+  const envPath = path.resolve(__dirname, '../../.env');
+
+  try {
+    if (fs.existsSync(envPath)) {
+      let content = fs.readFileSync(envPath, 'utf8');
+      if (content.includes('MYST_API_PASSWORD=')) {
+        content = content.replace(/^MYST_API_PASSWORD=.*/m, `MYST_API_PASSWORD=${password}`);
+      } else {
+        content += `\nMYST_API_PASSWORD=${password}`;
+      }
+      fs.writeFileSync(envPath, content, 'utf8');
+    }
+    // Update current process env as well
+    process.env.MYST_API_PASSWORD = password;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 
 // Start server only when run directly (not when imported by tests).
