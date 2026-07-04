@@ -182,6 +182,7 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-}
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
+      - MYST_API_PASSWORD=${MYST_API_PASSWORD:-mystberry}
       - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
 
       - BITPING_API_URL=${BITPING_API_URL:-http://nodepin_bitping:9090}

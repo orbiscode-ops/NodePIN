@@ -137,6 +137,7 @@ collect_vars() {
   if [[ ",$SELECTED," == *",mysterium,"* ]]; then
     echo; info "Mysterium settings"
     prompt "MYST_IDENTITY_PASSPHRASE" "Mysterium identity passphrase" silent
+    prompt "MYST_API_PASSWORD" "Mysterium Node UI password (default: mystberry)" silent
   fi
 
   if [[ ",$SELECTED," == *",storj,"* ]]; then

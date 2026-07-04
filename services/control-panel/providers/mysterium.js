@@ -13,8 +13,9 @@ async function getMetrics() {
     extra: {},
   };
 
+  const pass = process.env.MYST_API_PASSWORD || 'mystberry';
   const headers = {
-    Authorization: 'Basic ' + Buffer.from('myst:mystberry').toString('base64'),
+    Authorization: 'Basic ' + Buffer.from(`myst:${pass}`).toString('base64'),
   };
 
   try {
