@@ -277,7 +277,7 @@ services:
     container_name: nodepin_bitping
     profiles: ["bitping"]
     restart: unless-stopped
-    command: --server --email ${BITPING_EMAIL} --password ${BITPING_PASSWORD}
+    command: /bitping-node --server --email ${BITPING_EMAIL} --password ${BITPING_PASSWORD}
     volumes:
       - nodepin_bitping_data:/root/.bitping
     networks:
