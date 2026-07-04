@@ -3,6 +3,9 @@
 // Only providers whose network is in ENABLED_NETWORKS are queried.
 const fs = require('fs');
 const path = require('path');
+const Docker = require('dockerode');
+
+const docker = global.__DOCKER_MOCK__ || new Docker({ socketPath: '/var/run/docker.sock' });
 
 function loadProviders() {
   const dir = __dirname;
@@ -19,16 +22,37 @@ function loadProviders() {
   return providers;
 }
 
-function enabledNetworks() {
-  const fromEnv = (process.env.ENABLED_NETWORKS || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
-  return [...new Set(['mysterium', ...fromEnv])];
+async function enabledNetworks() {
+  // 1. Fallback to process.env.ENABLED_NETWORKS if explicitly defined (tests/manual overrides)
+  if (process.env.ENABLED_NETWORKS) {
+    const fromEnv = process.env.ENABLED_NETWORKS
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    return [...new Set(['mysterium', ...fromEnv])];
+  }
+
+  // 2. Otherwise, auto-detect active networks by listing running docker containers
+  try {
+    const containers = await docker.listContainers({
+      all: true,
+      filters: { label: ['com.nodepin.project=nodepin'] }
+    });
+    const running = containers
+      .filter(c => c.State === 'running')
+      .map(c => c.Labels['com.nodepin.network'])
+      .filter(Boolean);
+    return [...new Set(['mysterium', ...running])];
+  } catch (err) {
+    // Fail-safe default
+    return ['mysterium'];
+  }
 }
 
 // Query all enabled providers in parallel; never let one failure break the rest.
 async function collectMetrics() {
   const providers = loadProviders();
-  const enabled = enabledNetworks();
+  const enabled = await enabledNetworks();
   const targets = enabled.filter(n => providers[n]);
 
   const results = await Promise.all(
