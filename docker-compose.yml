@@ -328,25 +328,6 @@ services:
       com.nodepin.network: "proxyrack"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 19) Uprock  (profile: uprock)
-  #     Distributed AI inference — يكسب UPT tokens
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  uprock:
-    image: uprock/node:latest
-    container_name: nodepin_uprock
-    profiles: ["uprock"]
-    restart: "no"
-    environment:
-      - UPROCK_EMAIL=${UPROCK_EMAIL}
-      - UPROCK_PASSWORD=${UPROCK_PASSWORD}
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "uprock"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 21) Titan Network  (profile: titan)

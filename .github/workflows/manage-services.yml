@@ -19,7 +19,6 @@ on:
           - earnapp
           - gradient
           - proxyrack
-          - uprock
           - titan
           - urnetwork
       action:
@@ -61,7 +60,6 @@ jobs:
             bitping)        SERVICE="bitping" ;;
             gradient)       SERVICE="gradient" ;;
             proxyrack)      SERVICE="proxyrack" ;;
-            uprock)         SERVICE="uprock" ;;
             titan)          SERVICE="titan" ;;
             anyone)         SERVICE="anyone" ;;
             urnetwork)      SERVICE="urnetwork" ;;

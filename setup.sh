@@ -221,7 +221,6 @@ validate() {
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && { check "PROXYRACK_UUID"; check "PROXYRACK_API_KEY"; }
-  [[ ",$SELECTED," == *",uprock,"*       ]] && { check "UPROCK_EMAIL"; check "UPROCK_PASSWORD"; }
   [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",urnetwork,"*    ]] && check "UR_AUTH_TOKEN"

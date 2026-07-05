@@ -6,10 +6,10 @@ function mockFetch(handler) {
   global.fetch = async (url, opts) => handler(String(url), opts || {});
 }
 
-test('loadProviders returns all 14 built-in providers', () => {
+test('loadProviders returns all 13 built-in providers', () => {
   const providers = loadProviders();
   const keys = Object.keys(providers);
-  assert.strictEqual(keys.length, 14);
+  assert.strictEqual(keys.length, 13);
   assert.ok(keys.includes('mysterium'));
   assert.ok(keys.includes('storj'));
   assert.ok(keys.includes('anyone'));
