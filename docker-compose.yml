@@ -57,7 +57,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -92,7 +92,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -116,7 +116,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -139,7 +139,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -163,7 +163,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -188,7 +188,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -228,7 +228,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -253,7 +253,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -284,7 +284,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -308,7 +308,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -333,7 +333,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -361,7 +361,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -385,7 +385,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -413,7 +413,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -449,7 +449,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
@@ -478,7 +478,7 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "50m"
+        max-size: "100m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
