@@ -294,12 +294,12 @@ services:
   #     ❌ لا API محلي — راجع لوحتهم
   # ──────────────────────────────────────────
   gradient:
-    image: community/gradient-node:latest
+    image: sicnull/gradient-sentry-node:latest
     container_name: nodepin_gradient
     profiles: ["gradient"]
     restart: "no"
     environment:
-      - GRADIENT_EMAIL=${GRADIENT_EMAIL}
+      - GRADIENT_USER=${GRADIENT_EMAIL}
       - GRADIENT_PASS=${GRADIENT_PASS}
     networks:
       - nodepin-net
