@@ -22,6 +22,7 @@ on:
           - proxyrack
           - anyone
           - nym
+          - nkn
 
 jobs:
   # ── 1) التحقق من صحة docker compose ──
@@ -117,9 +118,10 @@ jobs:
             HAS_IP=$(echo "$CHANGED"      | grep -c "services/iproyal"      || true)
             HAS_RP=$(echo "$CHANGED"      | grep -c "services/repocket"     || true)
             HAS_ANY=$(echo "$CHANGED"     | grep -c "services/anyone"       || true)
+            HAS_NKN=$(echo "$CHANGED"     | grep -c "services/nkn"          || true)
             HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
 
-            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_RP>0)+(HAS_ANY>0) ))
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_RP>0)+(HAS_ANY>0)+(HAS_NKN>0) ))
 
             if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
               echo "network=all" >> $GITHUB_OUTPUT
@@ -129,6 +131,7 @@ jobs:
             elif [ "$HAS_IP"    -gt 0 ]; then echo "network=iproyal"        >> $GITHUB_OUTPUT
             elif [ "$HAS_RP"    -gt 0 ]; then echo "network=repocket"       >> $GITHUB_OUTPUT
             elif [ "$HAS_ANY"   -gt 0 ]; then echo "network=anyone"         >> $GITHUB_OUTPUT
+            elif [ "$HAS_NKN"   -gt 0 ]; then echo "network=nkn"            >> $GITHUB_OUTPUT
             else echo "network=all" >> $GITHUB_OUTPUT
             fi
           fi
@@ -267,6 +270,12 @@ jobs:
           NYM_PORT_MIXNET=${{ secrets.NYM_PORT_MIXNET }}
           NYM_PORT_VERLOC=${{ secrets.NYM_PORT_VERLOC }}
           NYM_PORT_API=${{ secrets.NYM_PORT_API }}
+
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # 25) NKN
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          NKN_BENEFICIARY_ADDR=${{ secrets.NKN_BENEFICIARY_ADDR }}
+          NKN_WALLET_PASSWORD=${{ secrets.NKN_WALLET_PASSWORD }}
           ENVEOF
 
             chmod 600 .env

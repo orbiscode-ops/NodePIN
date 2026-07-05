@@ -75,6 +75,7 @@ make up
 
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
 | 8 | **Nym Network** | `nym` | NYM | 🔗 موقعهم | [nymtech.net](https://nymtech.net) |
+| 9 | **NKN Network** | `nkn` | NKN | 🔗 موقعهم | [nkn.org](https://nkn.org) |
 
 ### 💵 USD networks — أرباح بالدولار
 
@@ -88,7 +89,7 @@ make up
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,iproyal,repocket,proxyrack,grass,nym
+> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,iproyal,repocket,proxyrack,grass,nym,nkn
 > ```
 
 ---

@@ -17,6 +17,7 @@ on:
           - repocket
           - proxyrack
           - nym
+          - nkn
       action:
         description: "الإجراء المطلوب"
         required: true
@@ -54,6 +55,7 @@ jobs:
             proxyrack)      SERVICE="proxyrack" ;;
             anyone)         SERVICE="anyone" ;;
             nym)            SERVICE="nym" ;;
+            nkn)            SERVICE="nkn" ;;
             *)              SERVICE="" ;;
           esac
 

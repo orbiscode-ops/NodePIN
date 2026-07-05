@@ -167,6 +167,12 @@ jobs:
           NYM_PORT_MIXNET=${{ secrets.NYM_PORT_MIXNET }}
           NYM_PORT_VERLOC=${{ secrets.NYM_PORT_VERLOC }}
           NYM_PORT_API=${{ secrets.NYM_PORT_API }}
+
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # 25) NKN
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          NKN_BENEFICIARY_ADDR=${{ secrets.NKN_BENEFICIARY_ADDR }}
+          NKN_WALLET_PASSWORD=${{ secrets.NKN_WALLET_PASSWORD }}
           ENVEOF
 
             chmod 600 .env
