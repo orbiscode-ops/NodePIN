@@ -54,6 +54,11 @@ services:
       - "${MYST_UI_PORT:-4449}:4449"
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "mysterium"
@@ -84,6 +89,11 @@ services:
       - "${STORJ_DASHBOARD_PORT:-14002}:14002"
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "storj"
@@ -103,6 +113,11 @@ services:
     command: start accept --token ${TRAFFMONETIZER_TOKEN}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "traffmonetizer"
@@ -121,6 +136,11 @@ services:
     command: -accept-tos -email=${IPROYAL_EMAIL} -password=${IPROYAL_PASS} -device-name=${IPROYAL_DEVICE:-nodepin} -traffic-limit=0
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "iproyal"
@@ -140,6 +160,11 @@ services:
       - P2P_EMAIL=${PEER2PROFIT_EMAIL}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "peer2profit"
@@ -160,6 +185,11 @@ services:
       - RP_API_KEY=${REPOCKET_API_KEY}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "repocket"
@@ -195,6 +225,11 @@ services:
       - "${DASHBOARD_PORT:-3000}:${DASHBOARD_PORT:-3000}"
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "control-panel"
@@ -215,6 +250,11 @@ services:
       - WATCHTOWER_LABEL_ENABLE=false
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "watchtower"
@@ -241,6 +281,11 @@ services:
       - nodepin-net
     depends_on:
       - control-panel
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "caddy"
@@ -260,6 +305,11 @@ services:
       - EARNAPP_UUID=${EARNAPP_UUID}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "earnapp"
@@ -280,6 +330,11 @@ services:
       - nodepin_bitping_data:/root/.bitping
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "bitping"
@@ -303,6 +358,11 @@ services:
       - GRADIENT_PASS=${GRADIENT_PASS}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "gradient"
@@ -322,6 +382,11 @@ services:
       - API_KEY=${PROXYRACK_API_KEY}
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "proxyrack"
@@ -345,6 +410,11 @@ services:
       - nodepin_titan_data:/root/.titanedge
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "titan"
@@ -376,6 +446,11 @@ services:
       - nodepin_urnetwork_data:/root/.urnetwork
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "urnetwork"
@@ -400,6 +475,11 @@ services:
       - ./services/anyone/anonrc:/etc/anon/anonrc:ro
     networks:
       - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "anyone"
