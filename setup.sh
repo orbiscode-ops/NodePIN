@@ -82,34 +82,30 @@ select_networks() {
   echo "   ── Crypto earning networks ──────────────────"
   echo "   1) mysterium     (bandwidth proxy  — earns MYST)"
   echo "   2) storj         (storage sharing  — earns STORJ)"
-  echo "   3) bitping       (network monitor  — earns NOIA) ✅ live earnings"
-  echo "   5) urnetwork     (decentralized VPN — earns USDC/UR)"
+  echo "   3) nym           (mixnet node      — earns NYM)"
+  echo "   4) nkn           (relayer node     — earns NKN)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
 
-  echo "   6) traffmonetizer(bandwidth sharing — earns USD)"
-  echo "   7) iproyal       (bandwidth sharing — earns USD)"
-  echo "   8) peer2profit   (bandwidth sharing — earns USD)"
-  echo "   9) repocket      (bandwidth sharing — earns USD)"
-  echo "  10) earnapp       (bandwidth sharing — earns USD)"
-  echo "  11) anyone        (onion relay      — earns ANYONE)"
+  echo "   5) traffmonetizer(bandwidth sharing — earns USD)"
+  echo "   6) iproyal       (bandwidth sharing — earns USD)"
+  echo "   7) repocket      (bandwidth sharing — earns USD)"
+  echo "   8) anyone        (onion relay      — earns ATOR/ANYONE)"
   echo ""
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 2 11]: ")" choice
-  choice="${choice:-1 2 11}"
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5 8]: ")" choice
+  choice="${choice:-1 5 8}"
   local nets=""
   for c in $choice; do
     case "$c" in
       1)  nets="${nets}mysterium,";;
       2)  nets="${nets}storj,";;
-      3)  nets="${nets}bitping,";;
-      5)  nets="${nets}urnetwork,";;
+      3)  nets="${nets}nym,";;
+      4)  nets="${nets}nkn,";;
 
-      6)  nets="${nets}traffmonetizer,";;
-      7)  nets="${nets}iproyal,";;
-      8)  nets="${nets}peer2profit,";;
-      9)  nets="${nets}repocket,";;
-      10) nets="${nets}earnapp,";;
-      11) nets="${nets}anyone,";;
+      5)  nets="${nets}traffmonetizer,";;
+      6)  nets="${nets}iproyal,";;
+      7)  nets="${nets}repocket,";;
+      8)  nets="${nets}anyone,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -158,27 +154,10 @@ collect_vars() {
     prompt "IPROYAL_PASS"  "IPRoyal password" silent
   fi
 
-  if [[ ",$SELECTED," == *",peer2profit,"* ]]; then
-    echo; info "Peer2Profit settings"
-    prompt "PEER2PROFIT_EMAIL" "Peer2Profit email"
-  fi
-
   if [[ ",$SELECTED," == *",repocket,"* ]]; then
     echo; info "Repocket settings"
     prompt "REPOCKET_EMAIL"   "Repocket email"
     prompt "REPOCKET_API_KEY" "Repocket API key"
-  fi
-
-  if [[ ",$SELECTED," == *",earnapp,"* ]]; then
-    echo; info "EarnApp settings"
-    info "Generate your UUID at: https://earnapp.com/i/sdk-node-uuid"
-    prompt "EARNAPP_UUID" "EarnApp UUID (sdk-node-...)"
-  fi
-
-  if [[ ",$SELECTED," == *",bitping,"* ]]; then
-    echo; info "Bitping settings"
-    prompt "BITPING_EMAIL"    "Bitping email"
-    prompt "BITPING_PASSWORD" "Bitping password" silent
   fi
 
   if [[ ",$SELECTED," == *",anyone,"* ]]; then
@@ -188,10 +167,15 @@ collect_vars() {
     prompt "ANYONE_PORT"     "Anyone relay ORPort (default: 9001)"
   fi
 
-  if [[ ",$SELECTED," == *",urnetwork,"* ]]; then
-    echo; info "URnetwork settings"
-    info "Get your token at: https://ur.io"
-    prompt "UR_AUTH_TOKEN" "URnetwork Auth Token"
+  if [[ ",$SELECTED," == *",nym,"* ]]; then
+    echo; info "Nym Network settings"
+    prompt "NYM_NODE_ID" "Nym Node ID (default: default-nym-node)"
+  fi
+
+  if [[ ",$SELECTED," == *",nkn,"* ]]; then
+    echo; info "NKN settings"
+    prompt "NKN_BENEFICIARY_ADDR" "NKN beneficiary wallet address (to receive rewards)"
+    prompt "NKN_WALLET_PASSWORD"  "Password to encrypt the node's local wallet file" silent
   fi
 }
 
