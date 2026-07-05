@@ -286,24 +286,6 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
 
-  # ──────────────────────────────────────────
-  # 15) PacketStream  (profile: packetstream)
-  #     مشاركة bandwidth — يكسب USD
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  packetstream:
-    image: packetstream/psclient:latest
-    container_name: nodepin_packetstream
-    profiles: ["packetstream"]
-    restart: "no"
-    environment:
-      - CID=${PACKETSTREAM_CID}
-    networks:
-      - nodepin-net
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "packetstream"
-      com.centurylinklabs.watchtower.enable: "true"
 
 
   # ──────────────────────────────────────────

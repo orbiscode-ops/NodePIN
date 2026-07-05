@@ -22,7 +22,6 @@ on:
           - repocket
           - earnapp
           - bitping
-          - packetstream
           - gradient
           - proxyrack
           - uprock
@@ -279,11 +278,6 @@ jobs:
           # 9) EarnApp
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           EARNAPP_UUID=${{ secrets.EARNAPP_UUID }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 11) PacketStream
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          PACKETSTREAM_CID=${{ secrets.PACKETSTREAM_CID }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 13) Gradient

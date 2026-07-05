@@ -52,10 +52,6 @@ on:
         description: "EarnApp"
         type: boolean
         default: false
-      packetstream:
-        description: "PacketStream"
-        type: boolean
-        default: false
       gradient:
         description: "Gradient Network"
         type: boolean
@@ -101,7 +97,6 @@ jobs:
           if [ "${{ github.event.inputs.peer2profit }}" = "true" ]; then ITEMS="$ITEMS peer2profit:peer2profit"; fi
           if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
           if [ "${{ github.event.inputs.earnapp }}" = "true" ]; then ITEMS="$ITEMS earnapp:earnapp"; fi
-          if [ "${{ github.event.inputs.packetstream }}" = "true" ]; then ITEMS="$ITEMS packetstream:packetstream"; fi
           if [ "${{ github.event.inputs.gradient }}" = "true" ]; then ITEMS="$ITEMS gradient:gradient"; fi
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
           if [ "${{ github.event.inputs.uprock }}" = "true" ]; then ITEMS="$ITEMS uprock:uprock"; fi

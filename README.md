@@ -89,12 +89,11 @@ make up
 | 14 | **Peer2Profit** | `peer2profit` | USD | 🔗 موقعهم | [peer2profit.com](https://peer2profit.com) |
 | 15 | **Repocket** | `repocket` | USD | 🔗 موقعهم | [repocket.co](https://link.repocket.co) |
 | 16 | **EarnApp** | `earnapp` | USD | 🔗 موقعهم | [earnapp.com](https://earnapp.com) |
-| 17 | **PacketStream** | `packetstream` | USD | 🔗 موقعهم | [packetstream.io](https://packetstream.io) |
 | 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,packetstream,proxyrack,grass,gradient,uprock,titan,urnetwork
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,gradient,uprock,titan,urnetwork
 > ```
 
 ---
