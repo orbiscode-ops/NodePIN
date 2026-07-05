@@ -220,7 +220,7 @@ validate() {
   [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
   [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
-  [[ ",$SELECTED," == *",proxyrack,"*    ]] && { check "PROXYRACK_UUID"; check "PROXYRACK_API_KEY"; }
+  [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",urnetwork,"*    ]] && check "UR_AUTH_TOKEN"

@@ -319,7 +319,6 @@ services:
     profiles: ["proxyrack"]
     restart: "no"
     environment:
-      - UUID=${PROXYRACK_UUID}
       - API_KEY=${PROXYRACK_API_KEY}
     networks:
       - nodepin-net
