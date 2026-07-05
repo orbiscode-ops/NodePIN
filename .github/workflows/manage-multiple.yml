@@ -56,6 +56,10 @@ on:
         description: "Proxyrack"
         type: boolean
         default: false
+      nym:
+        description: "Nym Network"
+        type: boolean
+        default: false
 
 jobs:
   manage-multiple:
@@ -86,6 +90,7 @@ jobs:
           if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
           if [ "${{ github.event.inputs.earnapp }}" = "true" ]; then ITEMS="$ITEMS earnapp:earnapp"; fi
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
+          if [ "${{ github.event.inputs.nym }}" = "true" ]; then ITEMS="$ITEMS nym:nym"; fi
 
           # التحقق من اختيار شبكة واحدة على الأقل
           if [ -z "$ITEMS" ]; then

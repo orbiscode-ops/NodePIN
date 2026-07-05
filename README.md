@@ -75,7 +75,7 @@ make up
 | 3 | **Bitping** | `bitping` | NOIA | ✅ حية | [app.bitping.com](https://app.bitping.com) |
 | 5 | **URnetwork** | `urnetwork` | USDC/UR | 🔗 موقعهم | [ur.io](https://ur.io) |
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
-
+| 8 | **Nym Network** | `nym` | NYM | 🔗 موقعهم | [nymtech.net](https://nymtech.net) |
 
 ### 💵 USD networks — أرباح بالدولار
 
@@ -91,7 +91,7 @@ make up
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,urnetwork
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,urnetwork,nym
 > ```
 
 ---

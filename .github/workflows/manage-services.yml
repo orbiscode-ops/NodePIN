@@ -19,6 +19,7 @@ on:
           - earnapp
           - proxyrack
           - urnetwork
+          - nym
       action:
         description: "الإجراء المطلوب"
         required: true
@@ -59,6 +60,7 @@ jobs:
             proxyrack)      SERVICE="proxyrack" ;;
             anyone)         SERVICE="anyone" ;;
             urnetwork)      SERVICE="urnetwork" ;;
+            nym)            SERVICE="nym" ;;
             *)              SERVICE="" ;;
           esac
 

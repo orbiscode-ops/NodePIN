@@ -26,6 +26,7 @@ volumes:
   nodepin_bitping_data:
   nodepin_urnetwork_data:
   nodepin_anyone_data:
+  nodepin_nym_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
@@ -433,5 +434,38 @@ services:
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "anyone"
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # ──────────────────────────────────────────
+  # 24) Nym Network Node (profile: nym)
+  #     Decentralized privacy mixnet — earns NYM
+  #     ❌ no local API — check mixnet dashboard
+  # ──────────────────────────────────────────
+  nym:
+    image: nymtech/nym-node:latest
+    container_name: nodepin_nym
+    profiles: ["nym"]
+    restart: "no"
+    cpus: "2.0"
+    mem_limit: "4g"
+    environment:
+      - NYM_NODE_ID=${NYM_NODE_ID:-default-nym-node}
+    volumes:
+      - nodepin_nym_data:/root/.nym
+    ports:
+      - "${NYM_PORT_MIXNET:-1789}:1789"
+      - "${NYM_PORT_VERLOC:-1790}:1790"
+      - "${NYM_PORT_API:-8080}:8080"
+    networks:
+      - nodepin-net
+    command: ["run", "--mode", "mixnode", "--host", "${NODEPIN_VPS_IP}", "--http-bind-address", "0.0.0.0:8080"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "nym"
       com.centurylinklabs.watchtower.enable: "true"
 
