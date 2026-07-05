@@ -39,7 +39,7 @@ fi
 if [ -f "$WALLET_FILE" ]; then
     echo "--------------------------------------------------"
     echo "Wallet Address:"
-    /nkn/nknc wallet -l | grep -i "address:" || true
+    /nkn/nknc wallet -l account | grep -i "address:" || true
     echo "--------------------------------------------------"
 fi
 
