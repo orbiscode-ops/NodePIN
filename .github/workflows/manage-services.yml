@@ -17,9 +17,7 @@ on:
           - peer2profit
           - repocket
           - earnapp
-          - gradient
           - proxyrack
-          - titan
           - urnetwork
       action:
         description: "الإجراء المطلوب"
@@ -58,9 +56,7 @@ jobs:
             repocket)       SERVICE="repocket" ;;
             earnapp)        SERVICE="earnapp" ;;
             bitping)        SERVICE="bitping" ;;
-            gradient)       SERVICE="gradient" ;;
             proxyrack)      SERVICE="proxyrack" ;;
-            titan)          SERVICE="titan" ;;
             anyone)         SERVICE="anyone" ;;
             urnetwork)      SERVICE="urnetwork" ;;
             *)              SERVICE="" ;;

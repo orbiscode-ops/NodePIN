@@ -75,8 +75,7 @@ make up
 | 3 | **Bitping** | `bitping` | NOIA | ✅ حية | [app.bitping.com](https://app.bitping.com) |
 | 5 | **URnetwork** | `urnetwork` | USDC/UR | 🔗 موقعهم | [ur.io](https://ur.io) |
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
-| 7 | **Gradient** | `gradient` | GRAD | 🔗 موقعهم | [app.gradient.network](https://app.gradient.network) |
-| 10 | **Titan Network** | `titan` | TTN | 🔗 موقعهم | [storage.titannet.io](https://storage.titannet.io) |
+
 
 ### 💵 USD networks — أرباح بالدولار
 
@@ -92,7 +91,7 @@ make up
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,gradient,titan,urnetwork
+> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,urnetwork
 > ```
 
 ---

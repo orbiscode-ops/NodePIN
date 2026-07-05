@@ -24,7 +24,6 @@ volumes:
   nodepin_caddy_data:
   nodepin_caddy_config:
   nodepin_bitping_data:
-  nodepin_titan_data:
   nodepin_urnetwork_data:
   nodepin_anyone_data:
 
@@ -343,30 +342,6 @@ services:
 
 
 
-  # ──────────────────────────────────────────
-  # 17) Gradient Network  (profile: gradient)
-  #     AI bandwidth — يكسب GRAD tokens
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  gradient:
-    image: sicnull/gradient-sentry-node:latest
-    container_name: nodepin_gradient
-    profiles: ["gradient"]
-    restart: "no"
-    environment:
-      - GRADIENT_USER=${GRADIENT_EMAIL}
-      - GRADIENT_PASS=${GRADIENT_PASS}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "gradient"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 18) Proxyrack  (profile: proxyrack)
@@ -394,32 +369,6 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
 
-  # ──────────────────────────────────────────
-  # 21) Titan Network  (profile: titan)
-  #     Edge computing + storage — يكسب TTN tokens
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  titan:
-    image: nezha123/titan-edge:latest
-    container_name: nodepin_titan
-    profiles: ["titan"]
-    restart: "no"
-    environment:
-      - TITAN_URL=${TITAN_URL:-https://cassini.titannet.io:2345/rpc/v0}
-      - TITAN_HASH=${TITAN_HASH}
-    volumes:
-      - nodepin_titan_data:/root/.titanedge
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "titan"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ═══════════════════════════════════════════
   # — أضف شبكة جديدة أسفل هذا الخط —

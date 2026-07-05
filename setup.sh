@@ -219,9 +219,7 @@ validate() {
   [[ ",$SELECTED," == *",repocket,"*     ]] && { check "REPOCKET_EMAIL"; check "REPOCKET_API_KEY"; }
   [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
   [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
-  [[ ",$SELECTED," == *",gradient,"*     ]] && { check "GRADIENT_EMAIL"; check "GRADIENT_PASS"; }
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
-  [[ ",$SELECTED," == *",titan,"*        ]] && check "TITAN_HASH"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",urnetwork,"*    ]] && check "UR_AUTH_TOKEN"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."

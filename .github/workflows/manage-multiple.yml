@@ -52,16 +52,8 @@ on:
         description: "EarnApp"
         type: boolean
         default: false
-      gradient:
-        description: "Gradient Network"
-        type: boolean
-        default: false
       proxyrack:
         description: "Proxyrack"
-        type: boolean
-        default: false
-      titan:
-        description: "Titan Network"
         type: boolean
         default: false
 
@@ -93,9 +85,7 @@ jobs:
           if [ "${{ github.event.inputs.peer2profit }}" = "true" ]; then ITEMS="$ITEMS peer2profit:peer2profit"; fi
           if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
           if [ "${{ github.event.inputs.earnapp }}" = "true" ]; then ITEMS="$ITEMS earnapp:earnapp"; fi
-          if [ "${{ github.event.inputs.gradient }}" = "true" ]; then ITEMS="$ITEMS gradient:gradient"; fi
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
-          if [ "${{ github.event.inputs.titan }}" = "true" ]; then ITEMS="$ITEMS titan:titan"; fi
 
           # التحقق من اختيار شبكة واحدة على الأقل
           if [ -z "$ITEMS" ]; then

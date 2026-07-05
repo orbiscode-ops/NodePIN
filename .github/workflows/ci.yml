@@ -22,9 +22,7 @@ on:
           - repocket
           - earnapp
           - bitping
-          - gradient
           - proxyrack
-          - titan
           - anyone
           - urnetwork
 
@@ -279,22 +277,10 @@ jobs:
           EARNAPP_UUID=${{ secrets.EARNAPP_UUID }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 13) Gradient
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          GRADIENT_EMAIL=${{ secrets.GRADIENT_EMAIL }}
-          GRADIENT_PASS=${{ secrets.GRADIENT_PASS }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 14) Proxyrack
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           PROXYRACK_UUID=${{ secrets.PROXYRACK_UUID }}
           PROXYRACK_API_KEY=${{ secrets.PROXYRACK_API_KEY }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 17) Titan
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          TITAN_HASH=${{ secrets.TITAN_HASH }}
-          TITAN_URL=https://cassini.titannet.io:2345/rpc/v0
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 23) URnetwork
