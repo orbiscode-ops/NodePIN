@@ -14,11 +14,8 @@ on:
           - traffmonetizer
           - storj
           - iproyal
-          - peer2profit
           - repocket
-          - earnapp
           - proxyrack
-          - urnetwork
           - nym
       action:
         description: "الإجراء المطلوب"
@@ -53,13 +50,9 @@ jobs:
             storj)          SERVICE="storj-node" ;;
             traffmonetizer) SERVICE="traffmonetizer" ;;
             iproyal)        SERVICE="iproyal" ;;
-            peer2profit)    SERVICE="peer2profit" ;;
             repocket)       SERVICE="repocket" ;;
-            earnapp)        SERVICE="earnapp" ;;
-            bitping)        SERVICE="bitping" ;;
             proxyrack)      SERVICE="proxyrack" ;;
             anyone)         SERVICE="anyone" ;;
-            urnetwork)      SERVICE="urnetwork" ;;
             nym)            SERVICE="nym" ;;
             *)              SERVICE="" ;;
           esac

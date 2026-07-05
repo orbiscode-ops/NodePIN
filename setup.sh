@@ -215,13 +215,9 @@ validate() {
 
   [[ ",$SELECTED," == *",traffmonetizer,"* ]] && check "TRAFFMONETIZER_TOKEN"
   [[ ",$SELECTED," == *",iproyal,"*      ]] && { check "IPROYAL_EMAIL"; check "IPROYAL_PASS"; }
-  [[ ",$SELECTED," == *",peer2profit,"*  ]] && check "PEER2PROFIT_EMAIL"
   [[ ",$SELECTED," == *",repocket,"*     ]] && { check "REPOCKET_EMAIL"; check "REPOCKET_API_KEY"; }
-  [[ ",$SELECTED," == *",earnapp,"*      ]] && check "EARNAPP_UUID"
-  [[ ",$SELECTED," == *",bitping,"*      ]] && { check "BITPING_EMAIL"; check "BITPING_PASSWORD"; }
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
-  [[ ",$SELECTED," == *",urnetwork,"*    ]] && check "UR_AUTH_TOKEN"
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }

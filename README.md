@@ -72,8 +72,7 @@ make up
 |---|--------|--------------|--------|-------------------|---------|
 | 1 | **Mysterium** | `mysterium` | MYST | ✅ حية | [mysterium.network](https://mysterium.network) |
 | 2 | **Storj** | `storj` | STORJ | ✅ حية | [storj.io](https://storj.io) |
-| 3 | **Bitping** | `bitping` | NOIA | ✅ حية | [app.bitping.com](https://app.bitping.com) |
-| 5 | **URnetwork** | `urnetwork` | USDC/UR | 🔗 موقعهم | [ur.io](https://ur.io) |
+
 | 6 | **Grass** | `grass` | GRASS | 🔗 موقعهم | [app.getgrass.io](https://app.getgrass.io/register) |
 | 8 | **Nym Network** | `nym` | NYM | 🔗 موقعهم | [nymtech.net](https://nymtech.net) |
 
@@ -84,14 +83,12 @@ make up
 | 11 | **Honeygain** | `honeygain` | USD | ✅ حية | [r.honeygain.me](https://r.honeygain.me) |
 | 12 | **Traffmonetizer** | `traffmonetizer` | USD/BTC | 🔗 موقعهم | [traffmonetizer.com](https://traffmonetizer.com) |
 | 13 | **IPRoyal Pawns** | `iproyal` | USD | 🔗 موقعهم | [pawns.app](https://pawns.app) |
-| 14 | **Peer2Profit** | `peer2profit` | USD | 🔗 موقعهم | [peer2profit.com](https://peer2profit.com) |
 | 15 | **Repocket** | `repocket` | USD | 🔗 موقعهم | [repocket.co](https://link.repocket.co) |
-| 16 | **EarnApp** | `earnapp` | USD | 🔗 موقعهم | [earnapp.com](https://earnapp.com) |
 | 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,bitping,traffmonetizer,iproyal,peer2profit,repocket,earnapp,proxyrack,grass,urnetwork,nym
+> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,iproyal,repocket,proxyrack,grass,nym
 > ```
 
 ---

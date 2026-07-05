@@ -23,8 +23,6 @@ volumes:
   nodepin_control_db:
   nodepin_caddy_data:
   nodepin_caddy_config:
-  nodepin_bitping_data:
-  nodepin_urnetwork_data:
   nodepin_anyone_data:
   nodepin_nym_data:
 
@@ -146,29 +144,6 @@ services:
       com.nodepin.network: "iproyal"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 6) Peer2Profit  (profile: peer2profit)
-  #    مشاركة bandwidth — يكسب USD
-  #    ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  peer2profit:
-    image: peer2profit/peer2profit_linux:latest
-    container_name: nodepin_peer2profit
-    profiles: ["peer2profit"]
-    restart: "no"
-    environment:
-      - P2P_EMAIL=${PEER2PROFIT_EMAIL}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "peer2profit"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 7) Repocket  (profile: repocket)
@@ -213,9 +188,6 @@ services:
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
       - MYST_API_PASSWORD=${MYST_API_PASSWORD:-mystberry}
       - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
-
-      - BITPING_API_URL=${BITPING_API_URL:-http://nodepin_bitping:9090}
-      - MESON_API_URL=${MESON_API_URL:-http://nodepin_meson:19090}
       - ENABLED_NETWORKS=${ENABLED_NETWORKS:-}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
@@ -291,54 +263,6 @@ services:
       com.nodepin.network: "caddy"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 11) EarnApp (Bright Data)  (profile: earnapp)
-  #     مشاركة bandwidth — يكسب USD
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  earnapp:
-    image: mrcolorrain/earnapp:latest
-    container_name: nodepin_earnapp
-    profiles: ["earnapp"]
-    restart: "no"
-    environment:
-      - EARNAPP_UUID=${EARNAPP_UUID}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "earnapp"
-      com.centurylinklabs.watchtower.enable: "true"
-
-  # ──────────────────────────────────────────
-  # 12) Bitping  (profile: bitping)
-  #     network monitoring لامركزي — يكسب NOIA
-  #     ✅ أرباح حية عبر Bitping API
-  # ──────────────────────────────────────────
-  bitping:
-    image: bitping/bitping-node:latest
-    container_name: nodepin_bitping
-    profiles: ["bitping"]
-    restart: "no"
-    command: /bitping-node --server --email ${BITPING_EMAIL} --password ${BITPING_PASSWORD}
-    volumes:
-      - nodepin_bitping_data:/root/.bitping
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "bitping"
-      com.centurylinklabs.watchtower.enable: "true"
 
 
 
@@ -376,36 +300,6 @@ services:
   #   profiles: ["<name>"] + labels + nodepin-net
   # ═══════════════════════════════════════════
 
-  # ──────────────────────────────────────────
-  # 23) URnetwork Egress Node (profile: urnetwork)
-  #     Decentralized VPN & bandwidth-sharing network — earns USDC/UR
-  #     ❌ no local API — check dashboard at ur.io
-  # ──────────────────────────────────────────
-  urnetwork:
-    image: bringyour/community-provider:g4-latest
-    container_name: nodepin_urnetwork
-    profiles: ["urnetwork"]
-    restart: "no"
-    entrypoint: ["sh", "-c", "if [ -z \"$$UR_AUTH_TOKEN\" ] || [ \"$$UR_AUTH_TOKEN\" = \"your_ur_auth_token_here\" ]; then echo '❌ Error: UR_AUTH_TOKEN is missing or empty! Exiting...' && exit 1; fi; exec /usr/local/sbin/bringyour-provider provide"]
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    environment:
-      - UR_AUTH_TOKEN=${UR_AUTH_TOKEN}
-    volumes:
-      - nodepin_urnetwork_data:/root/.urnetwork
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "urnetwork"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 22) Anyone Protocol Relay  (profile: anyone)

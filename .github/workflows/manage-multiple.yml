@@ -20,16 +20,8 @@ on:
         description: "Anyone Protocol (ATOR)"
         type: boolean
         default: false
-      bitping:
-        description: "Bitping"
-        type: boolean
-        default: false
       traffmonetizer:
         description: "Traffmonetizer"
-        type: boolean
-        default: false
-      urnetwork:
-        description: "URnetwork (BringYour)"
         type: boolean
         default: false
       storj:
@@ -40,16 +32,8 @@ on:
         description: "IPRoyal Pawns"
         type: boolean
         default: false
-      peer2profit:
-        description: "Peer2Profit"
-        type: boolean
-        default: false
       repocket:
         description: "Repocket"
-        type: boolean
-        default: false
-      earnapp:
-        description: "EarnApp"
         type: boolean
         default: false
       proxyrack:
@@ -81,14 +65,10 @@ jobs:
           ITEMS=""
           if [ "${{ github.event.inputs.mysterium }}" = "true" ]; then ITEMS="$ITEMS mysterium:myst_client"; fi
           if [ "${{ github.event.inputs.anyone }}" = "true" ]; then ITEMS="$ITEMS anyone:anyone"; fi
-          if [ "${{ github.event.inputs.bitping }}" = "true" ]; then ITEMS="$ITEMS bitping:bitping"; fi
           if [ "${{ github.event.inputs.traffmonetizer }}" = "true" ]; then ITEMS="$ITEMS traffmonetizer:traffmonetizer"; fi
-          if [ "${{ github.event.inputs.urnetwork }}" = "true" ]; then ITEMS="$ITEMS urnetwork:urnetwork"; fi
           if [ "${{ github.event.inputs.storj }}" = "true" ]; then ITEMS="$ITEMS storj:storj-node"; fi
           if [ "${{ github.event.inputs.iproyal }}" = "true" ]; then ITEMS="$ITEMS iproyal:iproyal"; fi
-          if [ "${{ github.event.inputs.peer2profit }}" = "true" ]; then ITEMS="$ITEMS peer2profit:peer2profit"; fi
           if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
-          if [ "${{ github.event.inputs.earnapp }}" = "true" ]; then ITEMS="$ITEMS earnapp:earnapp"; fi
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
           if [ "${{ github.event.inputs.nym }}" = "true" ]; then ITEMS="$ITEMS nym:nym"; fi
 

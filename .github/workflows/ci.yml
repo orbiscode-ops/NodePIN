@@ -18,13 +18,9 @@ on:
           - storj
           - traffmonetizer
           - iproyal
-          - peer2profit
           - repocket
-          - earnapp
-          - bitping
           - proxyrack
           - anyone
-          - urnetwork
           - nym
 
 jobs:
@@ -119,13 +115,11 @@ jobs:
             HAS_STORJ=$(echo "$CHANGED"   | grep -c "services/storj"        || true)
             HAS_TM=$(echo "$CHANGED"      | grep -c "services/traffmonetizer" || true)
             HAS_IP=$(echo "$CHANGED"      | grep -c "services/iproyal"      || true)
-            HAS_P2P=$(echo "$CHANGED"     | grep -c "services/peer2profit"  || true)
             HAS_RP=$(echo "$CHANGED"      | grep -c "services/repocket"     || true)
-            HAS_BP=$(echo "$CHANGED"      | grep -c "services/bitping"      || true)
             HAS_ANY=$(echo "$CHANGED"     | grep -c "services/anyone"       || true)
             HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
 
-            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_P2P>0)+(HAS_RP>0)+(HAS_BP>0)+(HAS_ANY>0) ))
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_RP>0)+(HAS_ANY>0) ))
 
             if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
               echo "network=all" >> $GITHUB_OUTPUT
@@ -133,9 +127,7 @@ jobs:
             elif [ "$HAS_STORJ" -gt 0 ]; then echo "network=storj"          >> $GITHUB_OUTPUT
             elif [ "$HAS_TM"    -gt 0 ]; then echo "network=traffmonetizer" >> $GITHUB_OUTPUT
             elif [ "$HAS_IP"    -gt 0 ]; then echo "network=iproyal"        >> $GITHUB_OUTPUT
-            elif [ "$HAS_P2P"   -gt 0 ]; then echo "network=peer2profit"    >> $GITHUB_OUTPUT
             elif [ "$HAS_RP"    -gt 0 ]; then echo "network=repocket"       >> $GITHUB_OUTPUT
-            elif [ "$HAS_BP"    -gt 0 ]; then echo "network=bitping"        >> $GITHUB_OUTPUT
             elif [ "$HAS_ANY"   -gt 0 ]; then echo "network=anyone"         >> $GITHUB_OUTPUT
             else echo "network=all" >> $GITHUB_OUTPUT
             fi
@@ -233,12 +225,6 @@ jobs:
           ANYONE_WALLET=${{ secrets.ANYONE_WALLET }}
           ANYONE_PORT=9001
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 3) Bitping
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          BITPING_EMAIL=${{ secrets.BITPING_EMAIL }}
-          BITPING_PASSWORD=${{ secrets.BITPING_PASSWORD }}
-          BITPING_API_URL=http://nodepin_bitping:9090
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 4) Storj
@@ -262,20 +248,10 @@ jobs:
           IPROYAL_DEVICE=nodepin
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 7) Peer2Profit
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          PEER2PROFIT_EMAIL=${{ secrets.PEER2PROFIT_EMAIL }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 8) Repocket
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           REPOCKET_EMAIL=${{ secrets.REPOCKET_EMAIL }}
           REPOCKET_API_KEY=${{ secrets.REPOCKET_API_KEY }}
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 9) EarnApp
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          EARNAPP_UUID=${{ secrets.EARNAPP_UUID }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 14) Proxyrack
@@ -283,10 +259,6 @@ jobs:
           PROXYRACK_UUID=${{ secrets.PROXYRACK_UUID }}
           PROXYRACK_API_KEY=${{ secrets.PROXYRACK_API_KEY }}
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 23) URnetwork
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          UR_AUTH_TOKEN=${{ secrets.UR_AUTH_TOKEN }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 24) Nym
