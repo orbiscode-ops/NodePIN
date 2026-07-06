@@ -207,6 +207,7 @@ launch() {
     local wallet; wallet=$(get_val "ANYONE_WALLET")
     local port; port=$(get_val "ANYONE_PORT")
     local ip; ip=$(get_val "NODEPIN_VPS_IP")
+    local ipv6; ipv6=$(get_val "NODEPIN_VPS_IPV6")
     nick="${nick:-nodepin}"
     wallet="${wallet:-0x0000000000000000000000000000000000000000}"
     port="${port:-9001}"
@@ -234,6 +235,10 @@ EOF
 
     if [ "${port}" != "9001" ]; then
       echo "ORPort ${port} NoListen" >> services/anyone/anonrc
+    fi
+
+    if [ -n "${ipv6}" ] && [[ "${ipv6}" != your_* ]]; then
+      echo "ORPort [${ipv6}]:${port} NoListen" >> services/anyone/anonrc
     fi
 
     ok "Generated Anyone Protocol anonrc configuration."

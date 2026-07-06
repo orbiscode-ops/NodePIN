@@ -290,6 +290,7 @@ jobs:
               WALLET='${{ secrets.ANYONE_WALLET }}'
               PORT='${{ secrets.ANYONE_PORT }}'
               HOST='${{ secrets.VPS_HOST }}'
+              IPV6='${{ secrets.NODEPIN_VPS_IPV6 }}'
               NICK=\${NICK:-nodepin_relay}
               WALLET=\${WALLET:-0x0000000000000000000000000000000000000000}
               PORT=\${PORT:-9001}
@@ -316,6 +317,10 @@ jobs:
 
               if [ "\${PORT}" != "9001" ]; then
                 echo "ORPort \${PORT} NoListen" >> services/anyone/anonrc
+              fi
+
+              if [ -n "\${IPV6}" ] && [[ "\${IPV6}" != your_* ]]; then
+                echo "ORPort [\${IPV6}]:\${PORT} NoListen" >> services/anyone/anonrc
               fi
 
               echo '✅ anonrc generated'
