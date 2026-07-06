@@ -84,14 +84,15 @@ select_networks() {
   echo "   2) storj         (storage sharing  — earns STORJ)"
   echo "   3) nym           (mixnet node      — earns NYM)"
   echo "   4) nkn           (relayer node     — earns NKN)"
+  echo "   5) sentinel      (dVPN exit node   — earns DVPN)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
 
-  echo "   5) traffmonetizer(bandwidth sharing — earns USD)"
-  echo "   6) anyone        (onion relay      — earns ATOR/ANYONE)"
+  echo "   6) traffmonetizer(bandwidth sharing — earns USD)"
+  echo "   7) anyone        (onion relay      — earns ATOR/ANYONE)"
   echo ""
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5 6]: ")" choice
-  choice="${choice:-1 5 6}"
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 6 7]: ")" choice
+  choice="${choice:-1 6 7}"
   local nets=""
   for c in $choice; do
     case "$c" in
@@ -100,8 +101,9 @@ select_networks() {
       3)  nets="${nets}nym,";;
       4)  nets="${nets}nkn,";;
 
-      5)  nets="${nets}traffmonetizer,";;
-      6)  nets="${nets}anyone,";;
+      5)  nets="${nets}sentinel,";;
+      6)  nets="${nets}traffmonetizer,";;
+      7)  nets="${nets}anyone,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -163,6 +165,12 @@ collect_vars() {
     prompt "NKN_WALLET_PASSWORD"  "Password to encrypt the node's local wallet file" silent
   fi
 
+  if [[ ",$SELECTED," == *",sentinel,"* ]]; then
+    echo; info "Sentinel dVPN settings"
+    prompt "SENTINEL_MONIKER" "Sentinel node moniker (name)"
+    prompt "SENTINEL_PORT"    "WireGuard UDP port (default: 60299)"
+  fi
+
 }
 
 # ═══════════════════════════════════════════
@@ -188,6 +196,7 @@ validate() {
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",nkn,"*          ]] && { check "NKN_BENEFICIARY_ADDR"; check "NKN_WALLET_PASSWORD"; }
+  [[ ",$SELECTED," == *",sentinel,"*     ]] && check "SENTINEL_MONIKER"
 
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
@@ -218,6 +227,16 @@ ContactInfo @anon:${wallet}
 AgreeToTerms 1
 EOF
     ok "Generated Anyone Protocol anonrc configuration."
+  fi
+
+  if [[ ",$SELECTED," == *",sentinel,"* ]]; then
+    echo ""
+    warn "---------------------------------------------------------"
+    warn "Action Required: Initialize your Sentinel Node wallet!"
+    warn "Run: bash services/sentinel/init-node.sh"
+    warn "This will generate your config, certificates, and wallet."
+    warn "---------------------------------------------------------"
+    echo ""
   fi
 
   info "Starting NodePIN..."

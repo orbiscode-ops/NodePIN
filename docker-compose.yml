@@ -352,5 +352,36 @@ services:
       com.nodepin.network: "nkn"
       com.centurylinklabs.watchtower.enable: "true"
 
+  # ──────────────────────────────────────────
+  # Sentinel dVPN Node (profile: sentinel)
+  # ──────────────────────────────────────────
+  sentinel:
+    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
+    container_name: nodepin_sentinel
+    profiles: ["sentinel"]
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "8585:8585"
+      - "${SENTINEL_PORT:-60299}:${SENTINEL_PORT:-60299}/udp"
+    volumes:
+      - ./data/sentinel:/root/.sentinelnode
+    command: process start
+    networks:
+      - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "sentinel"
+      com.centurylinklabs.watchtower.enable: "true"
+
+
 
 

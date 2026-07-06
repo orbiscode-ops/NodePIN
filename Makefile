@@ -40,6 +40,9 @@ endif
 ifneq ($(strip $(NKN_BENEFICIARY_ADDR)),)
   PROFILE_FLAGS += --profile nkn
 endif
+ifneq ($(strip $(SENTINEL_MONIKER)),)
+  PROFILE_FLAGS += --profile sentinel
+endif
 ifneq ($(strip $(NODEPIN_DOMAIN)),)
   PROFILE_FLAGS += --profile https
 endif
