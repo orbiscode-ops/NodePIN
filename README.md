@@ -84,10 +84,11 @@ make up
 | 11 | **Honeygain** | `honeygain` | USD | ✅ حية | [r.honeygain.me](https://r.honeygain.me) |
 | 12 | **Traffmonetizer** | `traffmonetizer` | USD/BTC | 🔗 موقعهم | [traffmonetizer.com](https://traffmonetizer.com) |
 | 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
+| 19 | **BlockMesh** | `blockmesh` | POINTS | 🔗 موقعهم | [app.blockmesh.xyz](https://app.blockmesh.xyz) |
 
 > **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
 > ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,proxyrack,grass,nym,nkn
+> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,proxyrack,grass,nym,nkn,blockmesh
 > ```
 
 ---

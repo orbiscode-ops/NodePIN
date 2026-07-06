@@ -89,6 +89,7 @@ select_networks() {
 
   echo "   5) traffmonetizer(bandwidth sharing — earns USD)"
   echo "   6) anyone        (onion relay      — earns ATOR/ANYONE)"
+  echo "   7) blockmesh     (decentralized AI  — earns POINTS)"
   echo ""
   local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5 6]: ")" choice
   choice="${choice:-1 5 6}"
@@ -102,6 +103,7 @@ select_networks() {
 
       5)  nets="${nets}traffmonetizer,";;
       6)  nets="${nets}anyone,";;
+      7)  nets="${nets}blockmesh,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -163,6 +165,12 @@ collect_vars() {
     prompt "NKN_BENEFICIARY_ADDR" "NKN beneficiary wallet address (to receive rewards)"
     prompt "NKN_WALLET_PASSWORD"  "Password to encrypt the node's local wallet file" silent
   fi
+
+  if [[ ",$SELECTED," == *",blockmesh,"* ]]; then
+    echo; info "BlockMesh settings"
+    prompt "BLOCKMESH_EMAIL"    "BlockMesh email"
+    prompt "BLOCKMESH_PASSWORD" "BlockMesh password" silent
+  fi
 }
 
 # ═══════════════════════════════════════════
@@ -188,6 +196,7 @@ validate() {
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",nkn,"*          ]] && { check "NKN_BENEFICIARY_ADDR"; check "NKN_WALLET_PASSWORD"; }
+  [[ ",$SELECTED," == *",blockmesh,"*    ]] && { check "BLOCKMESH_EMAIL"; check "BLOCKMESH_PASSWORD"; }
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
 }

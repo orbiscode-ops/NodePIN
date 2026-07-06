@@ -21,6 +21,7 @@ on:
           - anyone
           - nym
           - nkn
+          - blockmesh
 
 jobs:
   # ── 1) التحقق من صحة docker compose ──
@@ -115,9 +116,10 @@ jobs:
             HAS_TM=$(echo "$CHANGED"      | grep -c "services/traffmonetizer" || true)
             HAS_ANY=$(echo "$CHANGED"     | grep -c "services/anyone"       || true)
             HAS_NKN=$(echo "$CHANGED"     | grep -c "services/nkn"          || true)
+            HAS_BM=$(echo "$CHANGED"      | grep -c "services/blockmesh"    || true)
             HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
 
-            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_ANY>0)+(HAS_NKN>0) ))
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_ANY>0)+(HAS_NKN>0)+(HAS_BM>0) ))
 
             if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
               echo "network=all" >> $GITHUB_OUTPUT
@@ -126,6 +128,7 @@ jobs:
             elif [ "$HAS_TM"    -gt 0 ]; then echo "network=traffmonetizer" >> $GITHUB_OUTPUT
             elif [ "$HAS_ANY"   -gt 0 ]; then echo "network=anyone"         >> $GITHUB_OUTPUT
             elif [ "$HAS_NKN"   -gt 0 ]; then echo "network=nkn"            >> $GITHUB_OUTPUT
+            elif [ "$HAS_BM"    -gt 0 ]; then echo "network=blockmesh"      >> $GITHUB_OUTPUT
             else echo "network=all" >> $GITHUB_OUTPUT
             fi
           fi
@@ -258,6 +261,12 @@ jobs:
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           NKN_BENEFICIARY_ADDR=${{ secrets.NKN_BENEFICIARY_ADDR }}
           NKN_WALLET_PASSWORD=${{ secrets.NKN_WALLET_PASSWORD }}
+
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # 26) BlockMesh
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          BLOCKMESH_EMAIL=${{ secrets.BLOCKMESH_EMAIL }}
+          BLOCKMESH_PASSWORD=${{ secrets.BLOCKMESH_PASSWORD }}
           ENVEOF
 
             chmod 600 .env
