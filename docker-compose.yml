@@ -288,7 +288,7 @@ services:
   #     ❌ no local API — check mixnet dashboard
   # ──────────────────────────────────────────
   nym:
-    image: nymtech/nym-node:latest
+    image: ghcr.io/nymtech/nym-node:latest
     container_name: nodepin_nym
     profiles: ["nym"]
     restart: "no"
