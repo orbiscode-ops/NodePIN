@@ -25,11 +25,11 @@ mkdir -p ./data/sentinel
 
 # 1. Initialize configuration files
 echo "Initializing Sentinel node configuration..."
-docker run --rm \
+docker run --rm --entrypoint sentinel-dvpnx \
   -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest process config init
 
-docker run --rm \
+docker run --rm --entrypoint sentinel-dvpnx \
   -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest process wireguard config init
 
@@ -64,7 +64,7 @@ echo "Generating Wallet Keys (Interactive)"
 echo "----------------------------------------------------------"
 echo "IMPORTANT: Write down your mnemonic phrase and public key!"
 echo "----------------------------------------------------------"
-docker run --rm -it \
+docker run --rm -it --entrypoint sentinel-dvpnx \
   -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest process keys add
 
