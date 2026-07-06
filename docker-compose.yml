@@ -38,6 +38,8 @@ services:
   myst_client:
     image: mysteriumnetwork/myst:latest
     container_name: nodepin_myst
+    cpus: "0.5"
+    mem_limit: "512m"
     command: --tequilapi.address=0.0.0.0 --tequilapi.port=4050 --ui.address=0.0.0.0 service --agreed-terms-and-conditions
     restart: "no"
     cap_add:
@@ -72,6 +74,8 @@ services:
     image: storjlabs/storagenode:latest
     container_name: nodepin_storj
     profiles: ["storj"]
+    cpus: "1.0"
+    mem_limit: "1g"
     restart: "no"
     environment:
       - WALLET=${STORJ_WALLET}
@@ -108,6 +112,8 @@ services:
     image: traffmonetizer/cli_v2:latest
     container_name: nodepin_traffmonetizer
     profiles: ["traffmonetizer"]
+    cpus: "0.25"
+    mem_limit: "128m"
     restart: "no"
     command: start accept --token ${TRAFFMONETIZER_TOKEN}
     networks:
@@ -131,6 +137,8 @@ services:
       context: ./services/control-panel
       dockerfile: Dockerfile
     container_name: nodepin_control_panel
+    cpus: "0.5"
+    mem_limit: "256m"
     restart: "no"
     environment:
       - PORT=${DASHBOARD_PORT:-3000}
@@ -165,6 +173,8 @@ services:
     profiles: ["watchtower"]
     image: ghcr.io/nicholas-fedor/watchtower:latest
     container_name: nodepin_watchtower
+    cpus: "0.25"
+    mem_limit: "128m"
     restart: "no"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -190,6 +200,8 @@ services:
     image: caddy:2-alpine
     container_name: nodepin_caddy
     profiles: ["https"]
+    cpus: "0.25"
+    mem_limit: "128m"
     restart: "no"
     environment:
       - NODEPIN_DOMAIN=${NODEPIN_DOMAIN}
@@ -229,6 +241,8 @@ services:
     image: proxyrack/pop:latest
     container_name: nodepin_proxyrack
     profiles: ["proxyrack"]
+    cpus: "0.25"
+    mem_limit: "256m"
     restart: "no"
     environment:
       - UUID=${PROXYRACK_UUID}
@@ -262,6 +276,8 @@ services:
     image: ghcr.io/anyone-protocol/ator-protocol:latest
     container_name: nodepin_anyone
     profiles: ["anyone"]
+    cpus: "0.5"
+    mem_limit: "768m"
     restart: "no"
     init: true
     user: "0:0"
@@ -294,8 +310,8 @@ services:
     container_name: nodepin_nym
     profiles: ["nym"]
     restart: "no"
-    cpus: "2.0"
-    mem_limit: "4g"
+    cpus: "1.0"
+    mem_limit: "1.5g"
     environment:
       - NYM_NODE_ID=${NYM_NODE_ID:-default-nym-node}
       - NODEPIN_VPS_IP=${NODEPIN_VPS_IP}
@@ -330,8 +346,8 @@ services:
     container_name: nodepin_nkn
     profiles: ["nkn"]
     restart: "no"
-    cpus: "2.0"
-    mem_limit: "4g"
+    cpus: "0.5"
+    mem_limit: "512m"
     environment:
       - NKN_BENEFICIARY_ADDR=${NKN_BENEFICIARY_ADDR}
       - NKN_WALLET_PASSWORD=${NKN_WALLET_PASSWORD}
@@ -364,6 +380,8 @@ services:
     image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
     container_name: nodepin_sentinel
     profiles: ["sentinel"]
+    cpus: "1.5"
+    mem_limit: "2g"
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
