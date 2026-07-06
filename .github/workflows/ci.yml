@@ -336,6 +336,16 @@ jobs:
             set -e
             cd ~/nodepin
 
+            # Install make if missing
+            if ! command -v make >/dev/null 2>&1; then
+              echo '📦 Installing make...'
+              if command -v apt-get >/dev/null 2>&1; then
+                apt-get update && apt-get install -y make
+              elif command -v yum >/dev/null 2>&1; then
+                yum install -y make
+              fi
+            fi
+
             echo '📥 Resetting local changes and pulling latest code...'
             git reset --hard
             git pull origin main
