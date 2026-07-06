@@ -298,6 +298,8 @@ services:
     mem_limit: "4g"
     environment:
       - NYM_NODE_ID=${NYM_NODE_ID:-default-nym-node}
+      - NODEPIN_VPS_IP=${NODEPIN_VPS_IP}
+      - NODEPIN_VPS_IPV6=${NODEPIN_VPS_IPV6:-}
     volumes:
       - nodepin_nym_data:/root/.nym
     ports:
@@ -306,7 +308,8 @@ services:
       - "${NYM_PORT_API:-8080}:8080"
     networks:
       - nodepin-net
-    command: ["run", "--mode", "mixnode", "--host", "${NODEPIN_VPS_IP}", "--http-bind-address", "0.0.0.0:8080"]
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["exec /usr/local/bin/nym-node run --mode mixnode --host 0.0.0.0 --public-ips $${NODEPIN_VPS_IP}$${NODEPIN_VPS_IPV6:+,$${NODEPIN_VPS_IPV6}} --http-bind-address 0.0.0.0:8080"]
     logging:
       driver: json-file
       options:
