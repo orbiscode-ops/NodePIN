@@ -83,27 +83,21 @@ select_networks() {
   echo "   1) mysterium     (bandwidth proxy  — earns MYST)"
   echo "   2) storj         (storage sharing  — earns STORJ)"
   echo "   3) nym           (mixnet node      — earns NYM)"
-  echo "   4) nkn           (relayer node     — earns NKN)"
-  echo "   5) sentinel      (dVPN exit node   — earns DVPN)"
+  echo "   4) sentinel      (dVPN exit node   — earns DVPN)"
   echo ""
   echo "   ── USD earning networks ─────────────────────"
-
-  echo "   6) traffmonetizer(bandwidth sharing — earns USD)"
-  echo "   7) anyone        (onion relay      — earns ATOR/ANYONE)"
+  echo "   5) traffmonetizer(bandwidth sharing — earns USD)"
   echo ""
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 6 7]: ")" choice
-  choice="${choice:-1 6 7}"
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5]: ")" choice
+  choice="${choice:-1 5}"
   local nets=""
   for c in $choice; do
     case "$c" in
       1)  nets="${nets}mysterium,";;
       2)  nets="${nets}storj,";;
       3)  nets="${nets}nym,";;
-      4)  nets="${nets}nkn,";;
-
-      5)  nets="${nets}sentinel,";;
-      6)  nets="${nets}traffmonetizer,";;
-      7)  nets="${nets}anyone,";;
+      4)  nets="${nets}sentinel,";;
+      5)  nets="${nets}traffmonetizer,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -147,22 +141,11 @@ collect_vars() {
 
 
 
-  if [[ ",$SELECTED," == *",anyone,"* ]]; then
-    echo; info "Anyone Protocol settings"
-    prompt "ANYONE_NICKNAME" "Anyone relay nickname (default: nodepin)"
-    prompt "ANYONE_WALLET"   "Anyone payout Ethereum wallet address"
-    prompt "ANYONE_PORT"     "Anyone relay ORPort (default: 9001)"
-  fi
+
 
   if [[ ",$SELECTED," == *",nym,"* ]]; then
     echo; info "Nym Network settings"
     prompt "NYM_NODE_ID" "Nym Node ID (default: default-nym-node)"
-  fi
-
-  if [[ ",$SELECTED," == *",nkn,"* ]]; then
-    echo; info "NKN settings"
-    prompt "NKN_BENEFICIARY_ADDR" "NKN beneficiary wallet address (to receive rewards)"
-    prompt "NKN_WALLET_PASSWORD"  "Password to encrypt the node's local wallet file" silent
   fi
 
   if [[ ",$SELECTED," == *",sentinel,"* ]]; then
@@ -193,8 +176,7 @@ validate() {
   [[ ",$SELECTED," == *",traffmonetizer,"* ]] && check "TRAFFMONETIZER_TOKEN"
 
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
-  [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
-  [[ ",$SELECTED," == *",nkn,"*          ]] && { check "NKN_BENEFICIARY_ADDR"; check "NKN_WALLET_PASSWORD"; }
+
 
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."
@@ -202,45 +184,7 @@ validate() {
 
 launch() {
   echo
-  if [[ ",$SELECTED," == *",anyone,"* ]]; then
-    local nick; nick=$(get_val "ANYONE_NICKNAME")
-    local wallet; wallet=$(get_val "ANYONE_WALLET")
-    local port; port=$(get_val "ANYONE_PORT")
-    local ip; ip=$(get_val "NODEPIN_VPS_IP")
-    local ipv6; ipv6=$(get_val "NODEPIN_VPS_IPV6")
-    nick="${nick:-nodepin}"
-    wallet="${wallet:-0x0000000000000000000000000000000000000000}"
-    port="${port:-9001}"
 
-    mkdir -p services/anyone
-    cat <<EOF > services/anyone/anonrc
-User anond
-DataDirectory /var/lib/anon
-ControlSocket /var/lib/anon/control
-ControlSocketsGroupWritable 1
-CookieAuthentication 1
-CookieAuthFile /var/lib/anon/control.authcookie
-CookieAuthFileGroupReadable 1
-Log notice file /var/lib/anon/notices.log
-ORPort 9001
-ExitRelay 0
-Nickname ${nick}
-ContactInfo @anon:${wallet}
-AgreeToTerms 1
-EOF
-
-    if [ -n "${ip}" ] && [[ "${ip}" != your_* ]]; then
-      echo "Address ${ip}" >> services/anyone/anonrc
-    fi
-
-    if [ "${port}" != "9001" ]; then
-      echo "ORPort ${port} NoListen" >> services/anyone/anonrc
-    fi
-
-
-
-    ok "Generated Anyone Protocol anonrc configuration."
-  fi
 
   if [[ ",$SELECTED," == *",sentinel,"* ]]; then
     echo ""

@@ -127,7 +127,6 @@ jobs:
           ANYONE_PORT=9001
 
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 4) Storj
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           STORJ_WALLET=${{ secrets.STORJ_WALLET }}
@@ -157,11 +156,6 @@ jobs:
           NYM_PORT_VERLOC=${{ secrets.NYM_PORT_VERLOC }}
           NYM_PORT_API=${{ secrets.NYM_PORT_API }}
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 25) NKN
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          NKN_BENEFICIARY_ADDR=${{ secrets.NKN_BENEFICIARY_ADDR }}
-          NKN_WALLET_PASSWORD=${{ secrets.NKN_WALLET_PASSWORD }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # Sentinel dVPN
@@ -173,13 +167,6 @@ jobs:
             echo '✅ Complete .env written from GitHub Secrets'
           "
 
-      # ══════════════════════════════════════════════════════
-      # ✨ توليد anonrc لـ Anyone Protocol
-      # ══════════════════════════════════════════════════════
-      - name: Generate Anyone Protocol anonrc
-        run: |
-          if [ -n "${{ secrets.ANYONE_WALLET }}" ]; then
-            echo "📝 Generating anonrc for Anyone Protocol..."
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
               cd ~/nodepin

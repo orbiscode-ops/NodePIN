@@ -31,14 +31,8 @@ endif
 ifneq ($(strip $(PROXYRACK_API_KEY)),)
   PROFILE_FLAGS += --profile proxyrack
 endif
-ifneq ($(strip $(ANYONE_WALLET)),)
-  PROFILE_FLAGS += --profile anyone
-endif
 ifneq ($(strip $(NYM_NODE_ID)),)
   PROFILE_FLAGS += --profile nym
-endif
-ifneq ($(strip $(NKN_BENEFICIARY_ADDR)),)
-  PROFILE_FLAGS += --profile nkn
 endif
 ifneq ($(strip $(SENTINEL_PORT)),)
   PROFILE_FLAGS += --profile sentinel

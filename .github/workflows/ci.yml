@@ -18,9 +18,7 @@ on:
           - storj
           - traffmonetizer
           - proxyrack
-          - anyone
           - nym
-          - nkn
           - sentinel
 
 jobs:
@@ -114,22 +112,18 @@ jobs:
             HAS_MYST=$(echo "$CHANGED"    | grep -c "services/mysterium"    || true)
             HAS_STORJ=$(echo "$CHANGED"   | grep -c "services/storj"        || true)
             HAS_TM=$(echo "$CHANGED"      | grep -c "services/traffmonetizer" || true)
-            HAS_ANY=$(echo "$CHANGED"     | grep -c "services/anyone"       || true)
             HAS_NYM=$(echo "$CHANGED"     | grep -c "services/nym"          || true)
-            HAS_NKN=$(echo "$CHANGED"     | grep -c "services/nkn"          || true)
             HAS_SEN=$(echo "$CHANGED"     | grep -c "services/sentinel"     || true)
             HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
 
-            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_ANY>0)+(HAS_NYM>0)+(HAS_NKN>0)+(HAS_SEN>0) ))
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_NYM>0)+(HAS_SEN>0) ))
 
             if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
               echo "network=all" >> $GITHUB_OUTPUT
             elif [ "$HAS_MYST"  -gt 0 ]; then echo "network=mysterium"      >> $GITHUB_OUTPUT
             elif [ "$HAS_STORJ" -gt 0 ]; then echo "network=storj"          >> $GITHUB_OUTPUT
             elif [ "$HAS_TM"    -gt 0 ]; then echo "network=traffmonetizer" >> $GITHUB_OUTPUT
-            elif [ "$HAS_ANY"   -gt 0 ]; then echo "network=anyone"         >> $GITHUB_OUTPUT
             elif [ "$HAS_NYM"   -gt 0 ]; then echo "network=nym"            >> $GITHUB_OUTPUT
-            elif [ "$HAS_NKN"   -gt 0 ]; then echo "network=nkn"            >> $GITHUB_OUTPUT
             elif [ "$HAS_SEN"   -gt 0 ]; then echo "network=sentinel"       >> $GITHUB_OUTPUT
             else echo "network=all" >> $GITHUB_OUTPUT
             fi
@@ -257,11 +251,6 @@ jobs:
           NYM_PORT_VERLOC=${{ secrets.NYM_PORT_VERLOC }}
           NYM_PORT_API=${{ secrets.NYM_PORT_API }}
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 25) NKN
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          NKN_BENEFICIARY_ADDR=${{ secrets.NKN_BENEFICIARY_ADDR }}
-          NKN_WALLET_PASSWORD=${{ secrets.NKN_WALLET_PASSWORD }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # Sentinel dVPN

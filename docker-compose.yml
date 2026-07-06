@@ -23,9 +23,7 @@ volumes:
   nodepin_control_db:
   nodepin_caddy_data:
   nodepin_caddy_config:
-  nodepin_anyone_data:
   nodepin_nym_data:
-  nodepin_nkn_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
@@ -267,36 +265,7 @@ services:
   # ═══════════════════════════════════════════
 
 
-  # ──────────────────────────────────────────
-  # 22) Anyone Protocol Relay  (profile: anyone)
-  #     Decentralized onion routing network — earns ANYONE
-  #     ❌ no local API — check dashboard.anyone.io
-  # ──────────────────────────────────────────
-  anyone:
-    image: ghcr.io/anyone-protocol/ator-protocol:latest
-    container_name: nodepin_anyone
-    profiles: ["anyone"]
-    cpus: "0.5"
-    mem_limit: "768m"
-    restart: "no"
-    init: true
-    user: "0:0"
-    ports:
-      - "${ANYONE_PORT:-9001}:9001"
-    volumes:
-      - nodepin_anyone_data:/var/lib/anon
-      - ./services/anyone/anonrc:/etc/anon/anonrc:ro
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "anyone"
-      com.centurylinklabs.watchtower.enable: "true"
+
 
   # ──────────────────────────────────────────
   # 24) Nym Network Node (profile: nym)
@@ -336,42 +305,7 @@ services:
       com.nodepin.network: "nym"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 25) NKN Node (profile: nkn)
-  #     Decentralized data transmission network — earns NKN
-  #     ❌ no local API — check NKN explorer
-  # ──────────────────────────────────────────
-  nkn:
-    image: nknorg/nkn:latest
-    container_name: nodepin_nkn
-    profiles: ["nkn"]
-    restart: "no"
-    cpus: "0.5"
-    mem_limit: "512m"
-    environment:
-      - NKN_BENEFICIARY_ADDR=${NKN_BENEFICIARY_ADDR}
-      - NKN_WALLET_PASSWORD=${NKN_WALLET_PASSWORD}
-    volumes:
-      - nodepin_nkn_data:/nkn/data
-      - ./services/nkn/entrypoint.sh:/entrypoint.sh
-    ports:
-      - "30001:30001"
-      - "30002:30002"
-      - "30003:30003"
-      - "30004:30004"
-      - "30005:30005"
-    networks:
-      - nodepin-net
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "nkn"
-      com.centurylinklabs.watchtower.enable: "true"
+
 
   # ──────────────────────────────────────────
   # Sentinel dVPN Node (profile: sentinel)

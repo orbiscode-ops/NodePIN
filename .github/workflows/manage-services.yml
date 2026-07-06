@@ -9,11 +9,9 @@ on:
         type: choice
         options:
           - mysterium
-          - anyone
           - traffmonetizer
           - storj
           - proxyrack
-          - nkn
           - sentinel
       action:
         description: "الإجراء المطلوب"
@@ -48,9 +46,7 @@ jobs:
             storj)          SERVICE="storj-node" ;;
             traffmonetizer) SERVICE="traffmonetizer" ;;
             proxyrack)      SERVICE="proxyrack" ;;
-            anyone)         SERVICE="anyone" ;;
             nym)            SERVICE="nym" ;;
-            nkn)            SERVICE="nkn" ;;
             sentinel)       SERVICE="sentinel" ;;
             *)              SERVICE="" ;;
           esac

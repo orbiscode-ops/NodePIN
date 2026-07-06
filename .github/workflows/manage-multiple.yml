@@ -16,10 +16,7 @@ on:
         description: "Mysterium (mystnodes)"
         type: boolean
         default: false
-      anyone:
-        description: "Anyone Protocol (ATOR)"
-        type: boolean
-        default: false
+
       traffmonetizer:
         description: "Traffmonetizer"
         type: boolean
@@ -37,10 +34,7 @@ on:
         description: "Nym Network"
         type: boolean
         default: false
-      nkn:
-        description: "NKN Network"
-        type: boolean
-        default: false
+
       sentinel:
         description: "Sentinel Network"
         type: boolean
@@ -66,13 +60,13 @@ jobs:
           # بناء قائمة الشبكات المختارة بناءً على الشيك بوكس
           ITEMS=""
           if [ "${{ github.event.inputs.mysterium }}" = "true" ]; then ITEMS="$ITEMS mysterium:myst_client"; fi
-          if [ "${{ github.event.inputs.anyone }}" = "true" ]; then ITEMS="$ITEMS anyone:anyone"; fi
+
           if [ "${{ github.event.inputs.traffmonetizer }}" = "true" ]; then ITEMS="$ITEMS traffmonetizer:traffmonetizer"; fi
           if [ "${{ github.event.inputs.storj }}" = "true" ]; then ITEMS="$ITEMS storj:storj-node"; fi
 
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
           if [ "${{ github.event.inputs.nym }}" = "true" ]; then ITEMS="$ITEMS nym:nym"; fi
-          if [ "${{ github.event.inputs.nkn }}" = "true" ]; then ITEMS="$ITEMS nkn:nkn"; fi
+
           if [ "${{ github.event.inputs.sentinel }}" = "true" ]; then ITEMS="$ITEMS sentinel:sentinel"; fi
 
           # التحقق من اختيار شبكة واحدة على الأقل
