@@ -4,7 +4,7 @@
 
 NodePIN is built to be **pluggable**: every network is a self-contained unit. Adding
 one never requires touching the core. Use `mysterium` (has a local API) or
-`honeygain` (web API) or `proxyrack` (no API) as reference examples.
+`proxyrack` (no API) as reference examples.
 
 ---
 
@@ -59,7 +59,7 @@ module.exports = { network: 'mynetwork', getMetrics };
 
 - If the network exposes a **local API**, query it with the `getJson` helper from
   `providers/http.js` and return `status: 'starting'` on timeout (see `mysterium.js`).
-- If it has a **web API** (login required), cache the JWT and query it (see `honeygain.js`).
+- If it has a **web API** (login required), you can query it by caching credentials or session headers.
 - If it has **no local API**, return `status: 'ok'`, `earnings: null`, and a
   dashboard link in `extra` (see `proxyrack.js`). Do **not** fabricate numbers.
 

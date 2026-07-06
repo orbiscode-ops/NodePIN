@@ -81,7 +81,6 @@ make up
 
 | # | الشبكة | Key في `.env` | الدفع | الأرباح في اللوحة | التسجيل |
 |---|--------|--------------|-------|-------------------|---------|
-| 11 | **Honeygain** | `honeygain` | USD | ✅ حية | [r.honeygain.me](https://r.honeygain.me) |
 | 12 | **Traffmonetizer** | `traffmonetizer` | USD/BTC | 🔗 موقعهم | [traffmonetizer.com](https://traffmonetizer.com) |
 | 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
 
