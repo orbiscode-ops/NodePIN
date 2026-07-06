@@ -291,20 +291,20 @@ jobs:
               PORT=\${PORT:-9001}
 
               cat > services/anyone/anonrc << ANONEOF
-User anond
-DataDirectory /var/lib/anon
-ControlSocket /var/lib/anon/control
-ControlSocketsGroupWritable 1
-CookieAuthentication 1
-CookieAuthFile /var/lib/anon/control.authcookie
-CookieAuthFileGroupReadable 1
-Log notice file /var/lib/anon/notices.log
-ORPort 9001
-ExitRelay 0
-Nickname \${NICK}
-ContactInfo @anon:\${WALLET}
-AgreeToTerms 1
-ANONEOF
+          User anond
+          DataDirectory /var/lib/anon
+          ControlSocket /var/lib/anon/control
+          ControlSocketsGroupWritable 1
+          CookieAuthentication 1
+          CookieAuthFile /var/lib/anon/control.authcookie
+          CookieAuthFileGroupReadable 1
+          Log notice file /var/lib/anon/notices.log
+          ORPort 9001
+          ExitRelay 0
+          Nickname \${NICK}
+          ContactInfo @anon:\${WALLET}
+          AgreeToTerms 1
+          ANONEOF
 
               if [ -n "\${HOST}" ] && [[ "\${HOST}" != your_* ]]; then
                 echo "Address \${HOST}" >> services/anyone/anonrc
