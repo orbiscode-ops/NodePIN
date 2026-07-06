@@ -309,7 +309,7 @@ services:
     networks:
       - nodepin-net
     entrypoint: ["/bin/sh", "-c"]
-    command: ["exec /usr/local/bin/nym-node run --mode mixnode --hostname $${NODEPIN_VPS_IP} --public-ips $${NODEPIN_VPS_IP}$${NODEPIN_VPS_IPV6:+,$${NODEPIN_VPS_IPV6}} --http-bind-address 0.0.0.0:8080"]
+    command: ["exec /usr/local/bin/nym-node run --mode mixnode --hostname $${NODEPIN_VPS_IP} --public-ips $${NODEPIN_VPS_IP}$${NODEPIN_VPS_IPV6:+,$${NODEPIN_VPS_IPV6}} --http-bind-address 0.0.0.0:8080 --accept-operator-terms-and-conditions"]
     logging:
       driver: json-file
       options:
