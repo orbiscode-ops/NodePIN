@@ -100,10 +100,10 @@ node --test "test/*.test.js"
 
 ## Enable it
 
-Add the network key to `ENABLED_NETWORKS` in `.env`, then `make up`.
+Add the network variables to `.env`, then run it using its profile:
 
-```
-ENABLED_NETWORKS=mysterium,storj,mynetwork
+```bash
+docker compose --profile mynetwork up -d
 ```
 
 That's it — the dashboard, isolation, Watchtower, and metrics all pick it up.

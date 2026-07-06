@@ -110,8 +110,7 @@ select_networks() {
   nets="${nets%,}"
   [ -n "$nets" ] || die "No valid network selected."
   SELECTED="$nets"
-  set_env_var "ENABLED_NETWORKS" "$SELECTED"
-  ok "Enabled networks: $SELECTED"
+  ok "Selected networks for setup: $SELECTED"
 }
 
 collect_vars() {

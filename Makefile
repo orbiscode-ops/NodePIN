@@ -20,14 +20,35 @@ include .env
 export
 endif
 
-# الشبكات المفعّلة (افتراضياً mysterium,storj)
-ENABLED_NETWORKS ?= 
-
-# حوّل "mysterium,storj" إلى "--profile mysterium --profile storj"
-comma := ,
-space := $(empty) $(empty)
-NETWORK_LIST := $(subst $(comma),$(space),$(ENABLED_NETWORKS))
-PROFILE_FLAGS := $(foreach n,$(NETWORK_LIST),--profile $(n))
+# Auto-detect profiles based on configured environment variables in .env
+PROFILE_FLAGS :=
+ifneq ($(strip $(STORJ_WALLET)),)
+  PROFILE_FLAGS += --profile storj
+endif
+ifneq ($(strip $(TRAFFMONETIZER_TOKEN)),)
+  PROFILE_FLAGS += --profile traffmonetizer
+endif
+ifneq ($(strip $(PROXYRACK_API_KEY)),)
+  PROFILE_FLAGS += --profile proxyrack
+endif
+ifneq ($(strip $(ANYONE_WALLET)),)
+  PROFILE_FLAGS += --profile anyone
+endif
+ifneq ($(strip $(NYM_NODE_ID)),)
+  PROFILE_FLAGS += --profile nym
+endif
+ifneq ($(strip $(NKN_BENEFICIARY_ADDR)),)
+  PROFILE_FLAGS += --profile nkn
+endif
+ifneq ($(strip $(BLOCKMESH_EMAIL)),)
+  PROFILE_FLAGS += --profile blockmesh
+endif
+ifneq ($(strip $(NODEPIN_DOMAIN)),)
+  PROFILE_FLAGS += --profile https
+endif
+ifneq ($(strip $(PROFILE_FLAGS)),)
+  PROFILE_FLAGS += --profile watchtower
+endif
 
 COMPOSE := docker compose $(PROFILE_FLAGS)
 
@@ -35,21 +56,20 @@ COMPOSE := docker compose $(PROFILE_FLAGS)
 
 help:
 	@echo "NodePIN — available commands:"
-	@echo "  make up       Start enabled networks: $(ENABLED_NETWORKS)"
+	@echo "  make up       Start configured networks"
 	@echo "  make down     Stop everything"
 	@echo "  make restart  Restart the stack"
 	@echo "  make logs     Follow logs"
 	@echo "  make ps       Show container status"
 	@echo "  make pull     Pull latest images"
 	@echo "  make config   Validate compose configuration"
-	@echo "  make networks Show which networks are enabled"
+	@echo "  make networks Show active profile flags"
 
 networks:
-	@echo "Enabled networks: $(ENABLED_NETWORKS)"
-	@echo "Profile flags:    $(PROFILE_FLAGS)"
+	@echo "Active profiles: $(PROFILE_FLAGS)"
 
 up:
-	@echo "▶ Starting NodePIN with networks: $(ENABLED_NETWORKS)"
+	@echo "▶ Starting NodePIN with profiles: $(PROFILE_FLAGS)"
 	$(COMPOSE) up -d
 	@echo "✔ NodePIN is up. Dashboard: http://$(NODEPIN_VPS_IP):$(or $(DASHBOARD_PORT),3000)"
 

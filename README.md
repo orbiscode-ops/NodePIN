@@ -53,9 +53,9 @@ the stack — then prints your dashboard URL.
 ```bash
 # 1) copy variables and edit them
 cp .env.example .env
-nano .env   # set ENABLED_NETWORKS, credentials, ports...
+nano .env   # set credentials, ports...
 
-# 2) run only the networks listed in ENABLED_NETWORKS
+# 2) run the stack (it will auto-detect which networks you have configured)
 make up
 
 # 3) open the dashboard
@@ -86,10 +86,7 @@ make up
 | 18 | **Proxyrack** | `proxyrack` | USD | 🔗 موقعهم | [peer.proxyrack.com](https://peer.proxyrack.com) |
 | 19 | **BlockMesh** | `blockmesh` | POINTS | 🔗 موقعهم | [app.blockmesh.xyz](https://app.blockmesh.xyz) |
 
-> **تشغيل الكل دفعة واحدة:** اكتب `all` عند سؤال `setup.sh`، أو اضبط:
-> ```
-> ENABLED_NETWORKS=mysterium,storj,honeygain,traffmonetizer,proxyrack,grass,nym,nkn,blockmesh
-> ```
+> **تشغيل الكل دفعة واحدة:** سيقوم السكربت والـ Makefile بتشغيل جميع الشبكات المهيأة تلقائياً بمجرد إدخال إعداداتها.
 
 ---
 
@@ -101,8 +98,7 @@ make up
 
 ## 🗑️ How to remove a network
 
-Delete its `service` block from `docker-compose.yml`, remove its entry from
-`ENABLED_NETWORKS` in `.env`, then:
+Delete its `service` block from `docker-compose.yml`, remove its config variables from `.env`, then:
 ```bash
 make up
 ```
@@ -127,9 +123,8 @@ A `DASHBOARD_API_KEY` is also supported for programmatic access via the
 Run the built-in **Caddy** reverse proxy for automatic TLS:
 
 1. Point `NODEPIN_DOMAIN` (DNS A record) to your server.
-2. Add `https` to `ENABLED_NETWORKS`, e.g. `ENABLED_NETWORKS=mysterium,storj,https`.
-3. Set `COOKIE_SECURE=true`.
-4. `make up` — Caddy obtains a certificate and serves the dashboard over HTTPS.
+2. Set `COOKIE_SECURE=true`.
+3. `make up` — Caddy obtains a certificate and serves the dashboard over HTTPS.
 
 ---
 

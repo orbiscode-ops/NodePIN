@@ -13,11 +13,10 @@ warn() { echo -e "${YELLOW}⚠${NC} $*"; }
 
 # حمّل .env
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
-ENABLED_NETWORKS="${ENABLED_NETWORKS:-}"
 DASHBOARD_PORT="${DASHBOARD_PORT:-3000}"
 HOST="127.0.0.1"
 
-echo "NodePIN smoke test — enabled: $ENABLED_NETWORKS"
+echo "NodePIN smoke test starting..."
 
 # 1) control panel container running
 if docker ps --format '{{.Names}}' | grep -q '^nodepin_control_panel$'; then
@@ -26,8 +25,10 @@ else
   bad "control-panel container is NOT running"
 fi
 
-# 2) each enabled network container running
-IFS=',' read -ra nets <<< "$ENABLED_NETWORKS"
+# 2) check running docker containers
+RUNNING_NETWORKS=$(docker ps --filter "label=com.nodepin.project=nodepin" --format "{{.Label \"com.nodepin.network\"}}" | grep -v "control-panel" | grep -v "watchtower" | xargs | tr ' ' ',')
+echo "Detected running networks: $RUNNING_NETWORKS"
+IFS=',' read -ra nets <<< "$RUNNING_NETWORKS"
 for n in "${nets[@]}"; do
   case "$n" in
     mysterium) cname="nodepin_myst";;

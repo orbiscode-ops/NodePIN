@@ -178,8 +178,7 @@ jobs:
       # ══════════════════════════════════════════════════════
       - name: Generate Anyone Protocol anonrc
         run: |
-          ENABLED="${{ secrets.ENABLED_NETWORKS }}"
-          if echo "$ENABLED" | grep -q "anyone"; then
+          if [ -n "${{ secrets.ANYONE_WALLET }}" ]; then
             echo "📝 Generating anonrc for Anyone Protocol..."
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
@@ -209,7 +208,7 @@ jobs:
               echo '✅ anonrc generated'
             "
           else
-            echo "ℹ️  Anyone not in ENABLED_NETWORKS — skipping anonrc"
+            echo "ℹ️  Anyone wallet not configured — skipping anonrc"
           fi
 
       # ── إنشاء مجلدات التخزين ──
@@ -226,18 +225,8 @@ jobs:
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             set -e
             cd ~/nodepin
-
-            ENABLED=\$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
-
-            if [ -z \"\$ENABLED\" ]; then
-              echo 'ℹ️  No ENABLED_NETWORKS — starting control-panel only'
-              docker compose --profile https up -d control-panel watchtower caddy
-            else
-              PROFILE_FLAGS=\$(echo \"\$ENABLED\" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
-              echo \"🚀 Starting with profiles: \$PROFILE_FLAGS --profile https\"
-              docker compose \$PROFILE_FLAGS --profile https up -d --build
-            fi
-
+            echo '🚀 Starting all configured networks...'
+            make up
             echo '📊 Status:'
             docker compose ps
           "
@@ -248,7 +237,6 @@ jobs:
           echo "✅ Bootstrap complete!"
           echo ""
           echo "📋 .env was auto-generated from GitHub Secrets"
-          echo "🔐 Enabled networks: ${{ secrets.ENABLED_NETWORKS }}"
           echo ""
           echo "افتح لوحة التحكم:"
-          echo "👉 https://${{ secrets.NODEPIN_DOMAIN }}/"
+          echo "👉 http://${{ secrets.NODEPIN_VPS_IP }}:3000/"

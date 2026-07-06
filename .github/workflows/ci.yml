@@ -187,8 +187,6 @@ jobs:
           # ── Project Isolation ──
           COMPOSE_PROJECT_NAME=nodepin
 
-          # ── Network Selection ──
-          ENABLED_NETWORKS=${{ secrets.ENABLED_NETWORKS }}
 
           # ── Global ──
           NODEPIN_VPS_IP=${{ secrets.VPS_HOST }}
@@ -278,8 +276,7 @@ jobs:
       # ══════════════════════════════════════════════════════
       - name: Generate Anyone Protocol anonrc
         run: |
-          ENABLED="${{ secrets.ENABLED_NETWORKS }}"
-          if echo "$ENABLED" | grep -q "anyone"; then
+          if [ -n "${{ secrets.ANYONE_WALLET }}" ]; then
             echo "📝 Generating anonrc for Anyone Protocol..."
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
               set -e
@@ -309,7 +306,7 @@ jobs:
               echo '✅ anonrc generated'
             "
           else
-            echo "ℹ️  Anyone not in ENABLED_NETWORKS — skipping anonrc generation"
+            echo "ℹ️  Anyone wallet not configured — skipping anonrc generation"
           fi
 
       - name: Deploy
@@ -326,16 +323,9 @@ jobs:
             echo '🔨 Rebuilding control-panel image...'
             docker compose build --no-cache control-panel
 
-            if [ '$NETWORK' = 'all' ]; then
-              echo '🚀 Deploying all networks...'
-              ENABLED=\$(grep '^ENABLED_NETWORKS=' .env 2>/dev/null | cut -d= -f2-)
-              if [ -z \"\$ENABLED\" ]; then
-                echo 'ℹ️  No ENABLED_NETWORKS — starting control-panel + watchtower'
-                docker compose up -d control-panel watchtower
-              else
-                PROFILE_FLAGS=\$(echo \"\$ENABLED\" | tr ',' '\n' | sed 's/^/--profile /' | tr '\n' ' ')
-                docker compose \$PROFILE_FLAGS up -d --build
-              fi
+            if [ "$NETWORK" = "all" ]; then
+              echo "🚀 Deploying all networks..."
+              make up
             else
               echo '🚀 Deploying: $NETWORK'
               docker compose --profile $NETWORK pull

@@ -2,12 +2,12 @@
 # NodePIN — Decentralized Node Earning Orchestrator
 #
 # عزل: كل الموارد تبدأ بـ nodepin ولا تتعارض مع مشاريع أخرى.
-# اختيار الشبكات: تُتحكم عبر profiles + ENABLED_NETWORKS في .env.
-#
-# كيف تضيف أو تحذف شبكة؟
-#   1. أضف service جديد أسفل هذه القائمة مع profiles: [<name>].
-#   2. أنشئ مجلد خاص تحت services/
-#   3. أضف متغيراته في .env.example و .env، وأضف اسمه في ENABLED_NETWORKS.
+# اختيار الشبكات: تُتحكم عبر profiles.
+# 
+# لإضافة شبكة جديدة:
+#   1. أضف الـ Service في هذا الملف مع تحديد الـ profile والـ labels والـ logging.
+#   2. أضف التوثيق في docs/adding-a-network.md.
+#   3. أضف متغيراته في .env.example و .env.
 # ═══════════════════════════════════════════
 
 # ━━━━━━━━━━━ NETWORKS ━━━━━━━━━━━
@@ -141,7 +141,6 @@ services:
       - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
       - MYST_API_PASSWORD=${MYST_API_PASSWORD:-mystberry}
       - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
-      - ENABLED_NETWORKS=${ENABLED_NETWORKS:-}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
