@@ -29,7 +29,7 @@ docker run --rm -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest init \
   --node.moniker "$MONIKER" \
   --node.service-type "wireguard" \
-  --node.remote-addrs "${NODEPIN_VPS_IP:-127.0.0.1}:37703" \
+  --node.remote-addrs "${NODEPIN_VPS_IP:-127.0.0.1}" \
   --keyring.backend "test"
 
 # 2. Generate wallet keys
