@@ -319,9 +319,7 @@ jobs:
                 echo "ORPort \${PORT} NoListen" >> services/anyone/anonrc
               fi
 
-              if [ -n "\${IPV6}" ] && [[ "\${IPV6}" != your_* ]]; then
-                echo "ORPort [\${IPV6}]:\${PORT} NoListen" >> services/anyone/anonrc
-              fi
+
 
               echo '✅ anonrc generated'
             "

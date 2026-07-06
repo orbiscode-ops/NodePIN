@@ -237,9 +237,7 @@ EOF
       echo "ORPort ${port} NoListen" >> services/anyone/anonrc
     fi
 
-    if [ -n "${ipv6}" ] && [[ "${ipv6}" != your_* ]]; then
-      echo "ORPort [${ipv6}]:${port} NoListen" >> services/anyone/anonrc
-    fi
+
 
     ok "Generated Anyone Protocol anonrc configuration."
   fi
