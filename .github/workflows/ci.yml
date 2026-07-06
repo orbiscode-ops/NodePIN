@@ -343,7 +343,7 @@ jobs:
             else
               echo '🚀 Deploying: $NETWORK'
               docker compose --profile $NETWORK pull
-              docker compose --profile $NETWORK up -d
+              docker compose --profile $NETWORK up -d --build
             fi
 
             echo '🔄 Restarting control-panel...'
