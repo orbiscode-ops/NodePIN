@@ -15,7 +15,6 @@ on:
           - proxyrack
           - nym
           - nkn
-          - blockmesh
       action:
         description: "الإجراء المطلوب"
         required: true
@@ -52,7 +51,6 @@ jobs:
             anyone)         SERVICE="anyone" ;;
             nym)            SERVICE="nym" ;;
             nkn)            SERVICE="nkn" ;;
-            blockmesh)      SERVICE="blockmesh" ;;
             *)              SERVICE="" ;;
           esac
 

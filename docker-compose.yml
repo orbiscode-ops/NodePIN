@@ -352,33 +352,5 @@ services:
       com.nodepin.network: "nkn"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 26) BlockMesh Node (profile: blockmesh)
-  #     Decentralized AI & bandwidth sharing — earns POINTS
-  #     ❌ no local API — check BlockMesh dashboard
-  # ──────────────────────────────────────────
-  blockmesh:
-    build:
-      context: ./services/blockmesh
-      dockerfile: Dockerfile
-    container_name: nodepin_blockmesh
-    profiles: ["blockmesh"]
-    restart: "no"
-    cpus: "0.5"
-    mem_limit: "256m"
-    environment:
-      - BLOCKMESH_EMAIL=${BLOCKMESH_EMAIL}
-      - BLOCKMESH_PASSWORD=${BLOCKMESH_PASSWORD}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "blockmesh"
-      com.centurylinklabs.watchtower.enable: "true"
 
 

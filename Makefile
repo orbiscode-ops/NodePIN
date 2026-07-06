@@ -40,9 +40,6 @@ endif
 ifneq ($(strip $(NKN_BENEFICIARY_ADDR)),)
   PROFILE_FLAGS += --profile nkn
 endif
-ifneq ($(strip $(BLOCKMESH_EMAIL)),)
-  PROFILE_FLAGS += --profile blockmesh
-endif
 ifneq ($(strip $(NODEPIN_DOMAIN)),)
   PROFILE_FLAGS += --profile https
 endif
