@@ -373,8 +373,8 @@ services:
       - "8585:8585"
       - "${SENTINEL_PORT:-60299}:${SENTINEL_PORT:-60299}/udp"
     volumes:
-      - ./data/sentinel:/root/.sentinelnode
-    command: process start
+      - ./data/sentinel:/root/.sentinel-dvpnx
+    command: start
     networks:
       - nodepin-net
     logging:

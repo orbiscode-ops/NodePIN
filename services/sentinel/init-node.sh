@@ -25,7 +25,7 @@ mkdir -p ./data/sentinel
 
 # 1. Initialize configuration and certificates
 echo "Initializing Sentinel node configuration and TLS certificates..."
-docker run --rm -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
+docker run --rm -v "$(pwd)/data/sentinel:/root/.sentinel-dvpnx" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest init \
   --node.moniker "$MONIKER" \
   --node.service-type "wireguard" \
@@ -39,7 +39,7 @@ echo "Generating Wallet Keys (Interactive)"
 echo "----------------------------------------------------------"
 echo "IMPORTANT: Write down your mnemonic phrase and public key!"
 echo "----------------------------------------------------------"
-docker run --rm -it -v "$(pwd)/data/sentinel:/root/.sentinelnode" \
+docker run --rm -it -v "$(pwd)/data/sentinel:/root/.sentinel-dvpnx" \
   ghcr.io/sentinel-official/sentinel-dvpnx:latest keys add main \
   --keyring.backend "test"
 
