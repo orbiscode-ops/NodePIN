@@ -205,8 +205,11 @@ launch() {
   if [[ ",$SELECTED," == *",anyone,"* ]]; then
     local nick; nick=$(get_val "ANYONE_NICKNAME")
     local wallet; wallet=$(get_val "ANYONE_WALLET")
+    local port; port=$(get_val "ANYONE_PORT")
+    local ip; ip=$(get_val "NODEPIN_VPS_IP")
     nick="${nick:-nodepin}"
     wallet="${wallet:-0x0000000000000000000000000000000000000000}"
+    port="${port:-9001}"
 
     mkdir -p services/anyone
     cat <<EOF > services/anyone/anonrc
@@ -224,6 +227,15 @@ Nickname ${nick}
 ContactInfo @anon:${wallet}
 AgreeToTerms 1
 EOF
+
+    if [ -n "${ip}" ] && [[ "${ip}" != your_* ]]; then
+      echo "Address ${ip}" >> services/anyone/anonrc
+    fi
+
+    if [ "${port}" != "9001" ]; then
+      echo "ORPort ${port} NoListen" >> services/anyone/anonrc
+    fi
+
     ok "Generated Anyone Protocol anonrc configuration."
   fi
 
