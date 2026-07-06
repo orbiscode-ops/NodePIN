@@ -122,54 +122,6 @@ services:
       com.nodepin.network: "traffmonetizer"
       com.centurylinklabs.watchtower.enable: "true"
 
-  # ──────────────────────────────────────────
-  # 5) IPRoyal Pawns  (profile: iproyal)
-  #    مشاركة bandwidth — يكسب USD
-  #    ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  iproyal:
-    image: iproyal/pawns-cli:latest
-    container_name: nodepin_iproyal
-    profiles: ["iproyal"]
-    restart: "no"
-    command: -accept-tos -email=${IPROYAL_EMAIL} -password=${IPROYAL_PASS} -device-name=${IPROYAL_DEVICE:-nodepin} -traffic-limit=0
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "iproyal"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-  # ──────────────────────────────────────────
-  # 7) Repocket  (profile: repocket)
-  #    مشاركة bandwidth — يكسب USD
-  #    ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  repocket:
-    image: repocket/repocket:latest
-    container_name: nodepin_repocket
-    profiles: ["repocket"]
-    restart: "no"
-    environment:
-      - RP_EMAIL=${REPOCKET_EMAIL}
-      - RP_API_KEY=${REPOCKET_API_KEY}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "repocket"
-      com.centurylinklabs.watchtower.enable: "true"
 
   # ──────────────────────────────────────────
   # 8) Control Panel — دائماً يعمل (بدون profile)

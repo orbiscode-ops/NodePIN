@@ -88,12 +88,10 @@ select_networks() {
   echo "   ── USD earning networks ─────────────────────"
 
   echo "   5) traffmonetizer(bandwidth sharing — earns USD)"
-  echo "   6) iproyal       (bandwidth sharing — earns USD)"
-  echo "   7) repocket      (bandwidth sharing — earns USD)"
-  echo "   8) anyone        (onion relay      — earns ATOR/ANYONE)"
+  echo "   6) anyone        (onion relay      — earns ATOR/ANYONE)"
   echo ""
-  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5 8]: ")" choice
-  choice="${choice:-1 5 8}"
+  local choice; read -r -p "$(echo -e "${CYAN}?${NC} Selection [default: 1 5 6]: ")" choice
+  choice="${choice:-1 5 6}"
   local nets=""
   for c in $choice; do
     case "$c" in
@@ -103,9 +101,7 @@ select_networks() {
       4)  nets="${nets}nkn,";;
 
       5)  nets="${nets}traffmonetizer,";;
-      6)  nets="${nets}iproyal,";;
-      7)  nets="${nets}repocket,";;
-      8)  nets="${nets}anyone,";;
+      6)  nets="${nets}anyone,";;
       *) warn "Ignoring unknown option: $c";;
     esac
   done
@@ -148,17 +144,7 @@ collect_vars() {
     prompt "TRAFFMONETIZER_TOKEN" "Traffmonetizer token (from dashboard)"
   fi
 
-  if [[ ",$SELECTED," == *",iproyal,"* ]]; then
-    echo; info "IPRoyal Pawns settings"
-    prompt "IPROYAL_EMAIL" "IPRoyal email"
-    prompt "IPROYAL_PASS"  "IPRoyal password" silent
-  fi
 
-  if [[ ",$SELECTED," == *",repocket,"* ]]; then
-    echo; info "Repocket settings"
-    prompt "REPOCKET_EMAIL"   "Repocket email"
-    prompt "REPOCKET_API_KEY" "Repocket API key"
-  fi
 
   if [[ ",$SELECTED," == *",anyone,"* ]]; then
     echo; info "Anyone Protocol settings"
@@ -198,8 +184,7 @@ validate() {
   [[ ",$SELECTED," == *",storj,"*        ]] && { check "STORJ_WALLET"; check "STORJ_EMAIL"; }
 
   [[ ",$SELECTED," == *",traffmonetizer,"* ]] && check "TRAFFMONETIZER_TOKEN"
-  [[ ",$SELECTED," == *",iproyal,"*      ]] && { check "IPROYAL_EMAIL"; check "IPROYAL_PASS"; }
-  [[ ",$SELECTED," == *",repocket,"*     ]] && { check "REPOCKET_EMAIL"; check "REPOCKET_API_KEY"; }
+
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",nkn,"*          ]] && { check "NKN_BENEFICIARY_ADDR"; check "NKN_WALLET_PASSWORD"; }

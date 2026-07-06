@@ -17,8 +17,6 @@ on:
           - mysterium
           - storj
           - traffmonetizer
-          - iproyal
-          - repocket
           - proxyrack
           - anyone
           - nym
@@ -115,21 +113,17 @@ jobs:
             HAS_MYST=$(echo "$CHANGED"    | grep -c "services/mysterium"    || true)
             HAS_STORJ=$(echo "$CHANGED"   | grep -c "services/storj"        || true)
             HAS_TM=$(echo "$CHANGED"      | grep -c "services/traffmonetizer" || true)
-            HAS_IP=$(echo "$CHANGED"      | grep -c "services/iproyal"      || true)
-            HAS_RP=$(echo "$CHANGED"      | grep -c "services/repocket"     || true)
             HAS_ANY=$(echo "$CHANGED"     | grep -c "services/anyone"       || true)
             HAS_NKN=$(echo "$CHANGED"     | grep -c "services/nkn"          || true)
             HAS_CORE=$(echo "$CHANGED"    | grep -cE "services/control-panel|docker-compose|Makefile|\.env\.example" || true)
 
-            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_IP>0)+(HAS_RP>0)+(HAS_ANY>0)+(HAS_NKN>0) ))
+            NET_COUNT=$(( (HAS_MYST>0)+(HAS_STORJ>0)+(HAS_TM>0)+(HAS_ANY>0)+(HAS_NKN>0) ))
 
             if [ "$HAS_CORE" -gt 0 ] || [ "$NET_COUNT" -gt 1 ]; then
               echo "network=all" >> $GITHUB_OUTPUT
             elif [ "$HAS_MYST"  -gt 0 ]; then echo "network=mysterium"      >> $GITHUB_OUTPUT
             elif [ "$HAS_STORJ" -gt 0 ]; then echo "network=storj"          >> $GITHUB_OUTPUT
             elif [ "$HAS_TM"    -gt 0 ]; then echo "network=traffmonetizer" >> $GITHUB_OUTPUT
-            elif [ "$HAS_IP"    -gt 0 ]; then echo "network=iproyal"        >> $GITHUB_OUTPUT
-            elif [ "$HAS_RP"    -gt 0 ]; then echo "network=repocket"       >> $GITHUB_OUTPUT
             elif [ "$HAS_ANY"   -gt 0 ]; then echo "network=anyone"         >> $GITHUB_OUTPUT
             elif [ "$HAS_NKN"   -gt 0 ]; then echo "network=nkn"            >> $GITHUB_OUTPUT
             else echo "network=all" >> $GITHUB_OUTPUT
@@ -243,18 +237,6 @@ jobs:
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           TRAFFMONETIZER_TOKEN=${{ secrets.TRAFFMONETIZER_TOKEN }}
 
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 6) IPRoyal Pawns
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          IPROYAL_EMAIL=${{ secrets.IPROYAL_EMAIL }}
-          IPROYAL_PASS=${{ secrets.IPROYAL_PASS }}
-          IPROYAL_DEVICE=nodepin
-
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          # 8) Repocket
-          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          REPOCKET_EMAIL=${{ secrets.REPOCKET_EMAIL }}
-          REPOCKET_API_KEY=${{ secrets.REPOCKET_API_KEY }}
 
           # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           # 14) Proxyrack

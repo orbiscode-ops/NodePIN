@@ -12,8 +12,6 @@ on:
           - anyone
           - traffmonetizer
           - storj
-          - iproyal
-          - repocket
           - proxyrack
           - nym
           - nkn
@@ -49,8 +47,6 @@ jobs:
             mysterium)      SERVICE="myst_client" ;;
             storj)          SERVICE="storj-node" ;;
             traffmonetizer) SERVICE="traffmonetizer" ;;
-            iproyal)        SERVICE="iproyal" ;;
-            repocket)       SERVICE="repocket" ;;
             proxyrack)      SERVICE="proxyrack" ;;
             anyone)         SERVICE="anyone" ;;
             nym)            SERVICE="nym" ;;

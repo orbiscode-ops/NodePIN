@@ -28,14 +28,7 @@ on:
         description: "Storj"
         type: boolean
         default: false
-      iproyal:
-        description: "IPRoyal Pawns"
-        type: boolean
-        default: false
-      repocket:
-        description: "Repocket"
-        type: boolean
-        default: false
+
       proxyrack:
         description: "Proxyrack"
         type: boolean
@@ -71,8 +64,7 @@ jobs:
           if [ "${{ github.event.inputs.anyone }}" = "true" ]; then ITEMS="$ITEMS anyone:anyone"; fi
           if [ "${{ github.event.inputs.traffmonetizer }}" = "true" ]; then ITEMS="$ITEMS traffmonetizer:traffmonetizer"; fi
           if [ "${{ github.event.inputs.storj }}" = "true" ]; then ITEMS="$ITEMS storj:storj-node"; fi
-          if [ "${{ github.event.inputs.iproyal }}" = "true" ]; then ITEMS="$ITEMS iproyal:iproyal"; fi
-          if [ "${{ github.event.inputs.repocket }}" = "true" ]; then ITEMS="$ITEMS repocket:repocket"; fi
+
           if [ "${{ github.event.inputs.proxyrack }}" = "true" ]; then ITEMS="$ITEMS proxyrack:proxyrack"; fi
           if [ "${{ github.event.inputs.nym }}" = "true" ]; then ITEMS="$ITEMS nym:nym"; fi
           if [ "${{ github.event.inputs.nkn }}" = "true" ]; then ITEMS="$ITEMS nkn:nkn"; fi
