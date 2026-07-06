@@ -167,7 +167,6 @@ collect_vars() {
 
   if [[ ",$SELECTED," == *",sentinel,"* ]]; then
     echo; info "Sentinel dVPN settings"
-    prompt "SENTINEL_MONIKER" "Sentinel node moniker (name)"
     prompt "SENTINEL_PORT"    "WireGuard UDP port (default: 60299)"
   fi
 
@@ -196,7 +195,6 @@ validate() {
   [[ ",$SELECTED," == *",proxyrack,"*    ]] && check "PROXYRACK_API_KEY"
   [[ ",$SELECTED," == *",anyone,"*       ]] && check "ANYONE_WALLET"
   [[ ",$SELECTED," == *",nkn,"*          ]] && { check "NKN_BENEFICIARY_ADDR"; check "NKN_WALLET_PASSWORD"; }
-  [[ ",$SELECTED," == *",sentinel,"*     ]] && check "SENTINEL_MONIKER"
 
   [ "$missing" -eq 0 ] || die "Fix the values above in $ENV_FILE (or re-run setup) and try again."
   ok "All required values present."

@@ -10,7 +10,7 @@ elif [ -f ../../.env ]; then
   export $(grep -v '^#' ../../.env | xargs)
 fi
 
-MONIKER=${SENTINEL_MONIKER:-"NodePIN-dVPN"}
+MONIKER="nodepin_dvpn"
 PORT=${SENTINEL_PORT:-60299}
 
 echo "=========================================================="
