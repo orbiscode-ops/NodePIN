@@ -279,8 +279,7 @@ services:
     container_name: nodepin_nym
     profiles: ["nym"]
     restart: "no"
-    cpus: "2.0"
-    mem_limit: "4g"
+
     environment:
       - NYM_NODE_ID=${NYM_NODE_ID:-default-nym-node}
       - NODEPIN_VPS_IP=${NODEPIN_VPS_IP}
