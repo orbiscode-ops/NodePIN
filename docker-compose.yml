@@ -322,7 +322,7 @@ services:
       - /dev/net/tun:/dev/net/tun
     ports:
       - "8585:8585"
-      - "${SENTINEL_PORT:-60299}:${SENTINEL_PORT:-60299}/udp"
+      - "${SENTINEL_PORT:-23501}:${SENTINEL_PORT:-23501}/udp"
     volumes:
       - ./data/sentinel:/root/.sentinel-dvpnx
     command: start
