@@ -338,6 +338,39 @@ services:
       com.nodepin.network: "sentinel"
       com.centurylinklabs.watchtower.enable: "true"
 
+  # ──────────────────────────────────────────
+  # Sentinel dVPN V2Ray Node (profile: sentinel)
+  # ──────────────────────────────────────────
+  sentinel_v2ray:
+    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
+    container_name: nodepin_sentinel_v2ray
+    profiles: ["sentinel"]
+    cpus: "1.0"
+    mem_limit: "512m"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "8586:8586"
+      - "23502:23502/tcp"
+      - "23502:23502/udp"
+    volumes:
+      - ./data/sentinel_v2ray:/root/.sentinel-dvpnx
+    command: start
+    networks:
+      - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "sentinel_v2ray"
+      com.centurylinklabs.watchtower.enable: "true"
+
 
 
 
