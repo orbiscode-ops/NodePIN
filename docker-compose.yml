@@ -354,8 +354,8 @@ services:
       - /dev/net/tun:/dev/net/tun
     ports:
       - "8586:8586"
-      - "23502:23502/tcp"
-      - "23502:23502/udp"
+      - "1447:1447/tcp"
+      - "3738:3738/tcp"
     volumes:
       - ./data/sentinel_v2ray:/root/.sentinel-dvpnx
     command: start
