@@ -374,3 +374,35 @@ services:
 
 
 
+
+  # ──────────────────────────────────────────
+  # Sentinel dVPN OpenVPN Node (profile: sentinel)
+  # ──────────────────────────────────────────
+  sentinel_openvpn:
+    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
+    container_name: nodepin_sentinel_openvpn
+    profiles: ["sentinel"]
+    cpus: "1.0"
+    mem_limit: "512m"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "56783:56783"
+      - "12996:12996/tcp"
+    volumes:
+      - ./data/sentinel_openvpn:/root/.sentinel-dvpnx
+    command: start
+    networks:
+      - nodepin-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+    labels:
+      com.nodepin.project: "nodepin"
+      com.nodepin.network: "sentinel_openvpn"
+      com.centurylinklabs.watchtower.enable: "true"
