@@ -280,7 +280,7 @@ async function loadContainers() {
       </div>
     `).join('');
   } catch(e) {
-    el.innerHTML = `<div class="placeholder" style="color:var(--red)">فشل تحميل الحاويات: ${e.message}</div>`;
+    el.innerHTML = `<div class="placeholder" style="color:var(--red)">⚠️ خطأ في الاتصال بالخادم. يرجى التأكد من تشغيل الـ API في السيرفر وإعدادات الـ IP. (${e.message})</div>`;
   }
 }
 
@@ -354,7 +354,7 @@ async function loadMetrics() {
       `;
     }).join('');
   } catch(e) {
-    el.innerHTML = `<div class="placeholder" style="color:var(--red)">فشل تحميل المقاييس: ${e.message}</div>`;
+    el.innerHTML = `<div class="placeholder" style="color:var(--red)">⚠️ خطأ في الاتصال بالخادم لجلب بيانات النودات. (${e.message})</div>`;
   }
 }
 
