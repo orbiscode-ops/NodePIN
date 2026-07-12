@@ -165,7 +165,11 @@
 
 <header>
   <div class="logo">Node<span>PIN</span> <span style="font-size:.75rem;color:var(--muted);font-weight:400">Dashboard</span></div>
-  <div class="header-right">
+  <div class="header-right" style="display:flex; align-items:center; gap:0.5rem;">
+    <select id="server-select" class="inline-input" style="width:180px;" onchange="selectServer(this.value)">
+      <option value="">-- اختر خادماً --</option>
+    </select>
+    <button class="btn btn-ghost" style="padding:0.4rem 0.6rem;" onclick="promptAddServer()">+ خادم جديد</button>
     <span id="last-update"></span>
     <button class="btn" onclick="refreshAll()">⟳ تحديث</button>
     <button class="btn btn-ghost" id="logout-btn" onclick="doLogout()">خروج</button>
@@ -193,12 +197,56 @@
 <script>
 // ── helpers ──────────────────────────────────────────
 async function apiFetch(url, options = {}) {
+  const activeServer = localStorage.getItem('nodepin_active_server');
+  if (activeServer) {
+    options.headers = options.headers || {};
+    options.headers['x-vps-host'] = activeServer;
+  }
   const res = await fetch(url, options);
   if (res.status === 401) {
     window.location.href = '/login.html';
     throw new Error('Unauthorized');
   }
   return res;
+}
+
+function getActiveServer() {
+  return localStorage.getItem('nodepin_active_server');
+}
+
+function loadServersList() {
+  const select = document.getElementById('server-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- اختر خادماً --</option>';
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  servers.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.ip;
+    opt.textContent = `${s.name} (${s.ip})`;
+    select.appendChild(opt);
+  });
+  const active = localStorage.getItem('nodepin_active_server');
+  if (active) {
+    select.value = active;
+  }
+}
+
+function promptAddServer() {
+  const name = prompt('أدخل اسماً للخادم (مثلاً: Germany-VPS):');
+  if (!name) return;
+  const ip = prompt('أدخل عنوان الـ IP الخاص بالخادم:');
+  if (!ip) return;
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  servers.push({ name, ip });
+  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
+  localStorage.setItem('nodepin_active_server', ip);
+  loadServersList();
+  refreshAll();
+}
+
+function selectServer(ip) {
+  localStorage.setItem('nodepin_active_server', ip);
+  refreshAll();
 }
 
 function badge(state) {
@@ -382,10 +430,21 @@ async function saveMysteriumPassword() {
 // ── main loop ─────────────────────────────────────────
 async function refreshAll() {
   document.getElementById('last-update').textContent = 'آخر تحديث: ' + ts();
+  const server = getActiveServer();
+  if (!server) {
+    document.getElementById('s-total').textContent = '0';
+    document.getElementById('s-running').textContent = '0';
+    document.getElementById('s-stopped').textContent = '0';
+    document.getElementById('s-networks').textContent = '0';
+    document.getElementById('containers').innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من القائمة بالأعلى لبدء العمل.</div>';
+    document.getElementById('metrics').innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً.</div>';
+    return;
+  }
   await Promise.all([loadContainers(), loadMetrics()]);
 }
 
 checkAuth();
+loadServersList();
 refreshAll();
 setInterval(refreshAll, 30_000);
 </script>
