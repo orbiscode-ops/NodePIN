@@ -1,6 +1,6 @@
-name: nodepin-dashboard
-main: "worker.js"
-compatibility_date: "2024-04-01"
+name = "nodepin-dashboard"
+main = "worker.js"
+compatibility_date = "2024-04-01"
 
 # Serve the static files from the public folder using Cloudflare Workers Assets
 assets = { directory = "./public" }
