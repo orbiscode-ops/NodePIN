@@ -7,16 +7,18 @@
   <style>
     :root {
       --bg:       #0b1120;
-      --surface:  #111827;
+      --surface:  #0f172a;
       --card:     #1e293b;
-      --border:   #1e3a5f;
-      --text:     #f1f5f9;
-      --muted:    #64748b;
+      --border:   #1e3a8a33;
+      --border-hover: #3b82f6aa;
+      --text:     #f8fafc;
+      --muted:    #94a3b8;
       --accent:   #38bdf8;
-      --green:    #34d399;
+      --green:    #4ade80;
       --red:      #f87171;
-      --yellow:   #fbbf24;
-      --purple:   #a78bfa;
+      --yellow:   #facc15;
+      --purple:   #c084fc;
+      --glow:     rgba(56, 189, 248, 0.05);
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -25,151 +27,243 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     /* ── Top bar ── */
     header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 2rem;
+      padding: 1.25rem 2rem;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 10;
+      backdrop-filter: blur(12px);
     }
-    .logo { font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: .5px; }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); letter-spacing: .5px; }
     .logo span { color: var(--text); }
     .header-right { display: flex; align-items: center; gap: 1rem; }
     #last-update { font-size: .8rem; color: var(--muted); }
+    
     .btn {
       background: var(--accent); color: #0b1120; border: none;
-      padding: .4rem .9rem; border-radius: 6px; font-weight: 700;
-      cursor: pointer; font-size: .85rem; transition: opacity .15s;
+      padding: .5rem 1.2rem; border-radius: 8px; font-weight: 700;
+      cursor: pointer; font-size: .85rem; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 0.4rem;
     }
-    .btn:hover { opacity: .85; }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+    .btn:active { transform: translateY(0); }
+    
     .btn-ghost {
       background: transparent; color: var(--muted); border: 1px solid var(--border);
     }
-    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+    .btn-ghost:hover {
+      color: var(--text); border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+    }
+    .btn-danger {
+      background: #7f1d1d; color: #fecaca;
+    }
+    .btn-danger:hover {
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Inline Config Input */
+    .inline-input {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.5rem 0.8rem; color: var(--text);
+      font-size: 0.85rem; outline: none; transition: all 0.2s;
+    }
+    .inline-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
 
     /* ── Layout ── */
-    main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Navigation Tabs ── */
+    .nav-tabs {
+      display: flex; gap: 0.5rem; margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;
+    }
+    .nav-tab {
+      color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 600;
+      padding: 0.6rem 1.2rem; border-radius: 8px; transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--text); background: rgba(30, 41, 59, 0.4); }
+    .nav-tab.active {
+      color: var(--accent); background: rgba(56, 189, 248, 0.08);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    /* Views container */
+    .view-container {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .view-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .view-title { font-size: 1.4rem; font-weight: 800; color: var(--text); }
 
     /* ── Summary strip ── */
     .summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem; margin-bottom: 1.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem; margin-bottom: 2rem;
     }
     .stat-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1rem 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.25rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    .stat-card .label { font-size: .75rem; color: var(--muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .5px; }
-    .stat-card .value { font-size: 1.6rem; font-weight: 700; }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-hover);
+      box-shadow: 0 10px 20px -10px rgba(56, 189, 248, 0.2);
+    }
+    .stat-card .label { font-size: .8rem; color: var(--muted); margin-bottom: .5rem; font-weight: 600; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 800; }
     .stat-card .value.green  { color: var(--green); }
     .stat-card .value.yellow { color: var(--yellow); }
     .stat-card .value.accent { color: var(--accent); }
 
     /* ── Section titles ── */
     .section-title {
-      font-size: .85rem; font-weight: 600; color: var(--muted);
+      font-size: .9rem; font-weight: 700; color: var(--muted);
       text-transform: uppercase; letter-spacing: 1px;
-      margin: 1.75rem 0 .9rem;
-      display: flex; align-items: center; gap: .5rem;
+      margin: 2rem 0 1rem;
+      display: flex; align-items: center; gap: .75rem;
     }
     .section-title::after {
       content: ''; flex: 1; height: 1px; background: var(--border);
     }
 
     /* ── Cards grid ── */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 
     .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.25rem;
-      transition: border-color .2s;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    .card:hover { border-color: var(--accent); }
+    .card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -10px rgba(0,0,0,0.3);
+    }
 
-    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
-    .card-title { font-weight: 700; font-size: 1rem; }
-    .card-subtitle { font-size: .75rem; color: var(--muted); margin-top: .15rem; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .card-title { font-weight: 800; font-size: 1.1rem; }
+    .card-subtitle { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
 
     /* Badge */
     .badge {
-      display: inline-flex; align-items: center; gap: .35rem;
-      padding: .2rem .65rem; border-radius: 999px;
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .25rem .75rem; border-radius: 999px;
       font-size: .75rem; font-weight: 700;
     }
-    .badge::before { content: '●'; font-size: .6rem; }
-    .badge.running  { background: #052e16; color: var(--green); }
-    .badge.stopped  { background: #450a0a; color: var(--red); }
-    .badge.starting { background: #1c1109; color: var(--yellow); }
-    .badge.error    { background: #3b0a0a; color: var(--red); }
-    .badge.ok       { background: #052e16; color: var(--green); }
+    .badge::before { content: '●'; font-size: .65rem; }
+    .badge.running  { background: rgba(74, 222, 128, 0.1); color: var(--green); }
+    .badge.stopped  { background: rgba(248, 113, 113, 0.1); color: var(--red); }
+    .badge.starting { background: rgba(250, 204, 21, 0.1); color: var(--yellow); }
+    .badge.error    { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+    .badge.ok       { background: rgba(74, 222, 128, 0.1); color: var(--green); }
 
     /* Rows inside card */
     .row { display: flex; justify-content: space-between; align-items: center;
-           padding: .4rem 0; border-bottom: 1px solid #1e3a5f22; font-size: .875rem; }
+           padding: .6rem 0; border-bottom: 1px solid rgba(30, 58, 138, 0.1); font-size: .9rem; }
     .row:last-child { border-bottom: none; }
     .row .key { color: var(--muted); }
-    .row .val { text-align: left; word-break: break-all; max-width: 55%; }
+    .row .val { text-align: left; word-break: break-all; max-width: 60%; font-weight: 500; }
 
     /* Earnings highlight */
     .earnings-box {
-      margin-top: .9rem; padding: .75rem; border-radius: 8px;
-      background: #0d1f11; border: 1px solid #1a3a23;
+      margin-top: 1.25rem; padding: 0.9rem; border-radius: 10px;
+      background: rgba(74, 222, 128, 0.05); border: 1px solid rgba(74, 222, 128, 0.15);
       display: flex; align-items: center; justify-content: space-between;
     }
-    .earnings-box .earn-label { font-size: .75rem; color: var(--muted); }
-    .earnings-box .earn-value { font-size: 1.25rem; font-weight: 700; color: var(--green); }
+    .earnings-box .earn-label { font-size: .8rem; color: var(--muted); }
+    .earnings-box .earn-value { font-size: 1.3rem; font-weight: 800; color: var(--green); }
 
     /* Empty / loading states */
-    .placeholder { color: var(--muted); font-size: .9rem; padding: 2rem; text-align: center; }
+    .placeholder { color: var(--muted); font-size: .95rem; padding: 3rem; text-align: center; border-radius: 16px; background: rgba(15, 23, 42, 0.3); border: 1px dashed var(--border); }
     .spinner {
-      display: inline-block; width: 18px; height: 18px;
+      display: inline-block; width: 20px; height: 20px;
       border: 2px solid var(--border); border-top-color: var(--accent);
       border-radius: 50%; animation: spin .7s linear infinite;
-      vertical-align: middle; margin-left: .4rem;
+      vertical-align: middle; margin-left: .5rem;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Footer */
-    footer {
-      text-align: center; padding: 2rem; color: var(--muted); font-size: .8rem;
-      border-top: 1px solid var(--border); margin-top: 2rem;
-    }
-
-    /* Inline Config Input */
-    .inline-input-group {
-      display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;
-    }
-    .inline-input {
-      flex: 1; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 0.35rem 0.6rem; color: var(--text);
-      font-size: 0.8rem; outline: none; transition: border-color 0.15s;
-    }
-    .inline-input:focus { border-color: var(--accent); }
-    .btn-sm {
-      padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px;
-    }
 
     /* Logout */
     #logout-btn { display: none; }
 
-    @media (max-width: 600px) {
-      header, main { padding-left: 1rem; padding-right: 1rem; }
+    /* ── Servers View Styles ── */
+    .servers-table {
+      width: 100%; border-collapse: collapse; text-align: right;
+    }
+    .servers-table th, .servers-table td {
+      padding: 1.25rem; border-bottom: 1px solid var(--border);
+    }
+    .servers-table th { color: var(--muted); font-size: 0.85rem; font-weight: 700; }
+    .servers-table tr:hover { background: rgba(30, 41, 59, 0.3); }
+    .servers-table td { font-size: 0.95rem; }
+    
+    /* ── Custom Modal Styles ── */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; transition: opacity 0.2s ease-in-out;
+    }
+    .modal-overlay.active {
+      display: flex; opacity: 1;
+    }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.25rem; width: 90%; max-width: 480px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      transform: translateY(15px); transition: transform 0.2s ease-in-out;
+    }
+    .modal-overlay.active .modal-box {
+      transform: translateY(0);
+    }
+    .modal-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--text); }
+    .modal-field { margin-bottom: 1.25rem; }
+    .modal-field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 600; }
+    .modal-field input { width: 100%; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+
+    /* Settings Group */
+    .settings-group {
+      display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px;
+    }
+
+    @media (max-width: 768px) {
+      header, main { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .header-right { flex-wrap: wrap; }
+      .nav-tabs { overflow-x: auto; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Node<span>PIN</span> <span style="font-size:.75rem;color:var(--muted);font-weight:400">Dashboard</span></div>
-  <div class="header-right" style="display:flex; align-items:center; gap:0.5rem;">
-    <select id="server-select" class="inline-input" style="width:180px;" onchange="selectServer(this.value)">
+  <div class="logo">Node<span>PIN</span> <span style="font-size:.8rem;color:var(--muted);font-weight:400">Dashboard</span></div>
+  <div class="header-right">
+    <!-- Active Server indicator -->
+    <select id="server-select" class="inline-input" style="width:180px; display:none;" onchange="selectServer(this.value)">
       <option value="">-- اختر خادماً --</option>
     </select>
-    <button class="btn btn-ghost" style="padding:0.4rem 0.6rem;" onclick="promptAddServer()">+ خادم جديد</button>
     <span id="last-update"></span>
     <button class="btn" onclick="refreshAll()">⟳ تحديث</button>
     <button class="btn btn-ghost" id="logout-btn" onclick="doLogout()">خروج</button>
@@ -177,25 +271,262 @@
 </header>
 
 <main>
-  <!-- Summary strip -->
-  <div class="summary" id="summary">
-    <div class="stat-card"><div class="label">الحاويات</div><div class="value accent" id="s-total">—</div></div>
-    <div class="stat-card"><div class="label">تعمل</div><div class="value green" id="s-running">—</div></div>
-    <div class="stat-card"><div class="label">متوقفة</div><div class="value" id="s-stopped">—</div></div>
-    <div class="stat-card"><div class="label">الشبكات المفعّلة</div><div class="value accent" id="s-networks">—</div></div>
+  <!-- Navigation bar (Client Router) -->
+  <nav class="nav-tabs">
+    <a href="#dashboard" class="nav-tab active">الرئيسية</a>
+    <a href="#servers" class="nav-tab">إدارة الخوادم</a>
+    <a href="#settings" class="nav-tab">إعدادات النودات</a>
+  </nav>
+
+  <!-- ── 1) Dashboard View ── -->
+  <div id="dashboard" class="view-container">
+    <!-- Summary strip -->
+    <div class="summary" id="summary">
+      <div class="stat-card"><div class="label">الحاويات</div><div class="value accent" id="s-total">—</div></div>
+      <div class="stat-card"><div class="label">تعمل</div><div class="value green" id="s-running">—</div></div>
+      <div class="stat-card"><div class="label">متوقفة</div><div class="value" id="s-stopped">—</div></div>
+      <div class="stat-card"><div class="label">الشبكات المفعّلة</div><div class="value accent" id="s-networks">—</div></div>
+    </div>
+
+    <!-- Active Containers Section -->
+    <div class="section-title">الحاويات النشطة</div>
+    <div id="containers" class="grid">
+      <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
+    </div>
+
+    <!-- Metrics & Wallets Section -->
+    <div class="section-title">الأرباح والشبكات</div>
+    <div id="metrics" class="grid">
+      <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
+    </div>
   </div>
 
-  <!-- Containers -->
-  <div class="section-title">الحاويات</div>
-  <div id="containers" class="grid"><div class="placeholder">جاري التحميل… <span class="spinner"></span></div></div>
+  <!-- ── 2) Servers View ── -->
+  <div id="servers" class="view-container" style="display:none;">
+    <div class="view-header">
+      <h2 class="view-title">الخوادم المضافة (VPS Servers)</h2>
+      <button class="btn" onclick="openAddServerModal()">+ إضافة خادم جديد</button>
+    </div>
+    
+    <div class="card" style="padding:0; overflow-x:auto; width:100%;">
+      <table class="servers-table">
+        <thead>
+          <tr>
+            <th>اسم السيرفر</th>
+            <th>عنوان الـ IP</th>
+            <th>حالة السيرفر</th>
+            <th style="text-align:left;">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="servers-table-body">
+          <tr>
+            <td colspan="4" class="placeholder">لا توجد خوادم مضافة حالياً. اضغط على زر الإضافة لإعداد خادمك الأول.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-  <!-- Metrics -->
-  <div class="section-title">الأرباح والشبكات</div>
-  <div id="metrics" class="grid"><div class="placeholder">جاري التحميل… <span class="spinner"></span></div></div>
+  <!-- ── 3) Settings View ── -->
+  <div id="settings" class="view-container" style="display:none;">
+    <div class="view-header">
+      <h2 class="view-title">إعدادات النودات العامة</h2>
+    </div>
+
+    <div class="card settings-group">
+      <div class="modal-field">
+        <label>تسمية النودات التلقائي (Moniker Convention)</label>
+        <input type="text" id="setting-moniker" class="inline-input" placeholder="{hostname}-{type}" value="{hostname}-{type}">
+        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">المتغيرات المتاحة: {hostname} اسم السيرفر، {type} نوع النود (wireguard, v2ray, openvpn).</span>
+      </div>
+
+      <div style="display:flex; gap:1rem;">
+        <div class="modal-field" style="flex:1;">
+          <label>منفذ WireGuard الافتراضي</label>
+          <input type="number" id="setting-port-wg" class="inline-input" value="23501">
+        </div>
+        <div class="modal-field" style="flex:1;">
+          <label>منفذ V2Ray الافتراضي</label>
+          <input type="number" id="setting-port-v2" class="inline-input" value="1447">
+        </div>
+        <div class="modal-field" style="flex:1;">
+          <label>منفذ OpenVPN الافتراضي</label>
+          <input type="number" id="setting-port-ovpn" class="inline-input" value="12996">
+        </div>
+      </div>
+
+      <div style="text-align:left; margin-top:0.5rem;">
+        <button class="btn" onclick="saveGlobalSettings()">حفظ الإعدادات</button>
+      </div>
+    </div>
+  </div>
 </main>
 
+<!-- ── Custom Beautiful Modal ── -->
+<div id="custom-modal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <h3 class="modal-title" id="modal-title">إضافة خادم جديد</h3>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-field">
+        <label for="modal-input-name">اسم الخادم</label>
+        <input type="text" id="modal-input-name" class="inline-input" placeholder="Germany-VPS">
+      </div>
+      <div class="modal-field">
+        <label for="modal-input-ip">عنوان الـ IP</label>
+        <input type="text" id="modal-input-ip" class="inline-input" placeholder="1.1.1.1">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="hideModal()">إلغاء</button>
+      <button class="btn" id="modal-btn-submit" onclick="submitAddServer()">إضافة</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ── helpers ──────────────────────────────────────────
+// ── Routing Handler ──────────────────────────────────
+function handleRoute() {
+  const hash = window.location.hash || '#dashboard';
+  
+  // Hide all views
+  document.querySelectorAll('.view-container').forEach(el => el.style.display = 'none');
+  
+  // Show active view
+  const activeView = document.querySelector(hash);
+  if (activeView) activeView.style.display = 'block';
+  
+  // Update nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.getAttribute('href') === hash);
+  });
+
+  // Refresh if going to dashboard
+  if (hash === '#dashboard') {
+    refreshAll();
+  } else if (hash === '#servers') {
+    renderServersTable();
+  } else if (hash === '#settings') {
+    loadSettingsInputs();
+  }
+}
+window.addEventListener('hashchange', handleRoute);
+
+// ── Custom Modal Handlers ────────────────────────────
+function showAddServerModal() {
+  document.getElementById('modal-input-name').value = '';
+  document.getElementById('modal-input-ip').value = '';
+  const overlay = document.getElementById('custom-modal');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('active'), 10);
+}
+
+function hideModal() {
+  const overlay = document.getElementById('custom-modal');
+  overlay.classList.remove('active');
+  setTimeout(() => overlay.style.display = 'none', 200);
+}
+
+function closeModal(e) {
+  if (e.target.id === 'custom-modal') hideModal();
+}
+
+function openAddServerModal() {
+  showAddServerModal();
+}
+
+// ── Server CRUD Operations ───────────────────────────
+function submitAddServer() {
+  const name = document.getElementById('modal-input-name').value.trim();
+  const ip = document.getElementById('modal-input-ip').value.trim();
+
+  if (!name || !ip) {
+    alert('الرجاء إدخال اسم الخادم وعنوان الـ IP');
+    return;
+  }
+
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  servers.push({ name, ip });
+  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
+  
+  // Auto activate the first added server
+  if (servers.length === 1) {
+    localStorage.setItem('nodepin_active_server', ip);
+  }
+
+  hideModal();
+  loadServersList();
+  renderServersTable();
+  refreshAll();
+}
+
+function removeServer(ip) {
+  if (!confirm('هل أنت متأكد من حذف هذا الخادم؟')) return;
+  
+  let servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  servers = servers.filter(s => s.ip !== ip);
+  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
+
+  const active = localStorage.getItem('nodepin_active_server');
+  if (active === ip) {
+    localStorage.removeItem('nodepin_active_server');
+    if (servers.length > 0) {
+      localStorage.setItem('nodepin_active_server', servers[0].ip);
+    }
+  }
+
+  loadServersList();
+  renderServersTable();
+  refreshAll();
+}
+
+function renderServersTable() {
+  const body = document.getElementById('servers-table-body');
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+
+  if (!servers.length) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="4" class="placeholder">لا توجد خوادم مضافة حالياً. اضغط على زر الإضافة لإعداد خادمك الأول.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  body.innerHTML = servers.map(s => {
+    const isActive = localStorage.getItem('nodepin_active_server') === s.ip;
+    return `
+      <tr>
+        <td style="font-weight: 700;">${s.name} ${isActive ? '<span style="color:var(--accent); font-size:0.8rem; margin-right:0.5rem;">[الخادم النشط]</span>' : ''}</td>
+        <td><code>${s.ip}</code></td>
+        <td>
+          <span class="badge ${isActive ? 'running' : 'stopped'}">${isActive ? 'نشط ومحدد' : 'متاح'}</span>
+        </td>
+        <td style="text-align:left;">
+          ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="selectServer('${s.ip}')">تحديد كنشط</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="removeServer('${s.ip}')">حذف</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ── Global Settings Handlers ─────────────────────────
+function loadSettingsInputs() {
+  document.getElementById('setting-moniker').value = localStorage.getItem('setting_moniker') || '{hostname}-{type}';
+  document.getElementById('setting-port-wg').value = localStorage.getItem('setting_port_wg') || '23501';
+  document.getElementById('setting-port-v2').value = localStorage.getItem('setting_port_v2') || '1447';
+  document.getElementById('setting-port-ovpn').value = localStorage.getItem('setting_port_ovpn') || '12996';
+}
+
+function saveGlobalSettings() {
+  localStorage.setItem('setting_moniker', document.getElementById('setting-moniker').value);
+  localStorage.setItem('setting_port_wg', document.getElementById('setting-port-wg').value);
+  localStorage.setItem('setting_port_v2', document.getElementById('setting-port-v2').value);
+  localStorage.setItem('setting_port_ovpn', document.getElementById('setting-port-ovpn').value);
+  alert('تم حفظ الإعدادات بنجاح!');
+}
+
+// ── API Fetch Wrapper ────────────────────────────────
 async function apiFetch(url, options = {}) {
   const activeServer = localStorage.getItem('nodepin_active_server');
   if (activeServer) {
@@ -217,8 +548,15 @@ function getActiveServer() {
 function loadServersList() {
   const select = document.getElementById('server-select');
   if (!select) return;
-  select.innerHTML = '<option value="">-- اختر خادماً --</option>';
+  
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  if (servers.length > 0) {
+    select.style.display = 'inline-block';
+  } else {
+    select.style.display = 'none';
+  }
+
+  select.innerHTML = '<option value="">-- اختر خادماً --</option>';
   servers.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.ip;
@@ -231,21 +569,10 @@ function loadServersList() {
   }
 }
 
-function promptAddServer() {
-  const name = prompt('أدخل اسماً للخادم (مثلاً: Germany-VPS):');
-  if (!name) return;
-  const ip = prompt('أدخل عنوان الـ IP الخاص بالخادم:');
-  if (!ip) return;
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers.push({ name, ip });
-  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
-  localStorage.setItem('nodepin_active_server', ip);
-  loadServersList();
-  refreshAll();
-}
-
 function selectServer(ip) {
   localStorage.setItem('nodepin_active_server', ip);
+  loadServersList();
+  renderServersTable();
   refreshAll();
 }
 
@@ -312,7 +639,7 @@ async function loadContainers() {
     document.getElementById('s-running').textContent = cs.filter(c=>c.state==='running').length;
     document.getElementById('s-stopped').textContent = cs.filter(c=>c.state!=='running').length;
 
-    if (!cs.length) { el.innerHTML = '<div class="placeholder">لا توجد حاويات NodePIN</div>'; return; }
+    if (!cs.length) { el.innerHTML = '<div class="placeholder">لا توجد حاويات NodePIN مضافة على هذا الخادم.</div>'; return; }
 
     el.innerHTML = cs.map(c => `
       <div class="card">
@@ -343,7 +670,7 @@ async function loadMetrics() {
 
     document.getElementById('s-networks').textContent = entries.length;
 
-    if (!entries.length) { el.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة</div>'; return; }
+    if (!entries.length) { el.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً على هذا السيرفر.</div>'; return; }
 
     el.innerHTML = entries.map(([name, info]) => {
       const x = info.extra || {};
@@ -353,30 +680,14 @@ async function loadMetrics() {
       if (name === 'mysterium') {
         const errorRow = x.message || x.error;
         extraRows = [
-          row('الخطأ', errorRow),
-          row('الهوية', x.identity ? x.identity.slice(0,16)+'…' : null),
-          row('حالة التسجيل', x.registrationStatus),
-          row('الرصيد', x.balance !== undefined ? fmt(x.balance)+' MYST (wei)' : null),
-          row('أرباح غير مستوفاة', x.earningsUnsettled !== undefined ? fmt(x.earningsUnsettled)+' wei' : null),
-          (info.status === 'error' && errorRow && errorRow.includes('403')) ? `
-            <div class="inline-input-group">
-              <input type="password" id="myst-pwd-input" class="inline-input" placeholder="أدخل كلمة مرور Mysterium">
-              <button class="btn btn-sm" onclick="saveMysteriumPassword()">حفظ</button>
-            </div>
-          ` : ''
+          row('المعرف (Identity)', x.identity),
+          row('الاسم المستعار (Moniker)', x.moniker),
+          row('المتصلين (Peers)', fmt(x.peers)),
+          row('المستهلك (Transferred)', fmtBytes(x.transferred)),
+          row('الرصيد (Balance)', x.balance),
+          row('النسخة (Version)', x.version),
+          errorRow ? `<div class="row" style="color:var(--red);font-weight:600">${errorRow}</div>` : ''
         ].join('');
-      } else if (name === 'storj') {
-        extraRows = [
-          row('Node ID', x.nodeID ? x.nodeID.slice(0,16)+'…' : null),
-          row('الإصدار', x.version),
-          row('محدّث', x.upToDate ? '✅ نعم' : x.upToDate === false ? '⚠️ لا' : null),
-          row('مساحة مستخدمة', fmtBytes(x.diskSpaceUsed)),
-          row('مساحة متاحة', fmtBytes(x.diskSpaceAvailable)),
-          row('البيانات المنقولة', fmtBytes(x.bandwidthUsed)),
-          row('الأقمار الصناعية', x.satellitesCount),
-        ].join('');
-      } else if (name === 'anyone') {
-        extraRows = x.dashboard ? row('لوحة التحكم', `<a href="${x.dashboard}" target="_blank" style="color:var(--accent)">${x.dashboard}</a>`) : '';
       } else {
         extraRows = Object.entries(x)
           .filter(([,v]) => v !== null && v !== undefined && v !== '')
@@ -388,7 +699,7 @@ async function loadMetrics() {
           <div class="card-header">
             <div>
               <div class="card-title">${name.toUpperCase()}</div>
-              <div class="card-subtitle">${info.token || ''}</div>
+              <div class="card-subtitle">${info.token || '—'}</div>
             </div>
             ${badge(info.status)}
           </div>
@@ -406,29 +717,11 @@ async function loadMetrics() {
   }
 }
 
-async function saveMysteriumPassword() {
-  const pwd = document.getElementById('myst-pwd-input').value;
-  if (!pwd) return alert('الرجاء كتابة كلمة المرور');
-  try {
-    const res = await apiFetch('/api/mysterium/password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwd })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert('تم حفظ كلمة المرور وتحديث اللوحة بنجاح!');
-      refreshAll();
-    } else {
-      alert('خطأ أثناء الحفظ: ' + data.error);
-    }
-  } catch (e) {
-    alert('فشل الاتصال: ' + e.message);
-  }
-}
-
 // ── main loop ─────────────────────────────────────────
 async function refreshAll() {
+  const activeTab = window.location.hash || '#dashboard';
+  if (activeTab !== '#dashboard') return;
+
   document.getElementById('last-update').textContent = 'آخر تحديث: ' + ts();
   const server = getActiveServer();
   if (!server) {
@@ -436,16 +729,17 @@ async function refreshAll() {
     document.getElementById('s-running').textContent = '0';
     document.getElementById('s-stopped').textContent = '0';
     document.getElementById('s-networks').textContent = '0';
-    document.getElementById('containers').innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من القائمة بالأعلى لبدء العمل.</div>';
+    document.getElementById('containers').innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من تبويب "إدارة الخوادم" لبدء العمل.</div>';
     document.getElementById('metrics').innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً.</div>';
     return;
   }
   await Promise.all([loadContainers(), loadMetrics()]);
 }
 
+// ── Initialization ────────────────────────────────────
 checkAuth();
 loadServersList();
-refreshAll();
+handleRoute();
 setInterval(refreshAll, 30_000);
 </script>
 </body>
