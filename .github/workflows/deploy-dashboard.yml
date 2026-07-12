@@ -16,6 +16,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: services/control-panel
           command: |
-            deploy services/control-panel/wrangler.toml \
-              --var DASHBOARD_API_KEY:${{ secrets.DASHBOARD_API_KEY }}
+            deploy --var DASHBOARD_API_KEY:${{ secrets.DASHBOARD_API_KEY }}
