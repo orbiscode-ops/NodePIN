@@ -190,10 +190,17 @@
   <div id="metrics" class="grid"><div class="placeholder">جاري التحميل… <span class="spinner"></span></div></div>
 </main>
 
-<footer>NodePIN — بنية node لامركزية قابلة للتوسيع 💡</footer>
-
 <script>
 // ── helpers ──────────────────────────────────────────
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    window.location.href = '/login.html';
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
 function badge(state) {
   const map = { running:'running', exited:'stopped', stopped:'stopped', starting:'starting', error:'error', ok:'running', no_identity:'stopped' };
   const cls = map[state] || 'stopped';
@@ -230,13 +237,13 @@ function ts() { return new Date().toLocaleTimeString('ar-SA'); }
 
 // ── logout ────────────────────────────────────────────
 async function doLogout() {
-  await fetch('/api/logout', { method:'POST' });
+  await apiFetch('/api/logout', { method:'POST' });
   location.reload();
 }
 
 // Check auth status to show/hide logout btn
 async function checkAuth() {
-  const r = await fetch('/api/health').catch(() => null);
+  const r = await apiFetch('/api/health').catch(() => null);
   if (r && r.ok) {
     const h = r.headers.get('x-auth-disabled');
     if (!h) document.getElementById('logout-btn').style.display = 'inline-flex';
@@ -247,7 +254,7 @@ async function checkAuth() {
 async function loadContainers() {
   const el = document.getElementById('containers');
   try {
-    const res = await fetch('/api/containers');
+    const res = await apiFetch('/api/containers');
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
     const cs = data.containers || [];
@@ -281,7 +288,7 @@ async function loadContainers() {
 async function loadMetrics() {
   const el = document.getElementById('metrics');
   try {
-    const res = await fetch('/api/metrics');
+    const res = await apiFetch('/api/metrics');
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
     const entries = Object.entries(data.nodes || {});
@@ -355,7 +362,7 @@ async function saveMysteriumPassword() {
   const pwd = document.getElementById('myst-pwd-input').value;
   if (!pwd) return alert('الرجاء كتابة كلمة المرور');
   try {
-    const res = await fetch('/api/mysterium/password', {
+    const res = await apiFetch('/api/mysterium/password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pwd })
