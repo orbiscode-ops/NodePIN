@@ -1,13 +1,5 @@
 # ═══════════════════════════════════════════
-# NodePIN — Decentralized Node Earning Orchestrator
-#
-# عزل: كل الموارد تبدأ بـ nodepin ولا تتعارض مع مشاريع أخرى.
-# اختيار الشبكات: تُتحكم عبر profiles.
-# 
-# لإضافة شبكة جديدة:
-#   1. أضف الـ Service في هذا الملف مع تحديد الـ profile والـ labels والـ logging.
-#   2. أضف التوثيق في docs/adding-a-network.md.
-#   3. أضف متغيراته في .env.example و .env.
+# NodePIN — Decentralized Sentinel Node Orchestrator
 # ═══════════════════════════════════════════
 
 # ━━━━━━━━━━━ NETWORKS ━━━━━━━━━━━
@@ -18,117 +10,14 @@ networks:
 
 # ━━━━━━━━━━━ VOLUMES ━━━━━━━━━━━
 volumes:
-  nodepin_myst_data:
-  nodepin_storj_data:
-  nodepin_control_db:
   nodepin_caddy_data:
   nodepin_caddy_config:
-  nodepin_nym_data:
 
 # ━━━━━━━━━━━ SERVICES ━━━━━━━━━━━
 services:
 
   # ──────────────────────────────────────────
-  # 1) Mysterium Network  (profile: mysterium)
-  #    نود proxy لامركزي — يكسب MYST
-  #    API محلي: TequilAPI :4050  ✅ أرباح حية
-  # ──────────────────────────────────────────
-  myst_client:
-    image: mysteriumnetwork/myst:latest
-    container_name: nodepin_myst
-    cpus: "0.5"
-    mem_limit: "512m"
-    command: --log-level=info --tequilapi.address=0.0.0.0 --tequilapi.port=4050 --ui.address=0.0.0.0 service --agreed-terms-and-conditions
-    restart: "no"
-    cap_add:
-      - NET_ADMIN
-    environment:
-      - MYST_IDENTITY_PASSPHRASE=${MYST_IDENTITY_PASSPHRASE}
-      - MYST_COUNTRY_FILTER=${MYST_COUNTRY_FILTER:-us}
-      - MYST_MAX_SESSION_MINUTES=${MYST_MAX_SESSION_MINUTES:-30}
-    volumes:
-      - nodepin_myst_data:/var/lib/mysterium-node
-    ports:
-      - "${MYST_TEQUILAPI_PORT:-4050}:4050"
-      - "${MYST_UI_PORT:-4449}:4449"
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "mysterium"
-      com.centurylinklabs.watchtower.enable: "true"
-
-  # ──────────────────────────────────────────
-  # 2) Storj Node  (profile: storj)
-  #    مشاركة تخزين لامركزي — يكسب STORJ
-  #    API محلي: storagenode :14002  ✅ أرباح حية
-  # ──────────────────────────────────────────
-  storj-node:
-    image: storjlabs/storagenode:latest
-    container_name: nodepin_storj
-    profiles: ["storj"]
-    cpus: "1.0"
-    mem_limit: "1g"
-    restart: "no"
-    environment:
-      - WALLET=${STORJ_WALLET}
-      - EMAIL=${STORJ_EMAIL}
-      - ADDRESS=${NODEPIN_VPS_IP}:${STORJ_PORT:-28967}
-      - STORAGE=${STORJ_STORAGE_SIZE:-500GB}
-      - BANDWIDTH=${STORJ_BANDWIDTH:-100TB}
-    volumes:
-      - nodepin_storj_data:/app/config
-      - /mnt/storj-storage:/app/storage
-    ports:
-      - "${STORJ_PORT:-28967}:28967/tcp"
-      - "${STORJ_PORT:-28967}:28967/udp"
-      - "${STORJ_DASHBOARD_PORT:-14002}:14002"
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "storj"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-  # ──────────────────────────────────────────
-  # 4) Traffmonetizer  (profile: traffmonetizer)
-  #    مشاركة bandwidth — يكسب USD
-  #    ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  traffmonetizer:
-    image: traffmonetizer/cli_v2:latest
-    container_name: nodepin_traffmonetizer
-    profiles: ["traffmonetizer"]
-    cpus: "0.25"
-    mem_limit: "128m"
-    restart: "no"
-    command: start accept --token ${TRAFFMONETIZER_TOKEN}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "traffmonetizer"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-  # ──────────────────────────────────────────
-  # 8) Control Panel — دائماً يعمل (بدون profile)
+  # 1) Control Panel
   # ──────────────────────────────────────────
   control-panel:
     build:
@@ -137,20 +26,17 @@ services:
     container_name: nodepin_control_panel
     cpus: "0.5"
     mem_limit: "256m"
-    restart: "no"
+    restart: unless-stopped
     environment:
       - PORT=${DASHBOARD_PORT:-3000}
       - API_KEY=${DASHBOARD_API_KEY:-}
       - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD:-}
       - SESSION_SECRET=${SESSION_SECRET:-}
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
-      - MYST_API_URL=${MYST_API_URL:-http://nodepin_myst:4050}
-      - MYST_API_PASSWORD=${MYST_API_PASSWORD:-mystberry}
-      - STORJ_API_URL=${STORJ_API_URL:-http://nodepin_storj:14002}
       - DOCKER_SOCK=/var/run/docker.sock
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nodepin_control_db:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
     ports:
       - "${DASHBOARD_PORT:-3000}:${DASHBOARD_PORT:-3000}"
     networks:
@@ -158,41 +44,14 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "100m"
+        max-size: "10m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "control-panel"
 
   # ──────────────────────────────────────────
-  # 9) Watchtower — تحديث تلقائي (محرَك اختيار)
-  # ──────────────────────────────────────────
-  watchtower:
-    profiles: ["watchtower"]
-    image: ghcr.io/nicholas-fedor/watchtower:latest
-    container_name: nodepin_watchtower
-    cpus: "0.25"
-    mem_limit: "128m"
-    restart: "no"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=${WATCHTOWER_INTERVAL:-3600}
-      - WATCHTOWER_LABEL_ENABLE=false
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "watchtower"
-
-  # ──────────────────────────────────────────
-  # 10) Caddy — HTTPS تلقائي  (profile: https)
+  # 2) Caddy — HTTPS Proxy (profile: https)
   # ──────────────────────────────────────────
   caddy:
     image: caddy:2-alpine
@@ -200,7 +59,7 @@ services:
     profiles: ["https"]
     cpus: "0.25"
     mem_limit: "128m"
-    restart: "no"
+    restart: unless-stopped
     environment:
       - NODEPIN_DOMAIN=${NODEPIN_DOMAIN}
       - DASHBOARD_PORT=${DASHBOARD_PORT:-3000}
@@ -218,191 +77,8 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "100m"
+        max-size: "10m"
         max-file: "3"
     labels:
       com.nodepin.project: "nodepin"
       com.nodepin.network: "caddy"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-
-
-
-
-  # ──────────────────────────────────────────
-  # 18) Proxyrack  (profile: proxyrack)
-  #     Proxy network — يكسب USD
-  #     ❌ لا API محلي — راجع لوحتهم
-  # ──────────────────────────────────────────
-  proxyrack:
-    image: proxyrack/pop:latest
-    container_name: nodepin_proxyrack
-    profiles: ["proxyrack"]
-    cpus: "2.0"
-    mem_limit: "2g"
-    restart: unless-stopped
-    environment:
-      - UUID=${PROXYRACK_UUID}
-      - API_KEY=${PROXYRACK_API_KEY}
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "proxyrack"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-
-  # ═══════════════════════════════════════════
-  # — أضف شبكة جديدة أسفل هذا الخط —
-  #   profiles: ["<name>"] + labels + nodepin-net
-  # ═══════════════════════════════════════════
-
-
-
-
-  # ──────────────────────────────────────────
-  # 24) Nym Network Node (profile: nym)
-  #     Decentralized privacy mixnet — earns NYM
-  #     ❌ no local API — check mixnet dashboard
-  # ──────────────────────────────────────────
-  nym:
-    build:
-      context: ./services/nym
-      dockerfile: Dockerfile
-    container_name: nodepin_nym
-    profiles: ["nym"]
-    restart: "no"
-
-    environment:
-      - NYM_NODE_ID=${NYM_NODE_ID:-default-nym-node}
-      - NODEPIN_VPS_IP=${NODEPIN_VPS_IP}
-      - NODEPIN_VPS_IPV6=${NODEPIN_VPS_IPV6:-}
-    volumes:
-      - nodepin_nym_data:/root/.nym
-    ports:
-      - "${NYM_PORT_MIXNET:-1789}:1789"
-      - "${NYM_PORT_VERLOC:-1790}:1790"
-      - "${NYM_PORT_API:-8080}:8080"
-    networks:
-      - nodepin-net
-    entrypoint: ["/bin/sh", "-c"]
-    command: ["exec /usr/local/bin/nym-node run --mode mixnode --hostname $${NODEPIN_VPS_IP} --public-ips $${NODEPIN_VPS_IP}$${NODEPIN_VPS_IPV6:+,$${NODEPIN_VPS_IPV6}} --http-bind-address 0.0.0.0:8080 --accept-operator-terms-and-conditions"]
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "nym"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-
-  # ──────────────────────────────────────────
-  # Sentinel dVPN Node (profile: sentinel)
-  # ──────────────────────────────────────────
-  sentinel:
-    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
-    container_name: nodepin_sentinel
-    profiles: ["sentinel"]
-    cpus: "1.5"
-    mem_limit: "2g"
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - "8585:8585"
-      - "${SENTINEL_PORT:-23501}:${SENTINEL_PORT:-23501}/udp"
-    volumes:
-      - ./data/sentinel:/root/.sentinel-dvpnx
-    command: start
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "sentinel"
-      com.centurylinklabs.watchtower.enable: "true"
-
-  # ──────────────────────────────────────────
-  # Sentinel dVPN V2Ray Node (profile: sentinel)
-  # ──────────────────────────────────────────
-  sentinel_v2ray:
-    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
-    container_name: nodepin_sentinel_v2ray
-    profiles: ["sentinel"]
-    cpus: "1.0"
-    mem_limit: "512m"
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - "8586:8586"
-      - "1447:1447/tcp"
-      - "3738:3738/tcp"
-    volumes:
-      - ./data/sentinel_v2ray:/root/.sentinel-dvpnx
-    command: start
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "sentinel_v2ray"
-      com.centurylinklabs.watchtower.enable: "true"
-
-
-
-
-
-  # ──────────────────────────────────────────
-  # Sentinel dVPN OpenVPN Node (profile: sentinel)
-  # ──────────────────────────────────────────
-  sentinel_openvpn:
-    image: ghcr.io/sentinel-official/sentinel-dvpnx:latest
-    container_name: nodepin_sentinel_openvpn
-    profiles: ["sentinel"]
-    cpus: "1.0"
-    mem_limit: "512m"
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - "56783:56783"
-      - "12996:12996/tcp"
-    volumes:
-      - ./data/sentinel_openvpn:/root/.sentinel-dvpnx
-    command: start
-    networks:
-      - nodepin-net
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "3"
-    labels:
-      com.nodepin.project: "nodepin"
-      com.nodepin.network: "sentinel_openvpn"
-      com.centurylinklabs.watchtower.enable: "true"

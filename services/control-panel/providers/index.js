@@ -66,7 +66,17 @@ async function collectMetrics() {
   );
 
   const nodes = {};
-  for (const r of results) nodes[r.network] = r;
+  for (const r of results) {
+    if (Array.isArray(r)) {
+      for (const item of r) {
+        // Use moniker or moniker-type as the key, fallback to network name
+        const key = item.moniker || item.network;
+        nodes[key] = item;
+      }
+    } else {
+      nodes[r.network] = r;
+    }
+  }
   return { enabled, nodes };
 }
 
