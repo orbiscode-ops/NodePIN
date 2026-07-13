@@ -25,28 +25,44 @@ warn() { echo -e "\e[33m[WARNING]\e[0m $*"; }
 # ──────────────────────────────────────────
 check_dependencies() {
   info "Checking system dependencies..."
+  
+  if [ -f /.dockerenv ]; then
+    info "Detected running inside Docker container. Verifying CLI binaries..."
+    if ! command -v docker &>/dev/null; then
+      error "Docker CLI is missing in container. Make sure docker-cli is installed."
+      exit 1
+    fi
+    if ! command -v jq &>/dev/null; then
+      error "jq is missing in container."
+      exit 1
+    fi
+    return 0
+  fi
+
   if ! command -v docker &>/dev/null; then
     warn "Docker is not installed. Installing Docker..."
     curl -fsSL https://get.docker.com | sh
-    systemctl start docker
-    systemctl enable docker
+    systemctl start docker || true
+    systemctl enable docker || true
   fi
 
   if ! command -v ufw &>/dev/null; then
     warn "UFW is not installed. Installing UFW..."
-    apt-get update && apt-get install -y ufw
+    apt-get update && apt-get install -y ufw || true
   fi
 
   # Enable UFW if not active
-  if ! ufw status | grep -q "active"; then
-    info "Enabling UFW..."
-    ufw allow 22/tcp comment 'SSH'
-    echo "y" | ufw enable
+  if command -v ufw &>/dev/null; then
+    if ! ufw status | grep -q "active"; then
+      info "Enabling UFW..."
+      ufw allow 22/tcp comment 'SSH' || true
+      echo "y" | ufw enable || true
+    fi
   fi
 
   if ! command -v jq &>/dev/null; then
     info "Installing jq..."
-    apt-get update && apt-get install -y jq
+    apt-get update && apt-get install -y jq || true
   fi
 }
 
@@ -220,8 +236,12 @@ add_node() {
     '{address: $addr, mnemonic: $mnem}' > "${node_data_dir}/key_info.json"
 
   # 6. Configure Firewall (UFW)
-  info "Adding UFW firewall rule for port ${node_port}/${proto}..."
-  ufw allow "${node_port}/${proto}" comment "nodepin_${moniker}"
+  if command -v ufw &>/dev/null; then
+    info "Adding UFW firewall rule for port ${node_port}/${proto}..."
+    ufw allow "${node_port}/${proto}" comment "nodepin_${moniker}" || true
+  else
+    warn "UFW is not installed. Skipping firewall configuration."
+  fi
 
   # 7. Start the Sentinel Node Container
   info "Starting Sentinel container: ${container_name}..."
@@ -290,7 +310,7 @@ remove_node() {
   docker rm "$container_name" || true
 
   # Remove UFW Firewall Rule
-  if [ -n "$node_port" ] && [ -n "$proto" ]; then
+  if [ -n "$node_port" ] && [ -n "$proto" ] && command -v ufw &>/dev/null; then
     info "Removing UFW rule for port ${node_port}/${proto}..."
     ufw delete allow "${node_port}/${proto}" || true
   fi

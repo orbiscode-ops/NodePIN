@@ -69,8 +69,11 @@
     .btn-danger:hover {
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
+    .btn-sm {
+      padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px;
+    }
 
-    /* Inline Config Input */
+    /* Inputs */
     .inline-input {
       background: var(--bg); border: 1px solid var(--border);
       border-radius: 8px; padding: 0.5rem 0.8rem; color: var(--text);
@@ -139,11 +142,10 @@
       font-size: .9rem; font-weight: 700; color: var(--muted);
       text-transform: uppercase; letter-spacing: 1px;
       margin: 2rem 0 1rem;
-      display: flex; align-items: center; gap: .75rem;
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem;
     }
-    .section-title::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
+    .section-title-text { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+    .section-title-text::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Cards grid ── */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
@@ -230,7 +232,7 @@
     }
     .modal-box {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 2.25rem; width: 90%; max-width: 480px;
+      border-radius: 20px; padding: 2.25rem; width: 90%; max-width: 500px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       transform: translateY(15px); transition: transform 0.2s ease-in-out;
     }
@@ -240,7 +242,7 @@
     .modal-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--text); }
     .modal-field { margin-bottom: 1.25rem; }
     .modal-field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 600; }
-    .modal-field input { width: 100%; }
+    .modal-field input, .modal-field select, .modal-field textarea { width: 100%; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
 
     /* Settings Group */
@@ -289,13 +291,18 @@
     </div>
 
     <!-- Active Containers Section -->
-    <div class="section-title">الحاويات النشطة</div>
+    <div class="section-title">
+      <div class="section-title-text">الحاويات النشطة</div>
+      <button class="btn btn-sm" id="btn-launch-node" style="display:none;" onclick="openLaunchNodeModal()">+ إطلاق نود جديد</button>
+    </div>
     <div id="containers" class="grid">
       <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
     </div>
 
     <!-- Metrics & Wallets Section -->
-    <div class="section-title">الأرباح والشبكات</div>
+    <div class="section-title">
+      <div class="section-title-text">الأرباح والشبكات</div>
+    </div>
     <div id="metrics" class="grid">
       <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
     </div>
@@ -313,8 +320,8 @@
         <thead>
           <tr>
             <th>اسم السيرفر</th>
-            <th>عنوان الـ IP</th>
-            <th>حالة السيرفر</th>
+            <th>عناوين الـ IP المرتبطة</th>
+            <th>حالة التحديد</th>
             <th style="text-align:left;">إجراءات</th>
           </tr>
         </thead>
@@ -340,21 +347,6 @@
         <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">المتغيرات المتاحة: {hostname} اسم السيرفر، {type} نوع النود (wireguard, v2ray, openvpn).</span>
       </div>
 
-      <div style="display:flex; gap:1rem;">
-        <div class="modal-field" style="flex:1;">
-          <label>منفذ WireGuard الافتراضي</label>
-          <input type="number" id="setting-port-wg" class="inline-input" value="23501">
-        </div>
-        <div class="modal-field" style="flex:1;">
-          <label>منفذ V2Ray الافتراضي</label>
-          <input type="number" id="setting-port-v2" class="inline-input" value="1447">
-        </div>
-        <div class="modal-field" style="flex:1;">
-          <label>منفذ OpenVPN الافتراضي</label>
-          <input type="number" id="setting-port-ovpn" class="inline-input" value="12996">
-        </div>
-      </div>
-
       <div style="text-align:left; margin-top:0.5rem;">
         <button class="btn" onclick="saveGlobalSettings()">حفظ الإعدادات</button>
       </div>
@@ -362,23 +354,94 @@
   </div>
 </main>
 
-<!-- ── Custom Beautiful Modal ── -->
-<div id="custom-modal" class="modal-overlay" onclick="closeModal(event)">
+<!-- ── Custom Modal: Add Server ── -->
+<div id="modal-add-server" class="modal-overlay" onclick="closeAddServerModal(event)">
   <div class="modal-box">
-    <h3 class="modal-title" id="modal-title">إضافة خادم جديد</h3>
-    <div class="modal-body" id="modal-body">
+    <h3 class="modal-title">إضافة خادم جديد</h3>
+    <div class="modal-body">
       <div class="modal-field">
-        <label for="modal-input-name">اسم الخادم</label>
-        <input type="text" id="modal-input-name" class="inline-input" placeholder="Germany-VPS">
+        <label for="server-input-name">اسم الخادم</label>
+        <input type="text" id="server-input-name" class="inline-input" placeholder="Germany-VPS">
       </div>
       <div class="modal-field">
-        <label for="modal-input-ip">عنوان الـ IP</label>
-        <input type="text" id="modal-input-ip" class="inline-input" placeholder="1.1.1.1">
+        <label for="server-input-ips">عناوين الـ IP المرتبطة (مفصولة بفاصلة)</label>
+        <textarea id="server-input-ips" class="inline-input" placeholder="1.1.1.1, 1.1.1.2, 1.1.1.3" style="height:80px; resize:none; font-family:monospace;"></textarea>
+        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">أدخل جميع الـ IP المخصصة لهذا السيرفر مفصولة بفاصلة ( , ).</span>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="hideModal()">إلغاء</button>
-      <button class="btn" id="modal-btn-submit" onclick="submitAddServer()">إضافة</button>
+      <button class="btn btn-ghost" onclick="hideAddServerModal()">إلغاء</button>
+      <button class="btn" onclick="submitAddServer()">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Custom Modal: Launch Node ── -->
+<div id="modal-launch-node" class="modal-overlay" onclick="closeLaunchNodeModal(event)">
+  <div class="modal-box">
+    <h3 class="modal-title">إطلاق نود Sentinel جديد</h3>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label for="node-input-type">نوع النود (Node Type)</label>
+        <select id="node-input-type" class="inline-input" onchange="autoFillMoniker()">
+          <option value="wireguard">WireGuard dVPN</option>
+          <option value="v2ray">V2Ray dVPN</option>
+          <option value="openvpn">OpenVPN dVPN</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="node-input-ip">الـ IP المستهدف (Target IP)</label>
+        <select id="node-input-ip" class="inline-input">
+          <!-- Populated dynamically based on active server IPs -->
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label for="node-input-moniker">اسم النود (Moniker)</label>
+        <input type="text" id="node-input-moniker" class="inline-input" placeholder="germany-wg">
+      </div>
+
+      <div class="modal-field">
+        <label for="node-input-wallet-mode">إعداد المحفظة (Wallet Setup)</label>
+        <select id="node-input-wallet-mode" class="inline-input" onchange="toggleMnemonicField(this.value)">
+          <option value="auto">توليد محفظة جديدة تلقائياً (Auto Generate)</option>
+          <option value="recover">استرداد محفظة سابقة عبر كلمات البذور (Recover Wallet)</option>
+        </select>
+      </div>
+
+      <div class="modal-field" id="node-field-mnemonic" style="display:none;">
+        <label for="node-input-mnemonic">كلمات الاسترداد الـ 24 (Mnemonic Seed Phrase)</label>
+        <textarea id="node-input-mnemonic" class="inline-input" placeholder="word1 word2 word3..." style="height:70px; resize:none;"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="hideLaunchNodeModal()">إلغاء</button>
+      <button class="btn" id="btn-submit-node" onclick="submitLaunchNode()">إطلاق النود 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Custom Modal: Wallet Generated Success ── -->
+<div id="modal-wallet-success" class="modal-overlay">
+  <div class="modal-box" style="max-width:550px;">
+    <h3 class="modal-title" style="color:var(--green);">✔️ تم إطلاق النود وتوليد المحفظة بنجاح!</h3>
+    <div class="modal-body">
+      <p style="font-size:0.9rem; line-height:1.5; margin-bottom:1.25rem;">تم تشغيل النود وربطه بالـ IP المحدد. لكي يعمل النود بشكل كامل، يجب عليك تمويل عنوان المحفظة بالـ DVPN.</p>
+      
+      <div class="modal-field">
+        <label>عنوان المحفظة (Wallet Address)</label>
+        <input type="text" id="success-wallet-address" class="inline-input" readonly style="font-family:monospace; background:rgba(30,41,59,0.5);" onclick="this.select()">
+      </div>
+
+      <div class="modal-field" id="success-mnemonic-group">
+        <label style="color:var(--red);">⚠️ كلمات الاسترداد السرية (Mnemonic Seed Phrase)</label>
+        <textarea id="success-wallet-mnemonic" class="inline-input" readonly style="height:80px; resize:none; font-family:monospace; background:rgba(30,41,59,0.5); color:var(--yellow);" onclick="this.select()"></textarea>
+        <span style="font-size:0.75rem; color:var(--red); font-weight:700; margin-top:0.4rem; display:block;">احفظ هذه الكلمات في مكان آمن للغاية. لن يتم عرضها مرة أخرى أبداً!</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="hideWalletSuccessModal()">حسناً، فهمت</button>
     </div>
   </div>
 </div>
@@ -411,63 +474,154 @@ function handleRoute() {
 }
 window.addEventListener('hashchange', handleRoute);
 
-// ── Custom Modal Handlers ────────────────────────────
-function showAddServerModal() {
-  document.getElementById('modal-input-name').value = '';
-  document.getElementById('modal-input-ip').value = '';
-  const overlay = document.getElementById('custom-modal');
+// ── Custom Modal: Add Server Handlers ────────────────
+function openAddServerModal() {
+  document.getElementById('server-input-name').value = '';
+  document.getElementById('server-input-ips').value = '';
+  const overlay = document.getElementById('modal-add-server');
   overlay.style.display = 'flex';
   setTimeout(() => overlay.classList.add('active'), 10);
 }
 
-function hideModal() {
-  const overlay = document.getElementById('custom-modal');
+function hideAddServerModal() {
+  const overlay = document.getElementById('modal-add-server');
   overlay.classList.remove('active');
   setTimeout(() => overlay.style.display = 'none', 200);
 }
 
-function closeModal(e) {
-  if (e.target.id === 'custom-modal') hideModal();
+function closeAddServerModal(e) {
+  if (e.target.id === 'modal-add-server') hideAddServerModal();
 }
 
-function openAddServerModal() {
-  showAddServerModal();
+// ── Custom Modal: Launch Node Handlers ───────────────
+function openLaunchNodeModal() {
+  const activeIp = getActiveServer();
+  if (!activeIp) return alert('الرجاء اختيار سيرفر نشط أولاً.');
+
+  // Populate dynamic IPs dropdown
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const activeServer = servers.find(s => s.ip === activeIp);
+  if (!activeServer) return alert('خطأ في استرجاع بيانات الخادم النشط.');
+
+  const ipSelect = document.getElementById('node-input-ip');
+  ipSelect.innerHTML = '';
+  
+  const ips = activeServer.ips || [activeServer.ip];
+  ips.forEach(ip => {
+    const opt = document.createElement('option');
+    opt.value = ip;
+    opt.textContent = ip;
+    ipSelect.appendChild(opt);
+  });
+
+  // Reset launch fields
+  document.getElementById('node-input-moniker').value = '';
+  document.getElementById('node-input-wallet-mode').value = 'auto';
+  document.getElementById('node-field-mnemonic').style.display = 'none';
+  document.getElementById('node-input-mnemonic').value = '';
+
+  autoFillMoniker();
+
+  const overlay = document.getElementById('modal-launch-node');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('active'), 10);
+}
+
+function hideLaunchNodeModal() {
+  const overlay = document.getElementById('modal-launch-node');
+  overlay.classList.remove('active');
+  setTimeout(() => overlay.style.display = 'none', 200);
+}
+
+function closeLaunchNodeModal(e) {
+  if (e.target.id === 'modal-launch-node') hideLaunchNodeModal();
+}
+
+function toggleMnemonicField(val) {
+  document.getElementById('node-field-mnemonic').style.display = val === 'recover' ? 'block' : 'none';
+}
+
+function autoFillMoniker() {
+  const type = document.getElementById('node-input-type').value;
+  const activeIp = getActiveServer();
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const activeServer = servers.find(s => s.ip === activeIp);
+  const hostname = activeServer ? activeServer.name : 'node';
+
+  let template = localStorage.getItem('setting_moniker') || '{hostname}-{type}';
+  let moniker = template
+    .replace('{hostname}', hostname)
+    .replace('{type}', type === 'wireguard' ? 'wg' : type === 'v2ray' ? 'v2' : 'ovpn')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '');
+
+  document.getElementById('node-input-moniker').value = moniker;
+}
+
+// ── Custom Modal: Wallet Success Handlers ────────────
+function showWalletSuccessModal(address, mnemonic) {
+  document.getElementById('success-wallet-address').value = address;
+  if (mnemonic) {
+    document.getElementById('success-mnemonic-group').style.display = 'block';
+    document.getElementById('success-wallet-mnemonic').value = mnemonic;
+  } else {
+    document.getElementById('success-mnemonic-group').style.display = 'none';
+  }
+  const overlay = document.getElementById('modal-wallet-success');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('active'), 10);
+}
+
+function hideWalletSuccessModal() {
+  const overlay = document.getElementById('modal-wallet-success');
+  overlay.classList.remove('active');
+  setTimeout(() => overlay.style.display = 'none', 200);
 }
 
 // ── Server CRUD Operations ───────────────────────────
 function submitAddServer() {
-  const name = document.getElementById('modal-input-name').value.trim();
-  const ip = document.getElementById('modal-input-ip').value.trim();
+  const name = document.getElementById('server-input-name').value.trim();
+  const rawIps = document.getElementById('server-input-ips').value.trim();
 
-  if (!name || !ip) {
-    alert('الرجاء إدخال اسم الخادم وعنوان الـ IP');
+  if (!name || !rawIps) {
+    alert('الرجاء إدخال اسم الخادم والـ IP');
+    return;
+  }
+
+  // Parse multiple IPs
+  const ips = rawIps.split(',')
+    .map(ip => ip.trim())
+    .filter(ip => ip.length > 0);
+
+  if (ips.length === 0) {
+    alert('يرجى كتابة عنوان IP صالح واحد على الأقل.');
     return;
   }
 
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers.push({ name, ip });
+  servers.push({ name, ip: ips[0], ips: ips }); // ips[0] is primary active IP
   localStorage.setItem('nodepin_servers', JSON.stringify(servers));
   
-  // Auto activate the first added server
+  // Auto-activate server if it's the first
   if (servers.length === 1) {
-    localStorage.setItem('nodepin_active_server', ip);
+    localStorage.setItem('nodepin_active_server', ips[0]);
   }
 
-  hideModal();
+  hideAddServerModal();
   loadServersList();
   renderServersTable();
   refreshAll();
 }
 
-function removeServer(ip) {
+function removeServer(primaryIp) {
   if (!confirm('هل أنت متأكد من حذف هذا الخادم؟')) return;
   
   let servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers = servers.filter(s => s.ip !== ip);
+  servers = servers.filter(s => s.ip !== primaryIp);
   localStorage.setItem('nodepin_servers', JSON.stringify(servers));
 
   const active = localStorage.getItem('nodepin_active_server');
-  if (active === ip) {
+  if (active === primaryIp) {
     localStorage.removeItem('nodepin_active_server');
     if (servers.length > 0) {
       localStorage.setItem('nodepin_active_server', servers[0].ip);
@@ -494,10 +648,11 @@ function renderServersTable() {
 
   body.innerHTML = servers.map(s => {
     const isActive = localStorage.getItem('nodepin_active_server') === s.ip;
+    const ipsList = s.ips ? s.ips.join(' , ') : s.ip;
     return `
       <tr>
-        <td style="font-weight: 700;">${s.name} ${isActive ? '<span style="color:var(--accent); font-size:0.8rem; margin-right:0.5rem;">[الخادم النشط]</span>' : ''}</td>
-        <td><code>${s.ip}</code></td>
+        <td style="font-weight: 700;">${s.name} ${isActive ? '<span style="color:var(--accent); font-size:0.8rem; margin-right:0.5rem;">[النشط]</span>' : ''}</td>
+        <td><code>${ipsList}</code></td>
         <td>
           <span class="badge ${isActive ? 'running' : 'stopped'}">${isActive ? 'نشط ومحدد' : 'متاح'}</span>
         </td>
@@ -510,19 +665,71 @@ function renderServersTable() {
   }).join('');
 }
 
+// ── Node Deploy & Remove Operations ──────────────────
+async function submitLaunchNode() {
+  const type = document.getElementById('node-input-type').value;
+  const ip = document.getElementById('node-input-ip').value;
+  const moniker = document.getElementById('node-input-moniker').value.trim();
+  const mode = document.getElementById('node-input-wallet-mode').value;
+  const mnemonic = document.getElementById('node-input-mnemonic').value.trim();
+
+  if (!moniker) return alert('الرجاء إدخال اسم النود (Moniker)');
+  if (mode === 'recover' && !mnemonic) return alert('الرجاء إدخال كلمات الاسترداد');
+
+  const btn = document.getElementById('btn-submit-node');
+  const oldText = btn.innerHTML;
+  btn.innerHTML = 'جاري إطلاق الحاوية… <span class="spinner"></span>';
+  btn.disabled = true;
+
+  try {
+    const res = await apiFetch('/api/nodes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moniker, ip, type, mode, mnemonic })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'فشلت عملية الإطلاق');
+
+    hideLaunchNodeModal();
+    
+    // Show success wallet details
+    const addr = data.wallet?.address || 'N/A';
+    const mnem = data.wallet?.mnemonic || '';
+    showWalletSuccessModal(addr, mnem);
+    
+    refreshAll();
+  } catch (e) {
+    alert('خطأ أثناء إطلاق النود: ' + e.message);
+  } finally {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  }
+}
+
+async function deleteNode(moniker) {
+  if (!confirm(`هل أنت متأكد من إيقاف وحذف النود ${moniker} نهائياً؟ سيتم مسح الحاوية وسجلات البيانات.`)) return;
+
+  try {
+    const res = await apiFetch(`/api/nodes/${moniker}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'فشل حذف النود');
+    
+    alert('تم إيقاف وحذف النود بنجاح!');
+    refreshAll();
+  } catch (e) {
+    alert('خطأ أثناء الحذف: ' + e.message);
+  }
+}
+
 // ── Global Settings Handlers ─────────────────────────
 function loadSettingsInputs() {
   document.getElementById('setting-moniker').value = localStorage.getItem('setting_moniker') || '{hostname}-{type}';
-  document.getElementById('setting-port-wg').value = localStorage.getItem('setting_port_wg') || '23501';
-  document.getElementById('setting-port-v2').value = localStorage.getItem('setting_port_v2') || '1447';
-  document.getElementById('setting-port-ovpn').value = localStorage.getItem('setting_port_ovpn') || '12996';
 }
 
 function saveGlobalSettings() {
   localStorage.setItem('setting_moniker', document.getElementById('setting-moniker').value);
-  localStorage.setItem('setting_port_wg', document.getElementById('setting-port-wg').value);
-  localStorage.setItem('setting_port_v2', document.getElementById('setting-port-v2').value);
-  localStorage.setItem('setting_port_ovpn', document.getElementById('setting-port-ovpn').value);
   alert('تم حفظ الإعدادات بنجاح!');
 }
 
@@ -552,8 +759,10 @@ function loadServersList() {
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
   if (servers.length > 0) {
     select.style.display = 'inline-block';
+    document.getElementById('btn-launch-node').style.display = 'inline-flex';
   } else {
     select.style.display = 'none';
+    document.getElementById('btn-launch-node').style.display = 'none';
   }
 
   select.innerHTML = '<option value="">-- اختر خادماً --</option>';
@@ -652,6 +861,10 @@ async function loadContainers() {
         </div>
         ${row('الحالة', c.status)}
         ${row('المنافذ', c.ports || '—')}
+        
+        <div style="margin-top: 1rem; text-align: left; border-top: 1px solid rgba(30, 58, 138, 0.1); padding-top: 0.75rem;">
+          <button class="btn btn-danger btn-sm" onclick="deleteNode('${c.name.replace('nodepin_sentinel_', '')}')">حذف النود 🗑️</button>
+        </div>
       </div>
     `).join('');
   } catch(e) {

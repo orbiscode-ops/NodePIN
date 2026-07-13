@@ -122,7 +122,78 @@ app.post('/api/mysterium/password', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+// Deploy a new Sentinel node container dynamically on the VPS using manage-nodes.sh
+app.post('/api/nodes', (req, res) => {
+  const { moniker, ip, type, mode, mnemonic } = req.body || {};
+  if (!type || !ip) {
+    return res.status(400).json({ error: 'Type and IP are required' });
+  }
+
+  const { exec } = require('child_process');
+  
+  // Clean inputs to prevent command injection
+  const cleanMoniker = (moniker || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  const cleanIp = (ip || '').replace(/[^0-9.]/g, '');
+  const cleanType = (type || '').replace(/[^a-zA-Z0-9]/g, '');
+  const cleanMode = (mode || 'auto').replace(/[^a-z]/g, '');
+  // Mnemonic can contain letters, numbers, and spaces
+  const cleanMnemonic = (mnemonic || '').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+
+  const monikerArg = cleanMoniker ? `'${cleanMoniker}'` : "''";
+  const ipArg = cleanIp ? `'${cleanIp}'` : "''";
+  const typeArg = cleanType ? `'${cleanType}'` : "''";
+  const modeArg = cleanMode ? `'${cleanMode}'` : "''";
+  const mnemonicArg = cleanMnemonic ? `'${cleanMnemonic}'` : "''";
+
+  // Invoke manage-nodes.sh inside the container
+  const cmd = `bash /app/manage-nodes.sh add ${monikerArg} ${ipArg} ${typeArg} ${modeArg} ${mnemonicArg}`;
+
+  exec(cmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[NodePIN Engine Error]: ${stderr || error.message}`);
+      return res.status(500).json({ error: error.message, details: stderr || stdout });
+    }
+
+    // Try reading key_info.json if it exists to retrieve mnemonic & address
+    const fs = require('fs');
+    const path = require('path');
+    let wallet = null;
+
+    if (cleanMoniker) {
+      try {
+        const keyPath = path.join('/app/data', `sentinel_${cleanMoniker}`, 'key_info.json');
+        if (fs.existsSync(keyPath)) {
+          wallet = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+        }
+      } catch (e) {
+        console.error(`[NodePIN Wallet Read Error]: ${e.message}`);
+      }
+    }
+
+    res.json({ ok: true, output: stdout, wallet });
+  });
 });
+
+// Remove a Sentinel node container dynamically on the VPS using manage-nodes.sh
+app.delete('/api/nodes/:moniker', (req, res) => {
+  const moniker = req.params.moniker;
+  const cleanMoniker = (moniker || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!cleanMoniker) {
+    return res.status(400).json({ error: 'Moniker is required' });
+  }
+
+  const { exec } = require('child_process');
+  const cmd = `bash /app/manage-nodes.sh remove '${cleanMoniker}'`;
+
+  exec(cmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[NodePIN Engine Remove Error]: ${stderr || error.message}`);
+      return res.status(500).json({ error: error.message, details: stderr || stdout });
+    }
+    res.json({ ok: true, output: stdout });
+  });
+});
+
 
 
 
