@@ -2,42 +2,59 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Intercept and proxy API requests dynamically to any target VPS
+    // API requests are proxied to the master control-panel server
     if (url.pathname.startsWith('/api/')) {
-      const targetVpsHost = request.headers.get('x-vps-host');
+      // The master server IP is sent from the browser as x-master-host
+      const masterHost = request.headers.get('x-master-host');
 
-      if (!targetVpsHost) {
-        return new Response(JSON.stringify({ error: "Missing x-vps-host header. Please select a target server." }), {
+      if (!masterHost) {
+        return new Response(JSON.stringify({ error: 'لم يتم تحديد سيرفر التحكم المركزي. يرجى إعداده من الإعدادات.' }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
       }
 
-      // Proxy to the dynamic VPS IP and port 3000
-      const targetUrl = `http://${targetVpsHost}:3000${url.pathname}${url.search}`;
+      const masterPort = request.headers.get('x-master-port') || '3000';
+      const targetUrl = `http://${masterHost}:${masterPort}${url.pathname}${url.search}`;
 
-      // Clone and forward all headers (including x-api-key)
+      // Forward all headers including SSH credentials
       const headers = new Headers(request.headers);
 
-      const proxyRequest = new Request(targetUrl, {
-        method: request.method,
-        headers: headers,
-        body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined,
-        redirect: 'manual'
-      });
-
       try {
+        const proxyRequest = new Request(targetUrl, {
+          method: request.method,
+          headers: headers,
+          body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined,
+          redirect: 'manual'
+        });
+
         const response = await fetch(proxyRequest);
-        return response;
+        
+        // Add CORS headers to allow dashboard to communicate
+        const newResponse = new Response(response.body, response);
+        newResponse.headers.set('Access-Control-Allow-Origin', '*');
+        newResponse.headers.set('Access-Control-Allow-Headers', '*');
+        return newResponse;
       } catch (err) {
-        return new Response(JSON.stringify({ error: `Connection to VPS at ${targetVpsHost} failed: ${err.message}` }), {
+        return new Response(JSON.stringify({ error: `فشل الاتصال بسيرفر التحكم (${masterHost}:${masterPort}): ${err.message}` }), {
           status: 502,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
       }
     }
 
-    // 2. Serve static assets (HTML, CSS, JS) from the public directory
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+        }
+      });
+    }
+
+    // Serve static assets (HTML, CSS, JS)
     return env.ASSETS.fetch(request);
   }
 };

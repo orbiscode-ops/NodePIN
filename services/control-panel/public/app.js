@@ -378,41 +378,65 @@ async function deleteNode(moniker) {
 // ── Global Settings Handlers ─────────────────────────
 function loadSettingsInputs() {
   setElementValue('setting-moniker', localStorage.getItem('setting_moniker') || '{hostname}-{type}');
+  setElementValue('setting-master-ip', localStorage.getItem('master_ip') || '');
+  setElementValue('setting-master-port', localStorage.getItem('master_port') || '3000');
+  setElementValue('setting-master-key', localStorage.getItem('master_key') || '');
 }
 
 function saveGlobalSettings() {
-  const mEl = document.getElementById('setting-moniker');
-  if (mEl) {
-    localStorage.setItem('setting_moniker', mEl.value);
-    alert('تم حفظ الإعدادات بنجاح!');
-  }
+  const monikerEl = document.getElementById('setting-moniker');
+  const masterIpEl = document.getElementById('setting-master-ip');
+  const masterPortEl = document.getElementById('setting-master-port');
+  const masterKeyEl = document.getElementById('setting-master-key');
+
+  if (monikerEl) localStorage.setItem('setting_moniker', monikerEl.value);
+  if (masterIpEl) localStorage.setItem('master_ip', masterIpEl.value.trim());
+  if (masterPortEl) localStorage.setItem('master_port', masterPortEl.value.trim() || '3000');
+  if (masterKeyEl) localStorage.setItem('master_key', masterKeyEl.value.trim());
+
+  alert('تم حفظ الإعدادات بنجاح!');
 }
 
 // ── API Fetch Wrapper ────────────────────────────────
 async function apiFetch(url, options = {}) {
+  options.headers = options.headers || {};
+
+  // 1. Inject master server coordinates for the Cloudflare Worker proxy
+  const masterIp = localStorage.getItem('master_ip');
+  const masterPort = localStorage.getItem('master_port') || '3000';
+  const masterKey = localStorage.getItem('master_key');
+
+  if (masterIp) {
+    options.headers['x-master-host'] = masterIp;
+    options.headers['x-master-port'] = masterPort;
+  }
+  if (masterKey) {
+    options.headers['x-api-key'] = masterKey;
+  }
+
+  // 2. Inject target VPS SSH credentials for the active server
   const activeServer = localStorage.getItem('nodepin_active_server');
   if (activeServer) {
-    options.headers = options.headers || {};
-    options.headers['x-vps-host'] = activeServer;
-    
-    // Retrieve SSH credentials specifically for this active server
     const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
     const active = servers.find(s => s.ip === activeServer);
-    if (active && active.key) {
+    if (active) {
       options.headers['x-ssh-host'] = active.ip;
       options.headers['x-ssh-port'] = active.sshPort || '22';
       options.headers['x-ssh-user'] = active.sshUser || 'root';
-      // Base64 encode key to prevent transport character issue in HTTP headers
-      try {
-        options.headers['x-ssh-key'] = btoa(unescape(encodeURIComponent(active.key)));
-      } catch (e) {
-        options.headers['x-ssh-key'] = btoa(active.key);
+      // Base64 encode key to safely transport in HTTP headers
+      if (active.key) {
+        try {
+          options.headers['x-ssh-key'] = btoa(unescape(encodeURIComponent(active.key)));
+        } catch (e) {
+          options.headers['x-ssh-key'] = btoa(active.key);
+        }
       }
     }
   }
+
   const res = await fetch(url, options);
   if (res.status === 401) {
-    alert('⚠️ فشل التحقق من هوية SSH أو الاتصال بالسيرفر. يرجى التحقق من صحة معلومات الاتصال بالسيرفر.');
+    alert('⚠️ فشل التحقق من هوية الاتصال. يرجى التحقق من إعدادات سيرفر التحكم المركزي وبيانات SSH.');
     throw new Error('Unauthorized');
   }
   return res;
