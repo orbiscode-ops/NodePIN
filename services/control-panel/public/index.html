@@ -355,7 +355,7 @@
 </main>
 
 <!-- ── Custom Modal: Add Server ── -->
-<div id="modal-add-server" class="modal-overlay" onclick="closeAddServerModal(event)">
+<div id="modal-add-server" class="modal-overlay">
   <div class="modal-box">
     <h3 class="modal-title">إضافة خادم جديد</h3>
     <div class="modal-body">
@@ -377,7 +377,7 @@
 </div>
 
 <!-- ── Custom Modal: Launch Node ── -->
-<div id="modal-launch-node" class="modal-overlay" onclick="closeLaunchNodeModal(event)">
+<div id="modal-launch-node" class="modal-overlay">
   <div class="modal-box">
     <h3 class="modal-title">إطلاق نود Sentinel جديد</h3>
     <div class="modal-body">
@@ -489,9 +489,7 @@ function hideAddServerModal() {
   setTimeout(() => overlay.style.display = 'none', 200);
 }
 
-function closeAddServerModal(e) {
-  if (e.target.id === 'modal-add-server') hideAddServerModal();
-}
+
 
 // ── Custom Modal: Launch Node Handlers ───────────────
 function openLaunchNodeModal() {
@@ -533,9 +531,7 @@ function hideLaunchNodeModal() {
   setTimeout(() => overlay.style.display = 'none', 200);
 }
 
-function closeLaunchNodeModal(e) {
-  if (e.target.id === 'modal-launch-node') hideLaunchNodeModal();
-}
+
 
 function toggleMnemonicField(val) {
   document.getElementById('node-field-mnemonic').style.display = val === 'recover' ? 'block' : 'none';
