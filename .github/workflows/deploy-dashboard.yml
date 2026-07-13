@@ -5,13 +5,27 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Workers
+    name: Deploy to Cloudflare Workers + D1
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to Cloudflare Workers
+      - name: Inject D1 database_id into wrangler.toml
+        working-directory: services/control-panel
+        run: |
+          sed -i "s|database_id = \"\"|database_id = \"${{ secrets.D1_DATABASE_ID }}\"|" wrangler.toml
+
+      - name: Apply D1 Migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: services/control-panel
+          command: |
+            d1 migrations apply nodepin-db --remote
+
+      - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

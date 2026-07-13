@@ -82,7 +82,7 @@ function hideAddIpModal() {
   }
 }
 
-function submitAddIp() {
+async function submitAddIp() {
   const primaryIpEl = document.getElementById('add-ip-server-primary-ip');
   const newIpEl = document.getElementById('add-ip-input-val');
   
@@ -91,19 +91,24 @@ function submitAddIp() {
 
   if (!newIp) return alert('الرجاء إدخال عنوان الـ IP الجديد');
 
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  const server = servers.find(s => s.ip === primaryIp);
-  
-  if (server) {
-    server.ips = server.ips || [server.ip];
-    if (server.ips.includes(newIp)) {
-      alert('هذا الـ IP مضاف بالفعل لهذا السيرفر.');
-      return;
+  // Find server ID from cached list
+  const server = window._cachedServers?.find(s => s.ip === primaryIp);
+  if (!server) return alert('لم يتم العثور على السيرفر');
+
+  try {
+    const res = await apiFetch(`/api/servers/${server.id}/ips`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip: newIp })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'فشل إضافة IP');
     }
-    server.ips.push(newIp);
-    localStorage.setItem('nodepin_servers', JSON.stringify(servers));
     hideAddIpModal();
-    renderServersTable();
+    await reloadServers();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
   }
 }
 
@@ -112,9 +117,9 @@ function openLaunchNodeModal() {
   const activeIp = getActiveServer();
   if (!activeIp) return alert('الرجاء اختيار سيرفر نشط أولاً.');
 
-  // Populate dynamic IPs dropdown
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  const activeServer = servers.find(s => s.ip === activeIp);
+  // Populate dynamic IPs dropdown from cached servers
+  const servers = window._cachedServers || [];
+  const activeServer = servers.find(s => s.id === getActiveServerId());
   if (!activeServer) return alert('خطأ في استرجاع بيانات الخادم النشط.');
 
   const ipSelect = document.getElementById('node-input-ip');
@@ -165,12 +170,11 @@ function autoFillMoniker() {
   const typeEl = document.getElementById('node-input-type');
   const type = typeEl ? typeEl.value : 'wireguard';
   
-  const activeIp = getActiveServer();
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  const activeServer = servers.find(s => s.ip === activeIp);
+  const servers = window._cachedServers || [];
+  const activeServer = servers.find(s => s.id === getActiveServerId());
   const hostname = activeServer ? activeServer.name : 'node';
 
-  let template = localStorage.getItem('setting_moniker') || '{hostname}-{type}';
+  let template = window._cachedSettings?.moniker || '{hostname}-{type}';
   let moniker = template
     .replace('{hostname}', hostname)
     .replace('{type}', type === 'wireguard' ? 'wg' : type === 'v2ray' ? 'v2' : 'ovpn')
@@ -207,7 +211,7 @@ function hideWalletSuccessModal() {
 }
 
 // ── Server CRUD Operations ───────────────────────────
-function submitAddServer() {
+async function submitAddServer() {
   const nameEl = document.getElementById('server-input-name');
   const ipEl = document.getElementById('server-input-ip');
   const portEl = document.getElementById('server-input-ssh-port');
@@ -225,58 +229,54 @@ function submitAddServer() {
     return;
   }
 
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  if (servers.find(s => s.ip === ip)) {
-    alert('هذا السيرفر مضاف بالفعل.');
-    return;
-  }
+  try {
+    const res = await apiFetch('/api/servers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, ip, ssh_port: port, ssh_user: user, ssh_key: key })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'فشل إضافة السيرفر');
 
-  servers.push({
-    name,
-    ip,
-    ips: [ip],
-    sshPort: port || '22',
-    sshUser: user || 'root',
-    key: key
-  });
-  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
-  
-  // Auto-activate server if it's the first
-  if (servers.length === 1) {
-    localStorage.setItem('nodepin_active_server', ip);
-  }
+    // Auto-activate if first server
+    const servers = window._cachedServers || [];
+    if (servers.length === 0) {
+      localStorage.setItem('nodepin_active_server_id', data.id);
+    }
 
-  hideAddServerModal();
-  loadServersList();
-  renderServersTable();
-  refreshAll();
+    hideAddServerModal();
+    await reloadServers();
+    refreshAll();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+  }
 }
 
-function removeServer(primaryIp) {
+async function removeServer(serverId) {
   if (!confirm('هل أنت متأكد من حذف هذا الخادم؟')) return;
   
-  let servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers = servers.filter(s => s.ip !== primaryIp);
-  localStorage.setItem('nodepin_servers', JSON.stringify(servers));
+  try {
+    const res = await apiFetch(`/api/servers/${serverId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('فشل حذف السيرفر');
 
-  const active = localStorage.getItem('nodepin_active_server');
-  if (active === primaryIp) {
-    localStorage.removeItem('nodepin_active_server');
-    if (servers.length > 0) {
-      localStorage.setItem('nodepin_active_server', servers[0].ip);
+    const activeId = getActiveServerId();
+    if (activeId == serverId) {
+      localStorage.removeItem('nodepin_active_server_id');
     }
-  }
 
-  loadServersList();
-  renderServersTable();
-  refreshAll();
+    await reloadServers();
+    refreshAll();
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+  }
 }
 
 function renderServersTable() {
   const body = document.getElementById('servers-table-body');
   if (!body) return;
   
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const servers = window._cachedServers || [];
+  const activeId = getActiveServerId();
 
   if (!servers.length) {
     body.innerHTML = `
@@ -288,7 +288,7 @@ function renderServersTable() {
   }
 
   body.innerHTML = servers.map(s => {
-    const isActive = localStorage.getItem('nodepin_active_server') === s.ip;
+    const isActive = activeId == s.id;
     const ipsList = s.ips ? s.ips.join(' , ') : s.ip;
     return `
       <tr>
@@ -299,8 +299,8 @@ function renderServersTable() {
         </td>
         <td style="text-align:left; display:flex; justify-content:flex-end; gap:0.5rem;">
           <button class="btn btn-ghost btn-sm" onclick="openAddIpModal('${s.ip}')">+ إضافة IP</button>
-          ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="selectServer('${s.ip}')">تحديد كنشط</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="removeServer('${s.ip}')">حذف</button>
+          ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="selectServer(${s.id})">تحديد كنشط</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="removeServer(${s.id})">حذف</button>
         </td>
       </tr>
     `;
@@ -376,81 +376,93 @@ async function deleteNode(moniker) {
 }
 
 // ── Global Settings Handlers ─────────────────────────
-function loadSettingsInputs() {
-  setElementValue('setting-moniker', localStorage.getItem('setting_moniker') || '{hostname}-{type}');
-  setElementValue('setting-master-ip', localStorage.getItem('master_ip') || '');
-  setElementValue('setting-master-port', localStorage.getItem('master_port') || '3000');
-  setElementValue('setting-master-key', localStorage.getItem('master_key') || '');
+async function loadSettingsInputs() {
+  try {
+    const res = await apiFetch('/api/settings');
+    if (res.ok) {
+      const settings = await res.json();
+      window._cachedSettings = settings;
+      setElementValue('setting-moniker', settings.moniker || '{hostname}-{type}');
+    }
+  } catch (e) {
+    // Fallback to defaults
+    setElementValue('setting-moniker', '{hostname}-{type}');
+  }
 }
 
-function saveGlobalSettings() {
+async function saveGlobalSettings() {
   const monikerEl = document.getElementById('setting-moniker');
-  const masterIpEl = document.getElementById('setting-master-ip');
-  const masterPortEl = document.getElementById('setting-master-port');
-  const masterKeyEl = document.getElementById('setting-master-key');
+  const moniker = monikerEl ? monikerEl.value : '{hostname}-{type}';
 
-  if (monikerEl) localStorage.setItem('setting_moniker', monikerEl.value);
-  if (masterIpEl) localStorage.setItem('master_ip', masterIpEl.value.trim());
-  if (masterPortEl) localStorage.setItem('master_port', masterPortEl.value.trim() || '3000');
-  if (masterKeyEl) localStorage.setItem('master_key', masterKeyEl.value.trim());
-
-  alert('تم حفظ الإعدادات بنجاح!');
+  try {
+    const res = await apiFetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moniker })
+    });
+    if (!res.ok) throw new Error('فشل حفظ الإعدادات');
+    window._cachedSettings = { ...window._cachedSettings, moniker };
+    alert('تم حفظ الإعدادات بنجاح!');
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+  }
 }
 
 // ── API Fetch Wrapper ────────────────────────────────
 async function apiFetch(url, options = {}) {
   options.headers = options.headers || {};
 
-  // 1. Inject master server coordinates for the Cloudflare Worker proxy
-  const masterIp = localStorage.getItem('master_ip');
-  const masterPort = localStorage.getItem('master_port') || '3000';
-  const masterKey = localStorage.getItem('master_key');
-
-  if (masterIp) {
-    options.headers['x-master-host'] = masterIp;
-    options.headers['x-master-port'] = masterPort;
-  }
-  if (masterKey) {
-    options.headers['x-api-key'] = masterKey;
+  // Inject auth token
+  const token = localStorage.getItem('nodepin_auth_token');
+  if (token) {
+    options.headers['x-auth-token'] = token;
   }
 
-  // 2. Inject target VPS SSH credentials for the active server
-  const activeServer = localStorage.getItem('nodepin_active_server');
-  if (activeServer) {
-    const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-    const active = servers.find(s => s.ip === activeServer);
-    if (active) {
-      options.headers['x-ssh-host'] = active.ip;
-      options.headers['x-ssh-port'] = active.sshPort || '22';
-      options.headers['x-ssh-user'] = active.sshUser || 'root';
-      // Base64 encode key to safely transport in HTTP headers
-      if (active.key) {
-        try {
-          options.headers['x-ssh-key'] = btoa(unescape(encodeURIComponent(active.key)));
-        } catch (e) {
-          options.headers['x-ssh-key'] = btoa(active.key);
-        }
-      }
-    }
+  // Inject active server ID for proxy routes
+  const activeId = getActiveServerId();
+  if (activeId) {
+    options.headers['x-server-id'] = activeId;
   }
 
   const res = await fetch(url, options);
   if (res.status === 401) {
-    alert('⚠️ فشل التحقق من هوية الاتصال. يرجى التحقق من إعدادات سيرفر التحكم المركزي وبيانات SSH.');
+    // Token expired or invalid — redirect to login
+    localStorage.removeItem('nodepin_auth_token');
+    window.location.href = '/login.html';
     throw new Error('Unauthorized');
   }
   return res;
 }
 
-function getActiveServer() {
-  return localStorage.getItem('nodepin_active_server');
+function getActiveServerId() {
+  return localStorage.getItem('nodepin_active_server_id');
+}
+
+// ── Reload servers from D1 ───────────────────────────
+async function reloadServers() {
+  try {
+    const res = await apiFetch('/api/servers');
+    if (res.ok) {
+      const data = await res.json();
+      window._cachedServers = data.servers || [];
+
+      // Auto-activate first server if none active
+      if (!getActiveServerId() && window._cachedServers.length > 0) {
+        localStorage.setItem('nodepin_active_server_id', window._cachedServers[0].id);
+      }
+    }
+  } catch (e) {
+    window._cachedServers = [];
+  }
+  loadServersList();
+  renderServersTable();
 }
 
 function loadServersList() {
   const select = document.getElementById('server-select');
   if (!select) return;
   
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const servers = window._cachedServers || [];
   const launchBtn = document.getElementById('btn-launch-node');
   
   if (servers.length > 0) {
@@ -464,18 +476,18 @@ function loadServersList() {
   select.innerHTML = '<option value="">-- اختر خادماً --</option>';
   servers.forEach(s => {
     const opt = document.createElement('option');
-    opt.value = s.ip;
+    opt.value = s.id;
     opt.textContent = `${s.name} (${s.ip})`;
     select.appendChild(opt);
   });
-  const active = localStorage.getItem('nodepin_active_server');
-  if (active) {
-    select.value = active;
+  const activeId = getActiveServerId();
+  if (activeId) {
+    select.value = activeId;
   }
 }
 
-function selectServer(ip) {
-  localStorage.setItem('nodepin_active_server', ip);
+function selectServer(id) {
+  localStorage.setItem('nodepin_active_server_id', id);
   loadServersList();
   renderServersTable();
   refreshAll();
@@ -518,17 +530,28 @@ function ts() { return new Date().toLocaleTimeString('ar-SA'); }
 
 // ── logout ────────────────────────────────────────────
 async function doLogout() {
-  await apiFetch('/api/logout', { method:'POST' });
-  location.reload();
+  localStorage.removeItem('nodepin_auth_token');
+  window.location.href = '/login.html';
 }
 
 // Check auth status to show/hide logout btn
 async function checkAuth() {
-  const r = await apiFetch('/api/health').catch(() => null);
-  if (r && r.ok) {
-    const h = r.headers.get('x-auth-disabled');
+  try {
+    const token = localStorage.getItem('nodepin_auth_token');
+    if (!token) {
+      // Try accessing health — if auth is disabled, it will work
+      const r = await fetch('/api/servers', {
+        headers: token ? { 'x-auth-token': token } : {}
+      });
+      if (r.status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
+    }
     const logBtn = document.getElementById('logout-btn');
-    if (!h && logBtn) logBtn.style.display = 'inline-flex';
+    if (logBtn && token) logBtn.style.display = 'inline-flex';
+  } catch (e) {
+    // ignore
   }
 }
 
@@ -642,7 +665,7 @@ async function refreshAll() {
   const lastUp = document.getElementById('last-update');
   if (lastUp) lastUp.textContent = 'آخر تحديث: ' + ts();
   
-  const server = getActiveServer();
+  const server = getActiveServerId();
   const sTotal = document.getElementById('s-total');
   const sRunning = document.getElementById('s-running');
   const sStopped = document.getElementById('s-stopped');
@@ -665,10 +688,12 @@ async function refreshAll() {
 }
 
 // ── Initialization ────────────────────────────────────
-checkAuth();
-loadServersList();
-handleRoute();
-setInterval(refreshAll, 30_000);
+(async function init() {
+  await checkAuth();
+  await reloadServers();
+  handleRoute();
+  setInterval(refreshAll, 30_000);
+})();
 
 // ── Password Mask Visibility Toggle ───────────────────
 function toggleKeyMask(checked) {

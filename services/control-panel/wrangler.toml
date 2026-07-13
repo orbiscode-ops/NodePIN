@@ -4,3 +4,11 @@ compatibility_date = "2024-04-01"
 
 # Serve the static files from the public folder using Cloudflare Workers Assets
 assets = { directory = "./public" }
+
+# D1 Database — قاعدة بيانات لتخزين السيرفرات وإعداداتها
+# أنشئ قاعدة البيانات أولاً عبر:  npx wrangler d1 create nodepin-db
+# ثم ضع الـ database_id الناتج هنا
+[[d1_databases]]
+binding = "DB"
+database_name = "nodepin-db"
+database_id = ""  # ← ضع هنا الـ ID بعد إنشاء القاعدة

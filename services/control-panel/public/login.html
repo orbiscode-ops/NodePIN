@@ -35,8 +35,13 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password }),
         });
-        if (res.ok) { window.location.href = '/'; }
-        else { err.textContent = 'كلمة المرور غير صحيحة'; }
+        const data = await res.json();
+        if (res.ok && data.token) {
+          localStorage.setItem('nodepin_auth_token', data.token);
+          window.location.href = '/';
+        } else {
+          err.textContent = data.error || 'كلمة المرور غير صحيحة';
+        }
       } catch (_) { err.textContent = 'خطأ في الاتصال'; }
       return false;
     }
