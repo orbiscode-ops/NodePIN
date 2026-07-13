@@ -112,13 +112,26 @@
         <label for="server-input-name">اسم الخادم</label>
         <input type="text" id="server-input-name" class="inline-input" placeholder="Germany-VPS">
       </div>
-      <div class="modal-field">
-        <label for="server-input-ip">عنوان الـ IP الرئيسي</label>
-        <input type="text" id="server-input-ip" class="inline-input" placeholder="1.1.1.1">
+      
+      <div class="modal-field" style="display:flex; gap:1rem;">
+        <div style="flex:2;">
+          <label for="server-input-ip">عنوان الـ IP الرئيسي</label>
+          <input type="text" id="server-input-ip" class="inline-input" placeholder="1.1.1.1">
+        </div>
+        <div style="flex:1;">
+          <label for="server-input-ssh-port">منفذ SSH</label>
+          <input type="number" id="server-input-ssh-port" class="inline-input" value="22">
+        </div>
       </div>
+
       <div class="modal-field">
-        <label for="server-input-key">رمز الأمان الخاص بالسيرفر (DASHBOARD_API_KEY)</label>
-        <input type="password" id="server-input-key" class="inline-input" placeholder="أدخل رمز الأمان">
+        <label for="server-input-ssh-user">اسم مستخدم SSH</label>
+        <input type="text" id="server-input-ssh-user" class="inline-input" value="root">
+      </div>
+
+      <div class="modal-field">
+        <label for="server-input-ssh-key">كلمة مرور SSH أو المفتاح الخاص (SSH Password / Private Key)</label>
+        <textarea id="server-input-ssh-key" class="inline-input" placeholder="أدخل كلمة المرور أو مفتاح SSH الخاص بك..." style="height:80px; resize:none; font-family:monospace;"></textarea>
       </div>
     </div>
     <div class="modal-actions">

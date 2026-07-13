@@ -163,10 +163,12 @@ function hideWalletSuccessModal() {
 function submitAddServer() {
   const name = document.getElementById('server-input-name').value.trim();
   const ip = document.getElementById('server-input-ip').value.trim();
-  const key = document.getElementById('server-input-key').value.trim();
+  const port = document.getElementById('server-input-ssh-port').value.trim();
+  const user = document.getElementById('server-input-ssh-user').value.trim();
+  const key = document.getElementById('server-input-ssh-key').value.trim();
 
-  if (!name || !ip || !key) {
-    alert('الرجاء إدخال اسم الخادم، الـ IP، ومفتاح الأمان');
+  if (!name || !ip || !user || !key) {
+    alert('الرجاء إدخال اسم الخادم، الـ IP، اسم المستخدم وكلمة المرور/مفتاح SSH');
     return;
   }
 
@@ -176,7 +178,14 @@ function submitAddServer() {
     return;
   }
 
-  servers.push({ name, ip, ips: [ip], key: key });
+  servers.push({
+    name,
+    ip,
+    ips: [ip],
+    sshPort: port || '22',
+    sshUser: user || 'root',
+    key: key
+  });
   localStorage.setItem('nodepin_servers', JSON.stringify(servers));
   
   // Auto-activate server if it's the first
@@ -318,16 +327,24 @@ async function apiFetch(url, options = {}) {
     options.headers = options.headers || {};
     options.headers['x-vps-host'] = activeServer;
     
-    // Retrieve API key specifically for this active server
+    // Retrieve SSH credentials specifically for this active server
     const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
     const active = servers.find(s => s.ip === activeServer);
     if (active && active.key) {
-      options.headers['x-api-key'] = active.key;
+      options.headers['x-ssh-host'] = active.ip;
+      options.headers['x-ssh-port'] = active.sshPort || '22';
+      options.headers['x-ssh-user'] = active.sshUser || 'root';
+      // Base64 encode key to prevent transport character issue in HTTP headers
+      try {
+        options.headers['x-ssh-key'] = btoa(unescape(encodeURIComponent(active.key)));
+      } catch (e) {
+        options.headers['x-ssh-key'] = btoa(active.key);
+      }
     }
   }
   const res = await fetch(url, options);
   if (res.status === 401) {
-    alert('⚠️ رمز الأمان (API Key) الخاص بهذا الخادم غير صحيح أو غير متطابق. يرجى التحقق من إعدادات الخادم.');
+    alert('⚠️ فشل التحقق من هوية SSH أو الاتصال بالسيرفر. يرجى التحقق من صحة معلومات الاتصال بالسيرفر.');
     throw new Error('Unauthorized');
   }
   return res;
