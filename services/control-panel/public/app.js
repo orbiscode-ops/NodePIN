@@ -28,7 +28,7 @@ window.addEventListener('hashchange', handleRoute);
 // ── Custom Modal: Add Server Handlers ────────────────
 function openAddServerModal() {
   document.getElementById('server-input-name').value = '';
-  document.getElementById('server-input-ips').value = '';
+  document.getElementById('server-input-ip').value = '';
   document.getElementById('server-input-key').value = '';
   const overlay = document.getElementById('modal-add-server');
   overlay.style.display = 'flex';
@@ -39,6 +39,43 @@ function hideAddServerModal() {
   const overlay = document.getElementById('modal-add-server');
   overlay.classList.remove('active');
   setTimeout(() => overlay.style.display = 'none', 200);
+}
+
+// ── Custom Modal: Add IP Handlers ────────────────────
+function openAddIpModal(primaryIp) {
+  document.getElementById('add-ip-server-primary-ip').value = primaryIp;
+  document.getElementById('add-ip-input-val').value = '';
+  const overlay = document.getElementById('modal-add-ip');
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('active'), 10);
+}
+
+function hideAddIpModal() {
+  const overlay = document.getElementById('modal-add-ip');
+  overlay.classList.remove('active');
+  setTimeout(() => overlay.style.display = 'none', 200);
+}
+
+function submitAddIp() {
+  const primaryIp = document.getElementById('add-ip-server-primary-ip').value;
+  const newIp = document.getElementById('add-ip-input-val').value.trim();
+
+  if (!newIp) return alert('الرجاء إدخال عنوان الـ IP الجديد');
+
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const server = servers.find(s => s.ip === primaryIp);
+  
+  if (server) {
+    server.ips = server.ips || [server.ip];
+    if (server.ips.includes(newIp)) {
+      alert('هذا الـ IP مضاف بالفعل لهذا السيرفر.');
+      return;
+    }
+    server.ips.push(newIp);
+    localStorage.setItem('nodepin_servers', JSON.stringify(servers));
+    hideAddIpModal();
+    renderServersTable();
+  }
 }
 
 // ── Custom Modal: Launch Node Handlers ───────────────
@@ -102,7 +139,7 @@ function autoFillMoniker() {
   document.getElementById('node-input-moniker').value = moniker;
 }
 
-// ── Custom Modal: Wallet Success Handlers ────────────
+// ── Custom Modal: Wallet Generated Success ───
 function showWalletSuccessModal(address, mnemonic) {
   document.getElementById('success-wallet-address').value = address;
   if (mnemonic) {
@@ -125,31 +162,26 @@ function hideWalletSuccessModal() {
 // ── Server CRUD Operations ───────────────────────────
 function submitAddServer() {
   const name = document.getElementById('server-input-name').value.trim();
-  const rawIps = document.getElementById('server-input-ips').value.trim();
+  const ip = document.getElementById('server-input-ip').value.trim();
   const key = document.getElementById('server-input-key').value.trim();
 
-  if (!name || !rawIps || !key) {
+  if (!name || !ip || !key) {
     alert('الرجاء إدخال اسم الخادم، الـ IP، ومفتاح الأمان');
     return;
   }
 
-  // Parse multiple IPs
-  const ips = rawIps.split(',')
-    .map(ip => ip.trim())
-    .filter(ip => ip.length > 0);
-
-  if (ips.length === 0) {
-    alert('يرجى كتابة عنوان IP صالح واحد على الأقل.');
+  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  if (servers.find(s => s.ip === ip)) {
+    alert('هذا السيرفر مضاف بالفعل.');
     return;
   }
 
-  const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers.push({ name, ip: ips[0], ips: ips, key: key }); // ips[0] is primary active IP
+  servers.push({ name, ip, ips: [ip], key: key });
   localStorage.setItem('nodepin_servers', JSON.stringify(servers));
   
   // Auto-activate server if it's the first
   if (servers.length === 1) {
-    localStorage.setItem('nodepin_active_server', ips[0]);
+    localStorage.setItem('nodepin_active_server', ip);
   }
 
   hideAddServerModal();
@@ -201,7 +233,8 @@ function renderServersTable() {
         <td>
           <span class="badge ${isActive ? 'running' : 'stopped'}">${isActive ? 'نشط ومحدد' : 'متاح'}</span>
         </td>
-        <td style="text-align:left;">
+        <td style="text-align:left; display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button class="btn btn-ghost btn-sm" onclick="openAddIpModal('${s.ip}')">+ إضافة IP</button>
           ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="selectServer('${s.ip}')">تحديد كنشط</button>` : ''}
           <button class="btn btn-danger btn-sm" onclick="removeServer('${s.ip}')">حذف</button>
         </td>
@@ -355,6 +388,7 @@ function fmt(n, unit='') {
   return n;
 }
 
+// Format bytes helper
 function fmtBytes(b) {
   if (!b) return '—';
   const units = ['B','KB','MB','GB','TB'];

@@ -113,9 +113,8 @@
         <input type="text" id="server-input-name" class="inline-input" placeholder="Germany-VPS">
       </div>
       <div class="modal-field">
-        <label for="server-input-ips">عناوين الـ IP المرتبطة (مفصولة بفاصلة)</label>
-        <textarea id="server-input-ips" class="inline-input" placeholder="1.1.1.1, 1.1.1.2, 1.1.1.3" style="height:80px; resize:none; font-family:monospace;"></textarea>
-        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">أدخل جميع الـ IP المخصصة لهذا السيرفر مفصولة بفاصلة ( , ).</span>
+        <label for="server-input-ip">عنوان الـ IP الرئيسي</label>
+        <input type="text" id="server-input-ip" class="inline-input" placeholder="1.1.1.1">
       </div>
       <div class="modal-field">
         <label for="server-input-key">رمز الأمان الخاص بالسيرفر (DASHBOARD_API_KEY)</label>
@@ -125,6 +124,24 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="hideAddServerModal()">إلغاء</button>
       <button class="btn" onclick="submitAddServer()">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Custom Modal: Add IP to Server ── -->
+<div id="modal-add-ip" class="modal-overlay">
+  <div class="modal-box" style="max-width:400px;">
+    <h3 class="modal-title">إضافة عنوان IP إضافي</h3>
+    <div class="modal-body">
+      <input type="hidden" id="add-ip-server-primary-ip">
+      <div class="modal-field">
+        <label for="add-ip-input-val">عنوان الـ IP الجديد</label>
+        <input type="text" id="add-ip-input-val" class="inline-input" placeholder="1.1.1.2">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="hideAddIpModal()">إلغاء</button>
+      <button class="btn" onclick="submitAddIp()">إضافة</button>
     </div>
   </div>
 </div>
@@ -190,7 +207,7 @@
       <div class="modal-field" id="success-mnemonic-group">
         <label style="color:var(--red);">⚠️ كلمات الاسترداد السرية (Mnemonic Seed Phrase)</label>
         <textarea id="success-wallet-mnemonic" class="inline-input" readonly style="height:80px; resize:none; font-family:monospace; background:rgba(30,41,59,0.5); color:var(--yellow);" onclick="this.select()"></textarea>
-        <span style="font-size:0.75rem; color:var(--red); font-weight:700; margin-top:0.4rem; display:block;">احفظ هذه الكلمات في مكان آمن للغاية. لن يتم عرضها مرة أخرى أبداً!</span>
+        <span style="font-size:0.75rem; color:var(--red); font-weight:700; margin-top:0.4rem; display:block;">احفظ هذه الكلمات in مكان آمن للغاية. لن يتم عرضها مرة أخرى أبداً!</span>
       </div>
     </div>
     <div class="modal-actions">
