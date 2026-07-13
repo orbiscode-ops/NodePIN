@@ -122,6 +122,8 @@ app.post('/api/mysterium/password', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
 // Deploy a new Sentinel node container dynamically on the VPS using manage-nodes.sh
 app.post('/api/nodes', (req, res) => {
   const { moniker, ip, type, mode, mnemonic } = req.body || {};
