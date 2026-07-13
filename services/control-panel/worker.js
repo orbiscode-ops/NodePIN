@@ -4,11 +4,11 @@ export default {
 
     // 1. Intercept and proxy API requests to the dynamically specified VPS
     if (url.pathname.startsWith('/api/')) {
-      // Read target VPS IP/Host from request headers (sent dynamically by the frontend)
+      // Read target VPS IP/Host from request headers
       const targetVpsHost = request.headers.get('x-vps-host');
 
       if (!targetVpsHost) {
-        return new Response(JSON.stringify({ error: "Missing x-vps-host header. Please select or configure a target server." }), {
+        return new Response(JSON.stringify({ error: "Missing x-vps-host header. Please select a target server." }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -17,9 +17,11 @@ export default {
       // Route the API call to the specific VPS IP/host dynamically on port 3000
       const targetUrl = `http://${targetVpsHost}:3000${url.pathname}${url.search}`;
 
-      // Clone headers and inject the dashboard API key for VPS authentication
+      // Clone headers and preserve or inject the API key for VPS authentication
       const headers = new Headers(request.headers);
-      if (env.DASHBOARD_API_KEY) {
+      
+      // If the browser didn't send an x-api-key header, fallback to the Worker environment variable
+      if (!headers.has('x-api-key') && env.DASHBOARD_API_KEY) {
         headers.set('x-api-key', env.DASHBOARD_API_KEY);
       }
 

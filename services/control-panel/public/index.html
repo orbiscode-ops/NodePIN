@@ -368,6 +368,10 @@
         <textarea id="server-input-ips" class="inline-input" placeholder="1.1.1.1, 1.1.1.2, 1.1.1.3" style="height:80px; resize:none; font-family:monospace;"></textarea>
         <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">أدخل جميع الـ IP المخصصة لهذا السيرفر مفصولة بفاصلة ( , ).</span>
       </div>
+      <div class="modal-field">
+        <label for="server-input-key">رمز الأمان الخاص بالسيرفر (DASHBOARD_API_KEY)</label>
+        <input type="password" id="server-input-key" class="inline-input" placeholder="أدخل رمز الأمان">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="hideAddServerModal()">إلغاء</button>
@@ -578,9 +582,10 @@ function hideWalletSuccessModal() {
 function submitAddServer() {
   const name = document.getElementById('server-input-name').value.trim();
   const rawIps = document.getElementById('server-input-ips').value.trim();
+  const key = document.getElementById('server-input-key').value.trim();
 
-  if (!name || !rawIps) {
-    alert('الرجاء إدخال اسم الخادم والـ IP');
+  if (!name || !rawIps || !key) {
+    alert('الرجاء إدخال اسم الخادم، الـ IP، ومفتاح الأمان');
     return;
   }
 
@@ -595,7 +600,7 @@ function submitAddServer() {
   }
 
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
-  servers.push({ name, ip: ips[0], ips: ips }); // ips[0] is primary active IP
+  servers.push({ name, ip: ips[0], ips: ips, key: key }); // ips[0] is primary active IP
   localStorage.setItem('nodepin_servers', JSON.stringify(servers));
   
   // Auto-activate server if it's the first
@@ -735,10 +740,17 @@ async function apiFetch(url, options = {}) {
   if (activeServer) {
     options.headers = options.headers || {};
     options.headers['x-vps-host'] = activeServer;
+    
+    // Retrieve API key specifically for this active server
+    const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+    const active = servers.find(s => s.ip === activeServer);
+    if (active && active.key) {
+      options.headers['x-api-key'] = active.key;
+    }
   }
   const res = await fetch(url, options);
   if (res.status === 401) {
-    window.location.href = '/login.html';
+    alert('⚠️ رمز الأمان (API Key) الخاص بهذا الخادم غير صحيح أو غير متطابق. يرجى التحقق من إعدادات الخادم.');
     throw new Error('Unauthorized');
   }
   return res;
