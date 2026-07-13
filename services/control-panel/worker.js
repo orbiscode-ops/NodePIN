@@ -2,9 +2,8 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Intercept and proxy API requests to the dynamically specified VPS
+    // 1. Intercept and proxy API requests dynamically to any target VPS
     if (url.pathname.startsWith('/api/')) {
-      // Read target VPS IP/Host from request headers
       const targetVpsHost = request.headers.get('x-vps-host');
 
       if (!targetVpsHost) {
@@ -14,16 +13,11 @@ export default {
         });
       }
 
-      // Route the API call to the specific VPS IP/host dynamically on port 3000
+      // Proxy to the dynamic VPS IP and port 3000
       const targetUrl = `http://${targetVpsHost}:3000${url.pathname}${url.search}`;
 
-      // Clone headers and preserve or inject the API key for VPS authentication
+      // Clone and forward all headers (including x-api-key)
       const headers = new Headers(request.headers);
-      
-      // If the browser didn't send an x-api-key header, fallback to the Worker environment variable
-      if (!headers.has('x-api-key') && env.DASHBOARD_API_KEY) {
-        headers.set('x-api-key', env.DASHBOARD_API_KEY);
-      }
 
       const proxyRequest = new Request(targetUrl, {
         method: request.method,

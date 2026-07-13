@@ -18,4 +18,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: services/control-panel
           command: |
-            deploy --var DASHBOARD_API_KEY:${{ secrets.DASHBOARD_API_KEY }}
+            deploy
