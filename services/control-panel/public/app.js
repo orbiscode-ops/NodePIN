@@ -29,7 +29,9 @@ window.addEventListener('hashchange', handleRoute);
 function openAddServerModal() {
   document.getElementById('server-input-name').value = '';
   document.getElementById('server-input-ip').value = '';
-  document.getElementById('server-input-key').value = '';
+  document.getElementById('server-input-ssh-port').value = '22';
+  document.getElementById('server-input-ssh-user').value = 'root';
+  document.getElementById('server-input-ssh-key').value = '';
   const overlay = document.getElementById('modal-add-server');
   overlay.style.display = 'flex';
   setTimeout(() => overlay.classList.add('active'), 10);
