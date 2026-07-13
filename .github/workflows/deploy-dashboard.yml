@@ -1,6 +1,52 @@
 name: Deploy Dashboard to Cloudflare Workers
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/control-panel/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers + D1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+        working-directory: services/control-panel
+
+      - name: Inject D1 database_id into wrangler.toml
+        working-directory: services/control-panel
+        run: |
+          sed -i "s|database_id = \"\"|database_id = \"${{ secrets.D1_DATABASE_ID }}\"|" wrangler.toml
+
+      - name: Apply D1 Migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: services/control-panel
+          command: d1 migrations apply nodepin-db --remote
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: services/control-panel
+          command: deploy
+name: Deploy Dashboard to Cloudflare Workers
+
+on:
   workflow_dispatch:
 
 jobs:

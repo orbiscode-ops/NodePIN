@@ -1,5 +1,134 @@
 # NodePIN 🌐
 
+> **NodePIN** — Professional Sentinel Node Management Dashboard hosted on Cloudflare.
+>
+> لوحة تحكم احترافية لإدارة عُقد **Sentinel** (v2ray / WireGuard / OpenVPN) على سيرفرات متعددة.
+
+---
+
+## ✨ Features
+
+- **Cloudflare-hosted:** Fast, secure, zero server maintenance for the dashboard.
+- **Multi-server management:** Add unlimited VPS servers with SSH credentials.
+- **Multi-node per server:** Run v2ray, WireGuard, or OpenVPN on each server.
+- **Encrypted credentials:** All SSH passwords/keys encrypted with AES-256-GCM.
+- **Professional UI:** Dark theme, responsive, real-time status monitoring.
+- **Secure auth:** PBKDF2 password hashing, session tokens, auto-expiry.
+
+---
+
+## 📁 Project Structure
+
+```
+NodePIN/
+├── services/control-panel/
+│   ├── src/
+│   │   ├── worker.js        ← Cloudflare Worker entry point
+│   │   ├── db.js            ← D1 database operations
+│   │   ├── crypto.js        ← AES-256-GCM encryption
+│   │   ├── auth.js          ← Password hashing & sessions
+│   │   └── ssh.js           ← SSH command execution
+│   ├── public/
+│   │   ├── index.html       ← Dashboard UI
+│   │   ├── app.js           ← Frontend JavaScript
+│   │   └── app.css          ← Professional dark theme
+│   ├── migrations/
+│   │   └── 0001_init.sql    ← D1 schema
+│   ├── package.json
+│   └── wrangler.toml        ← Cloudflare config
+├── .github/workflows/
+│   ├── ci.yml               ← CI testing
+│   └── deploy-dashboard.yml ← Cloudflare deployment
+└── .gitignore
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Setup Cloudflare
+
+```bash
+# Install Wrangler CLI
+npm install -g wrangler
+
+# Login to Cloudflare
+wrangler login
+
+# Create D1 database
+wrangler d1 create nodepin-db
+```
+
+### 2. Configure
+
+Copy the database ID from the output and paste it in `wrangler.toml`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "nodepin-db"
+database_id = "YOUR_DATABASE_ID_HERE"
+```
+
+### 3. Deploy
+
+```bash
+cd services/control-panel
+
+# Apply database migration
+wrangler d1 migrations apply nodepin-db --remote
+
+# Deploy to Cloudflare
+wrangler deploy
+```
+
+### 4. First Setup
+
+Open your dashboard URL (e.g., `https://nodepin-dashboard.your-subdomain.workers.dev`):
+
+1. Set your dashboard password (first-time setup)
+2. Sign in
+3. Add your first server (IP, SSH credentials)
+4. Add Sentinel nodes (v2ray / WireGuard / OpenVPN)
+
+---
+
+## 🔐 Security
+
+- **AES-256-GCM encryption** for all SSH credentials in the database.
+- **PBKDF2** (100,000 iterations) for password hashing.
+- **Session tokens** with 24-hour auto-expiry.
+- **No secrets in Git** — all credentials encrypted at rest.
+- **Cloudflare edge** — DDoS protection, automatic HTTPS.
+
+---
+
+## 📌 Supported Protocols
+
+| Protocol | Service Name | Config Path |
+|----------|-------------|-------------|
+| **V2Ray** | `v2ray` | `/etc/v2ray/config.json` |
+| **WireGuard** | `wg-quick@wg0` | `/etc/wireguard/wg0.conf` |
+| **OpenVPN** | `openvpn@server` | `/etc/openvpn/server.conf` |
+
+---
+
+## 📌 Roadmap
+
+- [x] Multi-server management with encrypted credentials.
+- [x] Sentinel node CRUD (v2ray / WireGuard / OpenVPN).
+- [x] Node status monitoring and control (start/stop/restart).
+- [x] Professional dark theme dashboard.
+- [ ] SSH execution via WebSocket proxy or WASM module.
+- [ ] Real-time bandwidth monitoring.
+- [ ] Node configuration generator.
+- [ ] Telegram / Discord notifications.
+
+---
+
+NodePIN — Professional Sentinel Node Management 💡
+# NodePIN 🌐
+
 > **NodePIN** — a pluggable, Dockerized infrastructure to run and manage **decentralized nodes** on any VPS and earn **passive income** from DePIN networks.
 >
 > بنية تحتية مرنة (Dockerized) لتشغيل وإدارة **عُقد لامركزية** على أي VPS بهدف توليد **دخل سلبي** من شبكات DePIN.

@@ -1,704 +1,572 @@
-// Helper to safely set input values without throwing null pointer errors
-function setElementValue(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.value = val;
-}
+/**
+ * NodePIN — Dashboard Frontend
+ * Professional Sentinel Management UI
+ */
 
-// ── Routing Handler ──────────────────────────────────
-function handleRoute() {
-  const hash = window.location.hash || '#dashboard';
-  
-  // Hide all views
-  document.querySelectorAll('.view-container').forEach(el => el.style.display = 'none');
-  
-  // Show active view
-  const activeView = document.querySelector(hash);
-  if (activeView) activeView.style.display = 'block';
-  
-  // Update nav tabs
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.getAttribute('href') === hash);
-  });
+(function () {
+  'use strict';
 
-  // Refresh if going to dashboard
-  if (hash === '#dashboard') {
-    refreshAll();
-  } else if (hash === '#servers') {
-    renderServersTable();
-  } else if (hash === '#settings') {
-    loadSettingsInputs();
-  }
-}
-window.addEventListener('hashchange', handleRoute);
+  // ── State ──
+  let sessionToken = localStorage.getItem('nodepin_token') || null;
+  let currentView = 'overview';
 
-// ── Custom Modal: Add Server Handlers ────────────────
-function openAddServerModal() {
-  setElementValue('server-input-name', '');
-  setElementValue('server-input-ip', '');
-  setElementValue('server-input-ssh-port', '22');
-  setElementValue('server-input-ssh-user', 'root');
-  setElementValue('server-input-ssh-key', '');
-  
-  // Reset the mask checkbox to checked
-  const checkbox = document.getElementById('toggle-ssh-key-mask');
-  if (checkbox) checkbox.checked = true;
-  toggleKeyMask(true);
+  // ── API Helper ──
+  async function api(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (sessionToken) headers['x-session-token'] = sessionToken;
 
-  // Reset legacy element IDs to prevent any caching errors
-  setElementValue('server-input-key', '');
-  setElementValue('server-input-ips', '');
+    const res = await fetch(`/api${path}`, { ...options, headers });
 
-  const overlay = document.getElementById('modal-add-server');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 10);
-  }
-}
-
-function hideAddServerModal() {
-  const overlay = document.getElementById('modal-add-server');
-  if (overlay) {
-    overlay.classList.remove('active');
-    setTimeout(() => overlay.style.display = 'none', 200);
-  }
-}
-
-// ── Custom Modal: Add IP Handlers ────────────────────
-function openAddIpModal(primaryIp) {
-  setElementValue('add-ip-server-primary-ip', primaryIp);
-  setElementValue('add-ip-input-val', '');
-  const overlay = document.getElementById('modal-add-ip');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 10);
-  }
-}
-
-function hideAddIpModal() {
-  const overlay = document.getElementById('modal-add-ip');
-  if (overlay) {
-    overlay.classList.remove('active');
-    setTimeout(() => overlay.style.display = 'none', 200);
-  }
-}
-
-async function submitAddIp() {
-  const primaryIpEl = document.getElementById('add-ip-server-primary-ip');
-  const newIpEl = document.getElementById('add-ip-input-val');
-  
-  const primaryIp = primaryIpEl ? primaryIpEl.value : '';
-  const newIp = newIpEl ? newIpEl.value.trim() : '';
-
-  if (!newIp) return alert('الرجاء إدخال عنوان الـ IP الجديد');
-
-  // Find server ID from cached list
-  const server = window._cachedServers?.find(s => s.ip === primaryIp);
-  if (!server) return alert('لم يتم العثور على السيرفر');
-
-  try {
-    const res = await apiFetch(`/api/servers/${server.id}/ips`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ip: newIp })
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || 'فشل إضافة IP');
+    if (res.status === 401) {
+      sessionToken = null;
+      localStorage.removeItem('nodepin_token');
+      showScreen('login');
+      throw new Error('Session expired');
     }
-    hideAddIpModal();
-    await reloadServers();
-  } catch (e) {
-    alert('خطأ: ' + e.message);
-  }
-}
 
-// ── Custom Modal: Launch Node Handlers ───────────────
-function openLaunchNodeModal() {
-  const activeIp = getActiveServer();
-  if (!activeIp) return alert('الرجاء اختيار سيرفر نشط أولاً.');
-
-  // Populate dynamic IPs dropdown from cached servers
-  const servers = window._cachedServers || [];
-  const activeServer = servers.find(s => s.id === getActiveServerId());
-  if (!activeServer) return alert('خطأ في استرجاع بيانات الخادم النشط.');
-
-  const ipSelect = document.getElementById('node-input-ip');
-  if (ipSelect) {
-    ipSelect.innerHTML = '';
-    const ips = activeServer.ips || [activeServer.ip];
-    ips.forEach(ip => {
-      const opt = document.createElement('option');
-      opt.value = ip;
-      opt.textContent = ip;
-      ipSelect.appendChild(opt);
-    });
-  }
-
-  // Reset launch fields
-  setElementValue('node-input-moniker', '');
-  setElementValue('node-input-wallet-mode', 'auto');
-  
-  const mField = document.getElementById('node-field-mnemonic');
-  if (mField) mField.style.display = 'none';
-  setElementValue('node-input-mnemonic', '');
-
-  autoFillMoniker();
-
-  const overlay = document.getElementById('modal-launch-node');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 10);
-  }
-}
-
-function hideLaunchNodeModal() {
-  const overlay = document.getElementById('modal-launch-node');
-  if (overlay) {
-    overlay.classList.remove('active');
-    setTimeout(() => overlay.style.display = 'none', 200);
-  }
-}
-
-function toggleMnemonicField(val) {
-  const mField = document.getElementById('node-field-mnemonic');
-  if (mField) {
-    mField.style.display = val === 'recover' ? 'block' : 'none';
-  }
-}
-
-function autoFillMoniker() {
-  const typeEl = document.getElementById('node-input-type');
-  const type = typeEl ? typeEl.value : 'wireguard';
-  
-  const servers = window._cachedServers || [];
-  const activeServer = servers.find(s => s.id === getActiveServerId());
-  const hostname = activeServer ? activeServer.name : 'node';
-
-  let template = window._cachedSettings?.moniker || '{hostname}-{type}';
-  let moniker = template
-    .replace('{hostname}', hostname)
-    .replace('{type}', type === 'wireguard' ? 'wg' : type === 'v2ray' ? 'v2' : 'ovpn')
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]/g, '');
-
-  setElementValue('node-input-moniker', moniker);
-}
-
-// ── Custom Modal: Wallet Generated Success ───
-function showWalletSuccessModal(address, mnemonic) {
-  setElementValue('success-wallet-address', address);
-  
-  const mGroup = document.getElementById('success-mnemonic-group');
-  if (mnemonic) {
-    if (mGroup) mGroup.style.display = 'block';
-    setElementValue('success-wallet-mnemonic', mnemonic);
-  } else {
-    if (mGroup) mGroup.style.display = 'none';
-  }
-  const overlay = document.getElementById('modal-wallet-success');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 10);
-  }
-}
-
-function hideWalletSuccessModal() {
-  const overlay = document.getElementById('modal-wallet-success');
-  if (overlay) {
-    overlay.classList.remove('active');
-    setTimeout(() => overlay.style.display = 'none', 200);
-  }
-}
-
-// ── Server CRUD Operations ───────────────────────────
-async function submitAddServer() {
-  const nameEl = document.getElementById('server-input-name');
-  const ipEl = document.getElementById('server-input-ip');
-  const portEl = document.getElementById('server-input-ssh-port');
-  const userEl = document.getElementById('server-input-ssh-user');
-  const keyEl = document.getElementById('server-input-ssh-key') || document.getElementById('server-input-key');
-
-  const name = nameEl ? nameEl.value.trim() : '';
-  const ip = ipEl ? ipEl.value.trim() : '';
-  const port = portEl ? portEl.value.trim() : '22';
-  const user = userEl ? userEl.value.trim() : 'root';
-  const key = keyEl ? keyEl.value.trim() : '';
-
-  if (!name || !ip || !user || !key) {
-    alert('الرجاء إدخال اسم الخادم، الـ IP، اسم المستخدم وكلمة المرور/مفتاح SSH');
-    return;
-  }
-
-  try {
-    const res = await apiFetch('/api/servers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, ip, ssh_port: port, ssh_user: user, ssh_key: key })
-    });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'فشل إضافة السيرفر');
-
-    // Auto-activate if first server
-    const servers = window._cachedServers || [];
-    if (servers.length === 0) {
-      localStorage.setItem('nodepin_active_server_id', data.id);
-    }
-
-    hideAddServerModal();
-    await reloadServers();
-    refreshAll();
-  } catch (e) {
-    alert('خطأ: ' + e.message);
-  }
-}
-
-async function removeServer(serverId) {
-  if (!confirm('هل أنت متأكد من حذف هذا الخادم؟')) return;
-  
-  try {
-    const res = await apiFetch(`/api/servers/${serverId}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('فشل حذف السيرفر');
-
-    const activeId = getActiveServerId();
-    if (activeId == serverId) {
-      localStorage.removeItem('nodepin_active_server_id');
-    }
-
-    await reloadServers();
-    refreshAll();
-  } catch (e) {
-    alert('خطأ: ' + e.message);
-  }
-}
-
-function renderServersTable() {
-  const body = document.getElementById('servers-table-body');
-  if (!body) return;
-  
-  const servers = window._cachedServers || [];
-  const activeId = getActiveServerId();
-
-  if (!servers.length) {
-    body.innerHTML = `
-      <tr>
-        <td colspan="4" class="placeholder">لا توجد خوادم مضافة حالياً. اضغط على زر الإضافة لإعداد خادمك الأول.</td>
-      </tr>
-    `;
-    return;
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
   }
 
-  body.innerHTML = servers.map(s => {
-    const isActive = activeId == s.id;
-    const ipsList = s.ips ? s.ips.join(' , ') : s.ip;
-    return `
-      <tr>
-        <td style="font-weight: 700;">${s.name} ${isActive ? '<span style="color:var(--accent); font-size:0.8rem; margin-right:0.5rem;">[النشط]</span>' : ''}</td>
-        <td><code>${ipsList}</code></td>
-        <td>
-          <span class="badge ${isActive ? 'running' : 'stopped'}">${isActive ? 'نشط ومحدد' : 'متاح'}</span>
-        </td>
-        <td style="text-align:left; display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button class="btn btn-ghost btn-sm" onclick="openAddIpModal('${s.ip}')">+ إضافة IP</button>
-          ${!isActive ? `<button class="btn btn-ghost btn-sm" onclick="selectServer(${s.id})">تحديد كنشط</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="removeServer(${s.id})">حذف</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-// ── Node Deploy & Remove Operations ──────────────────
-async function submitLaunchNode() {
-  const typeEl = document.getElementById('node-input-type');
-  const ipEl = document.getElementById('node-input-ip');
-  const monikerEl = document.getElementById('node-input-moniker');
-  const modeEl = document.getElementById('node-input-wallet-mode');
-  const mnemonicEl = document.getElementById('node-input-mnemonic');
-
-  const type = typeEl ? typeEl.value : '';
-  const ip = ipEl ? ipEl.value : '';
-  const moniker = monikerEl ? monikerEl.value.trim() : '';
-  const mode = modeEl ? modeEl.value : 'auto';
-  const mnemonic = mnemonicEl ? mnemonicEl.value.trim() : '';
-
-  if (!moniker) return alert('الرجاء إدخال اسم النود (Moniker)');
-  if (mode === 'recover' && !mnemonic) return alert('الرجاء إدخال كلمات الاسترداد');
-
-  const btn = document.getElementById('btn-submit-node');
-  const oldText = btn ? btn.innerHTML : '';
-  if (btn) {
-    btn.innerHTML = 'جاري إطلاق الحاوية… <span class="spinner"></span>';
-    btn.disabled = true;
+  // ── Screen Management ──
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById(`${name}-screen`);
+    if (screen) screen.classList.add('active');
   }
 
-  try {
-    const res = await apiFetch('/api/nodes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ moniker, ip, type, mode, mnemonic })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'فشلت عملية الإطلاق');
+  // ── View Management ──
+  function showView(name) {
+    currentView = name;
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    hideLaunchNodeModal();
-    
-    // Show success wallet details
-    const addr = data.wallet?.address || 'N/A';
-    const mnem = data.wallet?.mnemonic || '';
-    showWalletSuccessModal(addr, mnem);
-    
-    refreshAll();
-  } catch (e) {
-    alert('خطأ أثناء إطلاق النود: ' + e.message);
-  } finally {
-    if (btn) {
-      btn.innerHTML = oldText;
-      btn.disabled = false;
-    }
-  }
-}
+    const view = document.getElementById(`view-${name}`);
+    if (view) view.classList.add('active');
 
-async function deleteNode(moniker) {
-  if (!confirm(`هل أنت متأكد من إيقاف وحذف النود ${moniker} نهائياً؟ سيتم مسح الحاوية وسجلات البيانات.`)) return;
+    const nav = document.querySelector(`[data-view="${name}"]`);
+    if (nav) nav.classList.add('active');
 
-  try {
-    const res = await apiFetch(`/api/nodes/${moniker}`, {
-      method: 'DELETE'
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'فشل حذف النود');
-    
-    alert('تم إيقاف وحذف النود بنجاح!');
-    refreshAll();
-  } catch (e) {
-    alert('خطأ أثناء الحذف: ' + e.message);
-  }
-}
-
-// ── Global Settings Handlers ─────────────────────────
-async function loadSettingsInputs() {
-  try {
-    const res = await apiFetch('/api/settings');
-    if (res.ok) {
-      const settings = await res.json();
-      window._cachedSettings = settings;
-      setElementValue('setting-moniker', settings.moniker || '{hostname}-{type}');
-    }
-  } catch (e) {
-    // Fallback to defaults
-    setElementValue('setting-moniker', '{hostname}-{type}');
-  }
-}
-
-async function saveGlobalSettings() {
-  const monikerEl = document.getElementById('setting-moniker');
-  const moniker = monikerEl ? monikerEl.value : '{hostname}-{type}';
-
-  try {
-    const res = await apiFetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ moniker })
-    });
-    if (!res.ok) throw new Error('فشل حفظ الإعدادات');
-    window._cachedSettings = { ...window._cachedSettings, moniker };
-    alert('تم حفظ الإعدادات بنجاح!');
-  } catch (e) {
-    alert('خطأ: ' + e.message);
-  }
-}
-
-// ── API Fetch Wrapper ────────────────────────────────
-async function apiFetch(url, options = {}) {
-  options.headers = options.headers || {};
-
-  // Inject auth token
-  const token = localStorage.getItem('nodepin_auth_token');
-  if (token) {
-    options.headers['x-auth-token'] = token;
+    // Load data for the view
+    if (name === 'overview') loadDashboard();
+    if (name === 'servers') loadServers();
+    if (name === 'nodes') loadNodes();
   }
 
-  // Inject active server ID for proxy routes
-  const activeId = getActiveServerId();
-  if (activeId) {
-    options.headers['x-server-id'] = activeId;
-  }
+  // ══════════════════════════════════════════
+  // AUTH
+  // ══════════════════════════════════════════
 
-  const res = await fetch(url, options);
-  if (res.status === 401) {
-    // Token expired or invalid — redirect to login
-    localStorage.removeItem('nodepin_auth_token');
-    window.location.href = '/login.html';
-    throw new Error('Unauthorized');
-  }
-  return res;
-}
-
-function getActiveServerId() {
-  return localStorage.getItem('nodepin_active_server_id');
-}
-
-// ── Reload servers from D1 ───────────────────────────
-async function reloadServers() {
-  try {
-    const res = await apiFetch('/api/servers');
-    if (res.ok) {
-      const data = await res.json();
-      window._cachedServers = data.servers || [];
-
-      // Auto-activate first server if none active
-      if (!getActiveServerId() && window._cachedServers.length > 0) {
-        localStorage.setItem('nodepin_active_server_id', window._cachedServers[0].id);
+  async function checkAuth() {
+    try {
+      const health = await api('/health');
+      if (health.setupRequired) {
+        document.getElementById('setup-form').classList.remove('hidden');
+        document.getElementById('login-form').classList.add('hidden');
       }
+      if (sessionToken) {
+        showScreen('dashboard');
+        showView('overview');
+      }
+    } catch {
+      showScreen('login');
     }
-  } catch (e) {
-    window._cachedServers = [];
-  }
-  loadServersList();
-  renderServersTable();
-}
-
-function loadServersList() {
-  const select = document.getElementById('server-select');
-  if (!select) return;
-  
-  const servers = window._cachedServers || [];
-  const launchBtn = document.getElementById('btn-launch-node');
-  
-  if (servers.length > 0) {
-    select.style.display = 'inline-block';
-    if (launchBtn) launchBtn.style.display = 'inline-flex';
-  } else {
-    select.style.display = 'none';
-    if (launchBtn) launchBtn.style.display = 'none';
   }
 
-  select.innerHTML = '<option value="">-- اختر خادماً --</option>';
-  servers.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = `${s.name} (${s.ip})`;
-    select.appendChild(opt);
-  });
-  const activeId = getActiveServerId();
-  if (activeId) {
-    select.value = activeId;
-  }
-}
+  // Setup Form
+  document.getElementById('setup-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = document.getElementById('setup-password').value;
+    const confirm = document.getElementById('setup-confirm').value;
 
-function selectServer(id) {
-  localStorage.setItem('nodepin_active_server_id', id);
-  loadServersList();
-  renderServersTable();
-  refreshAll();
-}
+    if (password !== confirm) {
+      toast('Passwords do not match', 'error');
+      return;
+    }
 
-function badge(state) {
-  const map = { running:'running', exited:'stopped', stopped:'stopped', starting:'starting', error:'error', ok:'running', no_identity:'stopped' };
-  const cls = map[state] || 'stopped';
-  const labels = { running:'يعمل', stopped:'متوقف', starting:'قيد الإقلاع', error:'خطأ', no_identity:'بدون هوية' };
-  return `<span class="badge ${cls}">${labels[state] || state}</span>`;
-}
-
-function row(key, val) {
-  if (val === null || val === undefined || val === '') return '';
-  return `<div class="row"><span class="key">${key}</span><span class="val">${val}</span></div>`;
-}
-
-function fmt(n, unit='') {
-  if (n === null || n === undefined) return '—';
-  if (typeof n === 'number') return n.toLocaleString('en') + (unit ? ' ' + unit : '');
-  return n;
-}
-
-// Format bytes helper
-function fmtBytes(b) {
-  if (!b) return '—';
-  const units = ['B','KB','MB','GB','TB'];
-  let i = 0; let v = b;
-  while (v >= 1024 && i < units.length-1) { v /= 1024; i++; }
-  return v.toFixed(1) + ' ' + units[i];
-}
-
-function fmtEarnings(info) {
-  if (info.earnings === null || info.earnings === undefined) return null;
-  if (info.network === 'storj') return '$' + (info.earnings / 100).toFixed(2);
-  return info.earnings + ' ' + (info.token || '');
-}
-
-function ts() { return new Date().toLocaleTimeString('ar-SA'); }
-
-// ── logout ────────────────────────────────────────────
-async function doLogout() {
-  localStorage.removeItem('nodepin_auth_token');
-  window.location.href = '/login.html';
-}
-
-// Check auth status to show/hide logout btn
-async function checkAuth() {
-  try {
-    const token = localStorage.getItem('nodepin_auth_token');
-    if (!token) {
-      // Try accessing health — if auth is disabled, it will work
-      const r = await fetch('/api/servers', {
-        headers: token ? { 'x-auth-token': token } : {}
+    try {
+      await api('/auth/setup', {
+        method: 'POST',
+        body: JSON.stringify({ password })
       });
-      if (r.status === 401) {
-        window.location.href = '/login.html';
+      toast('Dashboard configured! Please sign in.', 'success');
+      document.getElementById('setup-form').classList.add('hidden');
+      document.getElementById('login-form').classList.remove('hidden');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  // Login Form
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+
+    try {
+      const data = await api('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ password })
+      });
+
+      sessionToken = data.token;
+      localStorage.setItem('nodepin_token', data.token);
+      errorEl.classList.add('hidden');
+      showScreen('dashboard');
+      showView('overview');
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.classList.remove('hidden');
+    }
+  });
+
+  // Logout
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    try {
+      await api('/auth/logout', { method: 'POST' });
+    } catch { /* ignore */ }
+    sessionToken = null;
+    localStorage.removeItem('nodepin_token');
+    showScreen('login');
+  });
+
+  // Change Password
+  document.getElementById('btn-change-password').addEventListener('click', () => {
+    openModal('Change Password', `
+      <form id="change-password-form">
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="cp-current" required>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="cp-new" minlength="8" required>
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="cp-confirm" minlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Update Password</button>
+      </form>
+    `);
+
+    document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById('cp-current').value;
+      const newPassword = document.getElementById('cp-new').value;
+      const confirm = document.getElementById('cp-confirm').value;
+
+      if (newPassword !== confirm) {
+        toast('Passwords do not match', 'error');
         return;
       }
-    }
-    const logBtn = document.getElementById('logout-btn');
-    if (logBtn && token) logBtn.style.display = 'inline-flex';
-  } catch (e) {
-    // ignore
-  }
-}
 
-// ── containers ────────────────────────────────────────
-async function loadContainers() {
-  const el = document.getElementById('containers');
-  if (!el) return;
-  try {
-    const res = await apiFetch('/api/containers');
-    if (!res.ok) throw new Error(res.statusText);
-    const data = await res.json();
-    const cs = data.containers || [];
+      try {
+        await api('/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        toast('Password updated successfully', 'success');
+        closeModal();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  });
 
-    // update summary
-    const sTotal = document.getElementById('s-total');
-    const sRunning = document.getElementById('s-running');
-    const sStopped = document.getElementById('s-stopped');
-    if (sTotal) sTotal.textContent = cs.length;
-    if (sRunning) sRunning.textContent = cs.filter(c=>c.state==='running').length;
-    if (sStopped) sStopped.textContent = cs.filter(c=>c.state!=='running').length;
+  // ══════════════════════════════════════════
+  // DASHBOARD OVERVIEW
+  // ══════════════════════════════════════════
 
-    if (!cs.length) { el.innerHTML = '<div class="placeholder">لا توجد حاويات NodePIN مضافة على هذا الخادم.</div>'; return; }
+  async function loadDashboard() {
+    try {
+      const stats = await api('/dashboard');
 
-    el.innerHTML = cs.map(c => `
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">${c.name}</div>
-            <div class="card-subtitle">${c.image}</div>
-          </div>
-          ${badge(c.state)}
-        </div>
-        ${row('الحالة', c.status)}
-        ${row('المنافذ', c.ports || '—')}
-        
-        <div style="margin-top: 1rem; text-align: left; border-top: 1px solid rgba(30, 58, 138, 0.1); padding-top: 0.75rem;">
-          <button class="btn btn-danger btn-sm" onclick="deleteNode('${c.name.replace('nodepin_sentinel_', '')}')">حذف النود 🗑️</button>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) {
-    el.innerHTML = `<div class="placeholder" style="color:var(--red)">⚠️ خطأ في الاتصال بالخادم. يرجى التأكد من تشغيل الـ API في السيرفر وإعدادات الـ IP. (${e.message})</div>`;
-  }
-}
+      document.getElementById('stat-total-servers').textContent = stats.servers.total;
+      document.getElementById('stat-online-servers').textContent = stats.servers.online;
+      document.getElementById('stat-total-nodes').textContent = stats.nodes.total;
+      document.getElementById('stat-running-nodes').textContent = stats.nodes.running;
 
-// ── metrics ───────────────────────────────────────────
-async function loadMetrics() {
-  const el = document.getElementById('metrics');
-  if (!el) return;
-  try {
-    const res = await apiFetch('/api/metrics');
-    if (!res.ok) throw new Error(res.statusText);
-    const data = await res.json();
-    const entries = Object.entries(data.nodes || {});
-
-    const sNet = document.getElementById('s-networks');
-    if (sNet) sNet.textContent = entries.length;
-
-    if (!entries.length) { el.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً على هذا السيرفر.</div>'; return; }
-
-    el.innerHTML = entries.map(([name, info]) => {
-      const x = info.extra || {};
-      const earned = fmtEarnings(info);
-      let extraRows = '';
-
-      if (name === 'mysterium') {
-        const errorRow = x.message || x.error;
-        extraRows = [
-          row('المعرف (Identity)', x.identity),
-          row('الاسم المستعار (Moniker)', x.moniker),
-          row('المتصلين (Peers)', fmt(x.peers)),
-          row('المستهلك (Transferred)', fmtBytes(x.transferred)),
-          row('الرصيد (Balance)', x.balance),
-          row('النسخة (Version)', x.version),
-          errorRow ? `<div class="row" style="color:var(--red);font-weight:600">${errorRow}</div>` : ''
-        ].join('');
+      const breakdown = document.getElementById('protocol-breakdown');
+      if (stats.byProtocol.length === 0) {
+        breakdown.innerHTML = '<div class="empty-state"><p>No nodes configured yet</p></div>';
       } else {
-        extraRows = Object.entries(x)
-          .filter(([,v]) => v !== null && v !== undefined && v !== '')
-          .map(([k,v]) => row(k, v)).join('');
+        breakdown.innerHTML = stats.byProtocol.map(p => `
+          <div class="protocol-card">
+            <div class="protocol-name"><span class="protocol-badge ${p.protocol}">${p.protocol}</span></div>
+            <div class="protocol-stats">${p.running} / ${p.count} running</div>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      toast('Failed to load dashboard: ' + err.message, 'error');
+    }
+  }
+
+  document.getElementById('btn-refresh-dashboard').addEventListener('click', loadDashboard);
+
+  // ══════════════════════════════════════════
+  // SERVERS
+  // ══════════════════════════════════════════
+
+  async function loadServers() {
+    const container = document.getElementById('servers-list');
+    try {
+      const { servers } = await api('/servers');
+
+      if (servers.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">&#9881;</div>
+            <p>No servers added yet. Click "Add Server" to get started.</p>
+          </div>`;
+        return;
       }
 
-      return `
-        <div class="card">
+      container.innerHTML = servers.map(s => `
+        <div class="card" data-id="${s.id}">
+          <div class="card-header">
+            <span class="card-title">${esc(s.name)}</span>
+            <div class="card-actions">
+              <button class="btn-icon" onclick="NodePIN.editServer('${s.id}')" title="Edit">&#9998;</button>
+              <button class="btn-icon" onclick="NodePIN.checkServer('${s.id}')" title="Check Connection">&#8635;</button>
+              <button class="btn-icon" onclick="NodePIN.deleteServer('${s.id}')" title="Delete">&#10005;</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="label">Host</span>
+              <span class="value">${esc(s.host)}:${s.port}</span>
+            </div>
+            <div class="card-row">
+              <span class="label">User</span>
+              <span class="value">${esc(s.username)}</span>
+            </div>
+            <div class="card-row">
+              <span class="label">Auth</span>
+              <span class="value">${s.auth_type}</span>
+            </div>
+            <div class="card-row">
+              <span class="label">Status</span>
+              <span class="badge badge-${s.status}">${s.status}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = `<div class="empty-state"><p>Error: ${esc(err.message)}</p></div>`;
+    }
+  }
+
+  // Add Server
+  document.getElementById('btn-add-server').addEventListener('click', () => {
+    openModal('Add Server', `
+      <form id="add-server-form">
+        <div class="form-group">
+          <label>Server Name</label>
+          <input type="text" id="srv-name" placeholder="e.g. VPS US-1" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Host (IP / Domain)</label>
+            <input type="text" id="srv-host" placeholder="192.168.1.1" required>
+          </div>
+          <div class="form-group">
+            <label>SSH Port</label>
+            <input type="number" id="srv-port" value="22" min="1" max="65535">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="srv-username" value="root">
+        </div>
+        <div class="form-group">
+          <label>Auth Type</label>
+          <select id="srv-authtype">
+            <option value="password">Password</option>
+            <option value="key">SSH Key</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label id="srv-cred-label">Password</label>
+          <textarea id="srv-credential" placeholder="Enter password or paste SSH private key" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Add Server</button>
+      </form>
+    `);
+
+    // Toggle credential label based on auth type
+    document.getElementById('srv-authtype').addEventListener('change', (e) => {
+      const label = document.getElementById('srv-cred-label');
+      const input = document.getElementById('srv-credential');
+      if (e.target.value === 'key') {
+        label.textContent = 'SSH Private Key';
+        input.placeholder = '-----BEGIN OPENSSH PRIVATE KEY-----\n...';
+      } else {
+        label.textContent = 'Password';
+        input.placeholder = 'Enter password';
+      }
+    });
+
+    document.getElementById('add-server-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/servers', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: document.getElementById('srv-name').value,
+            host: document.getElementById('srv-host').value,
+            port: parseInt(document.getElementById('srv-port').value),
+            username: document.getElementById('srv-username').value,
+            authType: document.getElementById('srv-authtype').value,
+            credential: document.getElementById('srv-credential').value
+          })
+        });
+        toast('Server added successfully', 'success');
+        closeModal();
+        loadServers();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════
+  // NODES
+  // ══════════════════════════════════════════
+
+  async function loadNodes() {
+    const container = document.getElementById('nodes-list');
+    const filterSelect = document.getElementById('filter-server');
+
+    try {
+      // Load servers for filter dropdown
+      const { servers } = await api('/servers');
+      filterSelect.innerHTML = '<option value="">All Servers</option>' +
+        servers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+
+      const serverId = filterSelect.value;
+      const { nodes } = await api(`/nodes${serverId ? '?server_id=' + serverId : ''}`);
+
+      if (nodes.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">&#9678;</div>
+            <p>No nodes configured. Click "Add Node" to create one.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = nodes.map(n => `
+        <div class="card" data-id="${n.id}">
           <div class="card-header">
             <div>
-              <div class="card-title">${name.toUpperCase()}</div>
-              <div class="card-subtitle">${info.token || '—'}</div>
+              <span class="card-title">${esc(n.name)}</span>
+              <span class="protocol-badge ${n.protocol}">${n.protocol}</span>
             </div>
-            ${badge(info.status)}
+            <div class="card-actions">
+              <button class="btn-icon" onclick="NodePIN.controlNode('${n.id}', 'restart')" title="Restart">&#8635;</button>
+              <button class="btn-icon" onclick="NodePIN.deleteNode('${n.id}')" title="Delete">&#10005;</button>
+            </div>
           </div>
-          ${extraRows}
-          ${earned ? `
-            <div class="earnings-box">
-              <span class="earn-label">إجمالي الأرباح</span>
-              <span class="earn-value">${earned}</span>
-            </div>` : ''}
+          <div class="card-body">
+            <div class="card-row">
+              <span class="label">Server</span>
+              <span class="value">${esc(n.server_name || 'N/A')}</span>
+            </div>
+            ${n.ip_address ? `<div class="card-row"><span class="label">IP</span><span class="value">${esc(n.ip_address)}</span></div>` : ''}
+            ${n.port ? `<div class="card-row"><span class="label">Port</span><span class="value">${n.port}</span></div>` : ''}
+            <div class="card-row">
+              <span class="label">Status</span>
+              <span class="badge badge-${n.status}">${n.status}</span>
+            </div>
+          </div>
         </div>
-      `;
-    }).join('');
-  } catch(e) {
-    el.innerHTML = `<div class="placeholder" style="color:var(--red)">⚠️ خطأ في الاتصال بالخادم لجلب بيانات النودات. (${e.message})</div>`;
+      `).join('');
+    } catch (err) {
+      container.innerHTML = `<div class="empty-state"><p>Error: ${esc(err.message)}</p></div>`;
+    }
   }
-}
 
-// ── main loop ─────────────────────────────────────────
-async function refreshAll() {
-  const activeTab = window.location.hash || '#dashboard';
-  if (activeTab !== '#dashboard') return;
+  document.getElementById('filter-server').addEventListener('change', loadNodes);
 
-  const lastUp = document.getElementById('last-update');
-  if (lastUp) lastUp.textContent = 'آخر تحديث: ' + ts();
-  
-  const server = getActiveServerId();
-  const sTotal = document.getElementById('s-total');
-  const sRunning = document.getElementById('s-running');
-  const sStopped = document.getElementById('s-stopped');
-  const sNet = document.getElementById('s-networks');
+  // Add Node
+  document.getElementById('btn-add-node').addEventListener('click', async () => {
+    const { servers } = await api('/servers');
 
-  if (!server) {
-    if (sTotal) sTotal.textContent = '0';
-    if (sRunning) sRunning.textContent = '0';
-    if (sStopped) sStopped.textContent = '0';
-    if (sNet) sNet.textContent = '0';
-    
-    const cont = document.getElementById('containers');
-    if (cont) cont.innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من تبويب "إدارة الخوادم" لبدء العمل.</div>';
-    
-    const metr = document.getElementById('metrics');
-    if (metr) metr.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً.</div>';
-    return;
+    if (servers.length === 0) {
+      toast('Add a server first before adding nodes', 'error');
+      return;
+    }
+
+    openModal('Add Sentinel Node', `
+      <form id="add-node-form">
+        <div class="form-group">
+          <label>Node Name</label>
+          <input type="text" id="node-name" placeholder="e.g. Sentinel US-1" required>
+        </div>
+        <div class="form-group">
+          <label>Server</label>
+          <select id="node-server" required>
+            ${servers.map(s => `<option value="${s.id}">${esc(s.name)} (${esc(s.host)})</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Protocol</label>
+          <select id="node-protocol" required>
+            <option value="v2ray">V2Ray</option>
+            <option value="wireguard">WireGuard</option>
+            <option value="openvpn">OpenVPN</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Port (optional)</label>
+            <input type="number" id="node-port" placeholder="Auto">
+          </div>
+          <div class="form-group">
+            <label>IP Address (optional)</label>
+            <input type="text" id="node-ip" placeholder="Node public IP">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Config Path (optional)</label>
+          <input type="text" id="node-config" placeholder="/etc/v2ray/config.json">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Add Node</button>
+      </form>
+    `);
+
+    document.getElementById('add-node-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/nodes', {
+          method: 'POST',
+          body: JSON.stringify({
+            serverId: document.getElementById('node-server').value,
+            name: document.getElementById('node-name').value,
+            protocol: document.getElementById('node-protocol').value,
+            port: document.getElementById('node-port').value ? parseInt(document.getElementById('node-port').value) : null,
+            ipAddress: document.getElementById('node-ip').value || null,
+            configPath: document.getElementById('node-config').value || null
+          })
+        });
+        toast('Node added successfully', 'success');
+        closeModal();
+        loadNodes();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════
+  // MODAL
+  // ══════════════════════════════════════════
+
+  function openModal(title, bodyHtml) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = bodyHtml;
+    document.getElementById('modal-overlay').classList.remove('hidden');
   }
-  await Promise.all([loadContainers(), loadMetrics()]);
-}
 
-// ── Initialization ────────────────────────────────────
-(async function init() {
-  await checkAuth();
-  await reloadServers();
-  handleRoute();
-  setInterval(refreshAll, 30_000);
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+  }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // ══════════════════════════════════════════
+  // TOAST
+  // ══════════════════════════════════════════
+
+  function toast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  // ══════════════════════════════════════════
+  // UTILITIES
+  // ══════════════════════════════════════════
+
+  function esc(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // ══════════════════════════════════════════
+  // NAVIGATION
+  // ══════════════════════════════════════════
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      showView(item.dataset.view);
+    });
+  });
+
+  // ══════════════════════════════════════════
+  // GLOBAL API (for inline onclick handlers)
+  // ══════════════════════════════════════════
+
+  window.NodePIN = {
+    async deleteServer(id) {
+      if (!confirm('Delete this server and all its nodes?')) return;
+      try {
+        await api(`/servers/${id}`, { method: 'DELETE' });
+        toast('Server deleted', 'success');
+        loadServers();
+      } catch (err) { toast(err.message, 'error'); }
+    },
+
+    async checkServer(id) {
+      try {
+        toast('Checking connection...', 'info');
+        const { status } = await api(`/servers/${id}/check`, { method: 'POST' });
+        toast(`Server is ${status}`, status === 'online' ? 'success' : 'error');
+        loadServers();
+      } catch (err) { toast(err.message, 'error'); }
+    },
+
+    editServer(id) {
+      // TODO: Implement edit server modal
+      toast('Edit server coming soon', 'info');
+    },
+
+    async deleteNode(id) {
+      if (!confirm('Delete this node?')) return;
+      try {
+        await api(`/nodes/${id}`, { method: 'DELETE' });
+        toast('Node deleted', 'success');
+        loadNodes();
+      } catch (err) { toast(err.message, 'error'); }
+    },
+
+    async controlNode(id, action) {
+      try {
+        toast(`${action}ing node...`, 'info');
+        const result = await api(`/nodes/${id}/control`, {
+          method: 'POST',
+          body: JSON.stringify({ action })
+        });
+        toast(result.success ? `${action} successful` : `${action} failed`, result.success ? 'success' : 'error');
+        loadNodes();
+      } catch (err) { toast(err.message, 'error'); }
+    }
+  };
+
+  // ══════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════
+
+  checkAuth();
 })();
-
-// ── Password Mask Visibility Toggle ───────────────────
-function toggleKeyMask(checked) {
-  const el = document.getElementById('server-input-ssh-key');
-  if (el) {
-    el.style.webkitTextSecurity = checked ? 'disc' : 'none';
-  }
-}

@@ -1,241 +1,148 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NodePIN Dashboard</title>
-  <link rel="stylesheet" href="app.css">
+  <title>NodePIN — Sentinel Dashboard</title>
+  <link rel="stylesheet" href="/app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<header>
-  <div class="logo">Node<span>PIN</span> <span style="font-size:.8rem;color:var(--muted);font-weight:400">Dashboard</span></div>
-  <div class="header-right">
-    <!-- Active Server indicator -->
-    <select id="server-select" class="inline-input" style="width:180px; display:none;" onchange="selectServer(this.value)">
-      <option value="">-- اختر خادماً --</option>
-    </select>
-    <span id="last-update"></span>
-    <button class="btn" onclick="refreshAll()">⟳ تحديث</button>
-    <button class="btn btn-ghost" id="logout-btn" onclick="doLogout()">خروج</button>
-  </div>
-</header>
-
-<main>
-  <!-- Navigation bar (Client Router) -->
-  <nav class="nav-tabs">
-    <a href="#dashboard" class="nav-tab active">الرئيسية</a>
-    <a href="#servers" class="nav-tab">إدارة الخوادم</a>
-    <a href="#settings" class="nav-tab">إعدادات النودات</a>
-  </nav>
-
-  <!-- ── 1) Dashboard View ── -->
-  <div id="dashboard" class="view-container">
-    <!-- Summary strip -->
-    <div class="summary" id="summary">
-      <div class="stat-card"><div class="label">الحاويات</div><div class="value accent" id="s-total">—</div></div>
-      <div class="stat-card"><div class="label">تعمل</div><div class="value green" id="s-running">—</div></div>
-      <div class="stat-card"><div class="label">متوقفة</div><div class="value" id="s-stopped">—</div></div>
-      <div class="stat-card"><div class="label">الشبكات المفعّلة</div><div class="value accent" id="s-networks">—</div></div>
-    </div>
-
-    <!-- Active Containers Section -->
-    <div class="section-title">
-      <div class="section-title-text">الحاويات النشطة</div>
-      <button class="btn btn-sm" id="btn-launch-node" style="display:none;" onclick="openLaunchNodeModal()">+ إطلاق نود جديد</button>
-    </div>
-    <div id="containers" class="grid">
-      <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
-    </div>
-
-    <!-- Metrics & Wallets Section -->
-    <div class="section-title">
-      <div class="section-title-text">الأرباح والشبكات</div>
-    </div>
-    <div id="metrics" class="grid">
-      <div class="placeholder">جاري التحميل… <span class="spinner"></span></div>
-    </div>
-  </div>
-
-  <!-- ── 2) Servers View ── -->
-  <div id="servers" class="view-container" style="display:none;">
-    <div class="view-header">
-      <h2 class="view-title">الخوادم المضافة (VPS Servers)</h2>
-      <button class="btn" onclick="openAddServerModal()">+ إضافة خادم جديد</button>
-    </div>
-    
-    <div class="card" style="padding:0; overflow-x:auto; width:100%;">
-      <table class="servers-table">
-        <thead>
-          <tr>
-            <th>اسم السيرفر</th>
-            <th>عناوين الـ IP المرتبطة</th>
-            <th>حالة التحديد</th>
-            <th style="text-align:left;">إجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="servers-table-body">
-          <tr>
-            <td colspan="4" class="placeholder">لا توجد خوادم مضافة حالياً. اضغط على زر الإضافة لإعداد خادمك الأول.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── 3) Settings View ── -->
-  <div id="settings" class="view-container" style="display:none;">
-    <div class="view-header">
-      <h2 class="view-title">إعدادات النودات العامة</h2>
-    </div>
-
-    <div class="card settings-group">
-      <h3 style="font-size:1rem; font-weight:800; margin-bottom:1rem; color:var(--text);">⚙️ إعدادات عامة</h3>
-
-      <div class="modal-field">
-        <label>تسمية النودات التلقائي (Moniker Convention)</label>
-        <input type="text" id="setting-moniker" class="inline-input" placeholder="{hostname}-{type}" value="{hostname}-{type}">
-        <span style="font-size:0.75rem; color:var(--muted); margin-top:0.3rem; display:block;">المتغيرات المتاحة: {hostname} اسم السيرفر، {type} نوع النود (wireguard, v2ray, openvpn).</span>
-      </div>
-
-      <div style="text-align:left; margin-top:0.5rem;">
-        <button class="btn" onclick="saveGlobalSettings()">حفظ الإعدادات</button>
-      </div>
-    </div>
-  </div>
-</main>
-
-<!-- ── Custom Modal: Add Server ── -->
-<div id="modal-add-server" class="modal-overlay">
-  <div class="modal-box">
-    <h3 class="modal-title">إضافة خادم جديد</h3>
-    <div class="modal-body">
-      <div class="modal-field">
-        <label for="server-input-name">اسم الخادم</label>
-        <input type="text" id="server-input-name" class="inline-input" placeholder="Germany-VPS">
-      </div>
-      
-      <div class="modal-field" style="display:flex; gap:1rem;">
-        <div style="flex:2;">
-          <label for="server-input-ip">عنوان الـ IP الرئيسي</label>
-          <input type="text" id="server-input-ip" class="inline-input" placeholder="1.1.1.1">
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+      <div class="login-container">
+        <div class="login-logo">
+          <div class="logo-icon">N</div>
+          <h1>NodePIN</h1>
+          <p class="login-subtitle">Sentinel Dashboard</p>
         </div>
-        <div style="flex:1;">
-          <label for="server-input-ssh-port">منفذ SSH</label>
-          <input type="number" id="server-input-ssh-port" class="inline-input" value="22">
+
+        <!-- Setup Form (first time) -->
+        <form id="setup-form" class="login-form hidden">
+          <p class="setup-note">First time? Set your dashboard password.</p>
+          <div class="form-group">
+            <label for="setup-password">Password</label>
+            <input type="password" id="setup-password" placeholder="Min 8 characters" minlength="8" required>
+          </div>
+          <div class="form-group">
+            <label for="setup-confirm">Confirm Password</label>
+            <input type="password" id="setup-confirm" placeholder="Repeat password" minlength="8" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Setup Dashboard</button>
+        </form>
+
+        <!-- Login Form -->
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+          <p id="login-error" class="error-text hidden"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard-screen" class="screen">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo-icon small">N</div>
+          <span class="logo-text">NodePIN</span>
         </div>
-      </div>
-
-      <div class="modal-field">
-        <label for="server-input-ssh-user">اسم مستخدم SSH</label>
-        <input type="text" id="server-input-ssh-user" class="inline-input" value="root">
-      </div>
-
-      <div class="modal-field">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-          <label for="server-input-ssh-key" style="margin-bottom:0;">كلمة مرور SSH أو المفتاح الخاص (SSH Password / Private Key)</label>
-          <label style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.75rem; cursor:pointer; font-weight:normal; color:var(--muted);">
-            <input type="checkbox" id="toggle-ssh-key-mask" checked onchange="toggleKeyMask(this.checked)"> إخفاء النص
-          </label>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item active" data-view="overview">
+            <span class="nav-icon">&#9632;</span> Overview
+          </a>
+          <a href="#" class="nav-item" data-view="servers">
+            <span class="nav-icon">&#9881;</span> Servers
+          </a>
+          <a href="#" class="nav-item" data-view="nodes">
+            <span class="nav-icon">&#9678;</span> Nodes
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <button id="btn-change-password" class="btn btn-ghost btn-sm">Change Password</button>
+          <button id="btn-logout" class="btn btn-ghost btn-sm">Logout</button>
         </div>
-        <textarea id="server-input-ssh-key" class="inline-input" placeholder="أدخل كلمة المرور أو مفتاح SSH الخاص بك..." style="height:80px; resize:none; font-family:monospace; -webkit-text-security: disc;"></textarea>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Overview View -->
+        <div id="view-overview" class="view active">
+          <div class="view-header">
+            <h2>Overview</h2>
+            <button id="btn-refresh-dashboard" class="btn btn-ghost btn-sm">Refresh</button>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Servers</div>
+              <div class="stat-value" id="stat-total-servers">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Online Servers</div>
+              <div class="stat-value online" id="stat-online-servers">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Nodes</div>
+              <div class="stat-value" id="stat-total-nodes">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Running Nodes</div>
+              <div class="stat-value online" id="stat-running-nodes">0</div>
+            </div>
+          </div>
+          <div class="section">
+            <h3>Nodes by Protocol</h3>
+            <div id="protocol-breakdown" class="protocol-grid"></div>
+          </div>
+        </div>
+
+        <!-- Servers View -->
+        <div id="view-servers" class="view">
+          <div class="view-header">
+            <h2>Servers</h2>
+            <button id="btn-add-server" class="btn btn-primary btn-sm">+ Add Server</button>
+          </div>
+          <div id="servers-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Nodes View -->
+        <div id="view-nodes" class="view">
+          <div class="view-header">
+            <h2>Sentinel Nodes</h2>
+            <button id="btn-add-node" class="btn btn-primary btn-sm">+ Add Node</button>
+          </div>
+          <div class="filter-bar">
+            <label>Filter by server:</label>
+            <select id="filter-server">
+              <option value="">All Servers</option>
+            </select>
+          </div>
+          <div id="nodes-list" class="cards-grid"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal" id="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Modal</h3>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
       </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="hideAddServerModal()">إلغاء</button>
-      <button class="btn" onclick="submitAddServer()">إضافة</button>
-    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
   </div>
-</div>
 
-<!-- ── Custom Modal: Add IP to Server ── -->
-<div id="modal-add-ip" class="modal-overlay">
-  <div class="modal-box" style="max-width:400px;">
-    <h3 class="modal-title">إضافة عنوان IP إضافي</h3>
-    <div class="modal-body">
-      <input type="hidden" id="add-ip-server-primary-ip">
-      <div class="modal-field">
-        <label for="add-ip-input-val">عنوان الـ IP الجديد</label>
-        <input type="text" id="add-ip-input-val" class="inline-input" placeholder="1.1.1.2">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="hideAddIpModal()">إلغاء</button>
-      <button class="btn" onclick="submitAddIp()">إضافة</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Custom Modal: Launch Node ── -->
-<div id="modal-launch-node" class="modal-overlay">
-  <div class="modal-box">
-    <h3 class="modal-title">إطلاق نود Sentinel جديد</h3>
-    <div class="modal-body">
-      <div class="modal-field">
-        <label for="node-input-type">نوع النود (Node Type)</label>
-        <select id="node-input-type" class="inline-input" onchange="autoFillMoniker()">
-          <option value="wireguard">WireGuard dVPN</option>
-          <option value="v2ray">V2Ray dVPN</option>
-          <option value="openvpn">OpenVPN dVPN</option>
-        </select>
-      </div>
-
-      <div class="modal-field">
-        <label for="node-input-ip">الـ IP المستهدف (Target IP)</label>
-        <select id="node-input-ip" class="inline-input">
-          <!-- Populated dynamically based on active server IPs -->
-        </select>
-      </div>
-
-      <div class="modal-field">
-        <label for="node-input-moniker">اسم النود (Moniker)</label>
-        <input type="text" id="node-input-moniker" class="inline-input" placeholder="germany-wg">
-      </div>
-
-      <div class="modal-field">
-        <label for="node-input-wallet-mode">إعداد المحفظة (Wallet Setup)</label>
-        <select id="node-input-wallet-mode" class="inline-input" onchange="toggleMnemonicField(this.value)">
-          <option value="auto">توليد محفظة جديدة تلقائياً (Auto Generate)</option>
-          <option value="recover">استرداد محفظة سابقة عبر كلمات البذور (Recover Wallet)</option>
-        </select>
-      </div>
-
-      <div class="modal-field" id="node-field-mnemonic" style="display:none;">
-        <label for="node-input-mnemonic">كلمات الاسترداد الـ 24 (Mnemonic Seed Phrase)</label>
-        <textarea id="node-input-mnemonic" class="inline-input" placeholder="word1 word2 word3..." style="height:70px; resize:none;"></textarea>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="hideLaunchNodeModal()">إلغاء</button>
-      <button class="btn" id="btn-submit-node" onclick="submitLaunchNode()">إطلاق النود 🚀</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Custom Modal: Wallet Generated Success ── -->
-<div id="modal-wallet-success" class="modal-overlay">
-  <div class="modal-box" style="max-width:550px;">
-    <h3 class="modal-title" style="color:var(--green);">✔️ تم إطلاق النود وتوليد المحفظة بنجاح!</h3>
-    <div class="modal-body">
-      <p style="font-size:0.9rem; line-height:1.5; margin-bottom:1.25rem;">تم تشغيل النود وربطه بالـ IP المحدد. لكي يعمل النود بشكل كامل، يجب عليك تمويل عنوان المحفظة بالـ DVPN.</p>
-      
-      <div class="modal-field">
-        <label>عنوان المحفظة (Wallet Address)</label>
-        <input type="text" id="success-wallet-address" class="inline-input" readonly style="font-family:monospace; background:rgba(30,41,59,0.5);" onclick="this.select()">
-      </div>
-
-      <div class="modal-field" id="success-mnemonic-group">
-        <label style="color:var(--red);">⚠️ كلمات الاسترداد السرية (Mnemonic Seed Phrase)</label>
-        <textarea id="success-wallet-mnemonic" class="inline-input" readonly style="height:80px; resize:none; font-family:monospace; background:rgba(30,41,59,0.5); color:var(--yellow);" onclick="this.select()"></textarea>
-        <span style="font-size:0.75rem; color:var(--red); font-weight:700; margin-top:0.4rem; display:block;">احفظ هذه الكلمات in مكان آمن للغاية. لن يتم عرضها مرة أخرى أبداً!</span>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="hideWalletSuccessModal()">حسناً، فهمت</button>
-    </div>
-  </div>
-</div>
-
-<script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

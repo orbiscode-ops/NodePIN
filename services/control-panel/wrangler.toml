@@ -1,14 +1,33 @@
 name = "nodepin-dashboard"
-main = "worker.js"
-compatibility_date = "2024-04-01"
+main = "src/worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
 
-# Serve the static files from the public folder using Cloudflare Workers Assets
-assets = { directory = "./public" }
+# Static assets
+assets = { directory = "./public", binding = "ASSETS" }
 
-# D1 Database — قاعدة بيانات لتخزين السيرفرات وإعداداتها
-# أنشئ قاعدة البيانات أولاً عبر:  npx wrangler d1 create nodepin-db
-# ثم ضع الـ database_id الناتج هنا
 [[d1_databases]]
 binding = "DB"
 database_name = "nodepin-db"
-database_id = ""  # ← ضع هنا الـ ID بعد إنشاء القاعدة
+database_id = ""
+
+[vars]
+ENVIRONMENT = "production"
+
+[placement]
+mode = "smart"
+name = "nodepin-dashboard"
+main = "src/worker.js"
+compatibility_date = "2026-7-12"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nodepin-db"
+database_id = ""
+
+[vars]
+ENVIRONMENT = "production"
+
+[placement]
+mode = "smart"

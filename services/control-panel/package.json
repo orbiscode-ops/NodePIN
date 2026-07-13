@@ -1,19 +1,19 @@
 {
   "name": "nodepin-control-panel",
-  "version": "1.0.0",
-  "description": "Pluggable dashboard for NodePIN node management",
-  "main": "index.js",
+  "version": "2.0.0",
+  "private": true,
+  "description": "NodePIN — Sentinel Node Management Dashboard",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
-    "test": "node --test"
-  },
-  "engines": {
-    "node": ">=18"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "dockerode": "^4.0.2",
-    "ssh2": "^1.15.0"
+    "ssh2": "^1.16.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "wrangler": "^3.99.0"
   }
 }
