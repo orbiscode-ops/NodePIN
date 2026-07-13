@@ -130,8 +130,13 @@
       </div>
 
       <div class="modal-field">
-        <label for="server-input-ssh-key">كلمة مرور SSH أو المفتاح الخاص (SSH Password / Private Key)</label>
-        <textarea id="server-input-ssh-key" class="inline-input" placeholder="أدخل كلمة المرور أو مفتاح SSH الخاص بك..." style="height:80px; resize:none; font-family:monospace;"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <label for="server-input-ssh-key" style="margin-bottom:0;">كلمة مرور SSH أو المفتاح الخاص (SSH Password / Private Key)</label>
+          <label style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.75rem; cursor:pointer; font-weight:normal; color:var(--muted);">
+            <input type="checkbox" id="toggle-ssh-key-mask" checked onchange="toggleKeyMask(this.checked)"> إخفاء النص
+          </label>
+        </div>
+        <textarea id="server-input-ssh-key" class="inline-input" placeholder="أدخل كلمة المرور أو مفتاح SSH الخاص بك..." style="height:80px; resize:none; font-family:monospace; -webkit-text-security: disc;"></textarea>
       </div>
     </div>
     <div class="modal-actions">

@@ -39,6 +39,11 @@ function openAddServerModal() {
   setElementValue('server-input-ssh-user', 'root');
   setElementValue('server-input-ssh-key', '');
   
+  // Reset the mask checkbox to checked
+  const checkbox = document.getElementById('toggle-ssh-key-mask');
+  if (checkbox) checkbox.checked = true;
+  toggleKeyMask(true);
+
   // Reset legacy element IDs to prevent any caching errors
   setElementValue('server-input-key', '');
   setElementValue('server-input-ips', '');
@@ -640,3 +645,11 @@ checkAuth();
 loadServersList();
 handleRoute();
 setInterval(refreshAll, 30_000);
+
+// ── Password Mask Visibility Toggle ───────────────────
+function toggleKeyMask(checked) {
+  const el = document.getElementById('server-input-ssh-key');
+  if (el) {
+    el.style.webkitTextSecurity = checked ? 'disc' : 'none';
+  }
+}
