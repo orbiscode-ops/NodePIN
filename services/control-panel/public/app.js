@@ -1,3 +1,9 @@
+// Helper to safely set input values without throwing null pointer errors
+function setElementValue(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
 // ── Routing Handler ──────────────────────────────────
 function handleRoute() {
   const hash = window.location.hash || '#dashboard';
@@ -27,40 +33,56 @@ window.addEventListener('hashchange', handleRoute);
 
 // ── Custom Modal: Add Server Handlers ────────────────
 function openAddServerModal() {
-  document.getElementById('server-input-name').value = '';
-  document.getElementById('server-input-ip').value = '';
-  document.getElementById('server-input-ssh-port').value = '22';
-  document.getElementById('server-input-ssh-user').value = 'root';
-  document.getElementById('server-input-ssh-key').value = '';
+  setElementValue('server-input-name', '');
+  setElementValue('server-input-ip', '');
+  setElementValue('server-input-ssh-port', '22');
+  setElementValue('server-input-ssh-user', 'root');
+  setElementValue('server-input-ssh-key', '');
+  
+  // Reset legacy element IDs to prevent any caching errors
+  setElementValue('server-input-key', '');
+  setElementValue('server-input-ips', '');
+
   const overlay = document.getElementById('modal-add-server');
-  overlay.style.display = 'flex';
-  setTimeout(() => overlay.classList.add('active'), 10);
+  if (overlay) {
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 10);
+  }
 }
 
 function hideAddServerModal() {
   const overlay = document.getElementById('modal-add-server');
-  overlay.classList.remove('active');
-  setTimeout(() => overlay.style.display = 'none', 200);
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.style.display = 'none', 200);
+  }
 }
 
 // ── Custom Modal: Add IP Handlers ────────────────────
 function openAddIpModal(primaryIp) {
-  document.getElementById('add-ip-server-primary-ip').value = primaryIp;
-  document.getElementById('add-ip-input-val').value = '';
+  setElementValue('add-ip-server-primary-ip', primaryIp);
+  setElementValue('add-ip-input-val', '');
   const overlay = document.getElementById('modal-add-ip');
-  overlay.style.display = 'flex';
-  setTimeout(() => overlay.classList.add('active'), 10);
+  if (overlay) {
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 10);
+  }
 }
 
 function hideAddIpModal() {
   const overlay = document.getElementById('modal-add-ip');
-  overlay.classList.remove('active');
-  setTimeout(() => overlay.style.display = 'none', 200);
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.style.display = 'none', 200);
+  }
 }
 
 function submitAddIp() {
-  const primaryIp = document.getElementById('add-ip-server-primary-ip').value;
-  const newIp = document.getElementById('add-ip-input-val').value.trim();
+  const primaryIpEl = document.getElementById('add-ip-server-primary-ip');
+  const newIpEl = document.getElementById('add-ip-input-val');
+  
+  const primaryIp = primaryIpEl ? primaryIpEl.value : '';
+  const newIp = newIpEl ? newIpEl.value.trim() : '';
 
   if (!newIp) return alert('الرجاء إدخال عنوان الـ IP الجديد');
 
@@ -91,41 +113,53 @@ function openLaunchNodeModal() {
   if (!activeServer) return alert('خطأ في استرجاع بيانات الخادم النشط.');
 
   const ipSelect = document.getElementById('node-input-ip');
-  ipSelect.innerHTML = '';
-  
-  const ips = activeServer.ips || [activeServer.ip];
-  ips.forEach(ip => {
-    const opt = document.createElement('option');
-    opt.value = ip;
-    opt.textContent = ip;
-    ipSelect.appendChild(opt);
-  });
+  if (ipSelect) {
+    ipSelect.innerHTML = '';
+    const ips = activeServer.ips || [activeServer.ip];
+    ips.forEach(ip => {
+      const opt = document.createElement('option');
+      opt.value = ip;
+      opt.textContent = ip;
+      ipSelect.appendChild(opt);
+    });
+  }
 
   // Reset launch fields
-  document.getElementById('node-input-moniker').value = '';
-  document.getElementById('node-input-wallet-mode').value = 'auto';
-  document.getElementById('node-field-mnemonic').style.display = 'none';
-  document.getElementById('node-input-mnemonic').value = '';
+  setElementValue('node-input-moniker', '');
+  setElementValue('node-input-wallet-mode', 'auto');
+  
+  const mField = document.getElementById('node-field-mnemonic');
+  if (mField) mField.style.display = 'none';
+  setElementValue('node-input-mnemonic', '');
 
   autoFillMoniker();
 
   const overlay = document.getElementById('modal-launch-node');
-  overlay.style.display = 'flex';
-  setTimeout(() => overlay.classList.add('active'), 10);
+  if (overlay) {
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 10);
+  }
 }
 
 function hideLaunchNodeModal() {
   const overlay = document.getElementById('modal-launch-node');
-  overlay.classList.remove('active');
-  setTimeout(() => overlay.style.display = 'none', 200);
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.style.display = 'none', 200);
+  }
 }
 
 function toggleMnemonicField(val) {
-  document.getElementById('node-field-mnemonic').style.display = val === 'recover' ? 'block' : 'none';
+  const mField = document.getElementById('node-field-mnemonic');
+  if (mField) {
+    mField.style.display = val === 'recover' ? 'block' : 'none';
+  }
 }
 
 function autoFillMoniker() {
-  const type = document.getElementById('node-input-type').value;
+  const typeEl = document.getElementById('node-input-type');
+  const type = typeEl ? typeEl.value : 'wireguard';
+  
   const activeIp = getActiveServer();
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
   const activeServer = servers.find(s => s.ip === activeIp);
@@ -138,36 +172,48 @@ function autoFillMoniker() {
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, '');
 
-  document.getElementById('node-input-moniker').value = moniker;
+  setElementValue('node-input-moniker', moniker);
 }
 
 // ── Custom Modal: Wallet Generated Success ───
 function showWalletSuccessModal(address, mnemonic) {
-  document.getElementById('success-wallet-address').value = address;
+  setElementValue('success-wallet-address', address);
+  
+  const mGroup = document.getElementById('success-mnemonic-group');
   if (mnemonic) {
-    document.getElementById('success-mnemonic-group').style.display = 'block';
-    document.getElementById('success-wallet-mnemonic').value = mnemonic;
+    if (mGroup) mGroup.style.display = 'block';
+    setElementValue('success-wallet-mnemonic', mnemonic);
   } else {
-    document.getElementById('success-mnemonic-group').style.display = 'none';
+    if (mGroup) mGroup.style.display = 'none';
   }
   const overlay = document.getElementById('modal-wallet-success');
-  overlay.style.display = 'flex';
-  setTimeout(() => overlay.classList.add('active'), 10);
+  if (overlay) {
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('active'), 10);
+  }
 }
 
 function hideWalletSuccessModal() {
   const overlay = document.getElementById('modal-wallet-success');
-  overlay.classList.remove('active');
-  setTimeout(() => overlay.style.display = 'none', 200);
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.style.display = 'none', 200);
+  }
 }
 
 // ── Server CRUD Operations ───────────────────────────
 function submitAddServer() {
-  const name = document.getElementById('server-input-name').value.trim();
-  const ip = document.getElementById('server-input-ip').value.trim();
-  const port = document.getElementById('server-input-ssh-port').value.trim();
-  const user = document.getElementById('server-input-ssh-user').value.trim();
-  const key = document.getElementById('server-input-ssh-key').value.trim();
+  const nameEl = document.getElementById('server-input-name');
+  const ipEl = document.getElementById('server-input-ip');
+  const portEl = document.getElementById('server-input-ssh-port');
+  const userEl = document.getElementById('server-input-ssh-user');
+  const keyEl = document.getElementById('server-input-ssh-key') || document.getElementById('server-input-key');
+
+  const name = nameEl ? nameEl.value.trim() : '';
+  const ip = ipEl ? ipEl.value.trim() : '';
+  const port = portEl ? portEl.value.trim() : '22';
+  const user = userEl ? userEl.value.trim() : 'root';
+  const key = keyEl ? keyEl.value.trim() : '';
 
   if (!name || !ip || !user || !key) {
     alert('الرجاء إدخال اسم الخادم، الـ IP، اسم المستخدم وكلمة المرور/مفتاح SSH');
@@ -223,6 +269,8 @@ function removeServer(primaryIp) {
 
 function renderServersTable() {
   const body = document.getElementById('servers-table-body');
+  if (!body) return;
+  
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
 
   if (!servers.length) {
@@ -256,19 +304,27 @@ function renderServersTable() {
 
 // ── Node Deploy & Remove Operations ──────────────────
 async function submitLaunchNode() {
-  const type = document.getElementById('node-input-type').value;
-  const ip = document.getElementById('node-input-ip').value;
-  const moniker = document.getElementById('node-input-moniker').value.trim();
-  const mode = document.getElementById('node-input-wallet-mode').value;
-  const mnemonic = document.getElementById('node-input-mnemonic').value.trim();
+  const typeEl = document.getElementById('node-input-type');
+  const ipEl = document.getElementById('node-input-ip');
+  const monikerEl = document.getElementById('node-input-moniker');
+  const modeEl = document.getElementById('node-input-wallet-mode');
+  const mnemonicEl = document.getElementById('node-input-mnemonic');
+
+  const type = typeEl ? typeEl.value : '';
+  const ip = ipEl ? ipEl.value : '';
+  const moniker = monikerEl ? monikerEl.value.trim() : '';
+  const mode = modeEl ? modeEl.value : 'auto';
+  const mnemonic = mnemonicEl ? mnemonicEl.value.trim() : '';
 
   if (!moniker) return alert('الرجاء إدخال اسم النود (Moniker)');
   if (mode === 'recover' && !mnemonic) return alert('الرجاء إدخال كلمات الاسترداد');
 
   const btn = document.getElementById('btn-submit-node');
-  const oldText = btn.innerHTML;
-  btn.innerHTML = 'جاري إطلاق الحاوية… <span class="spinner"></span>';
-  btn.disabled = true;
+  const oldText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = 'جاري إطلاق الحاوية… <span class="spinner"></span>';
+    btn.disabled = true;
+  }
 
   try {
     const res = await apiFetch('/api/nodes', {
@@ -290,8 +346,10 @@ async function submitLaunchNode() {
   } catch (e) {
     alert('خطأ أثناء إطلاق النود: ' + e.message);
   } finally {
-    btn.innerHTML = oldText;
-    btn.disabled = false;
+    if (btn) {
+      btn.innerHTML = oldText;
+      btn.disabled = false;
+    }
   }
 }
 
@@ -314,12 +372,15 @@ async function deleteNode(moniker) {
 
 // ── Global Settings Handlers ─────────────────────────
 function loadSettingsInputs() {
-  document.getElementById('setting-moniker').value = localStorage.getItem('setting_moniker') || '{hostname}-{type}';
+  setElementValue('setting-moniker', localStorage.getItem('setting_moniker') || '{hostname}-{type}');
 }
 
 function saveGlobalSettings() {
-  localStorage.setItem('setting_moniker', document.getElementById('setting-moniker').value);
-  alert('تم حفظ الإعدادات بنجاح!');
+  const mEl = document.getElementById('setting-moniker');
+  if (mEl) {
+    localStorage.setItem('setting_moniker', mEl.value);
+    alert('تم حفظ الإعدادات بنجاح!');
+  }
 }
 
 // ── API Fetch Wrapper ────────────────────────────────
@@ -361,12 +422,14 @@ function loadServersList() {
   if (!select) return;
   
   const servers = JSON.parse(localStorage.getItem('nodepin_servers') || '[]');
+  const launchBtn = document.getElementById('btn-launch-node');
+  
   if (servers.length > 0) {
     select.style.display = 'inline-block';
-    document.getElementById('btn-launch-node').style.display = 'inline-flex';
+    if (launchBtn) launchBtn.style.display = 'inline-flex';
   } else {
     select.style.display = 'none';
-    document.getElementById('btn-launch-node').style.display = 'none';
+    if (launchBtn) launchBtn.style.display = 'none';
   }
 
   select.innerHTML = '<option value="">-- اختر خادماً --</option>';
@@ -435,13 +498,15 @@ async function checkAuth() {
   const r = await apiFetch('/api/health').catch(() => null);
   if (r && r.ok) {
     const h = r.headers.get('x-auth-disabled');
-    if (!h) document.getElementById('logout-btn').style.display = 'inline-flex';
+    const logBtn = document.getElementById('logout-btn');
+    if (!h && logBtn) logBtn.style.display = 'inline-flex';
   }
 }
 
 // ── containers ────────────────────────────────────────
 async function loadContainers() {
   const el = document.getElementById('containers');
+  if (!el) return;
   try {
     const res = await apiFetch('/api/containers');
     if (!res.ok) throw new Error(res.statusText);
@@ -449,9 +514,12 @@ async function loadContainers() {
     const cs = data.containers || [];
 
     // update summary
-    document.getElementById('s-total').textContent   = cs.length;
-    document.getElementById('s-running').textContent = cs.filter(c=>c.state==='running').length;
-    document.getElementById('s-stopped').textContent = cs.filter(c=>c.state!=='running').length;
+    const sTotal = document.getElementById('s-total');
+    const sRunning = document.getElementById('s-running');
+    const sStopped = document.getElementById('s-stopped');
+    if (sTotal) sTotal.textContent = cs.length;
+    if (sRunning) sRunning.textContent = cs.filter(c=>c.state==='running').length;
+    if (sStopped) sStopped.textContent = cs.filter(c=>c.state!=='running').length;
 
     if (!cs.length) { el.innerHTML = '<div class="placeholder">لا توجد حاويات NodePIN مضافة على هذا الخادم.</div>'; return; }
 
@@ -480,13 +548,15 @@ async function loadContainers() {
 // ── metrics ───────────────────────────────────────────
 async function loadMetrics() {
   const el = document.getElementById('metrics');
+  if (!el) return;
   try {
     const res = await apiFetch('/api/metrics');
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
     const entries = Object.entries(data.nodes || {});
 
-    document.getElementById('s-networks').textContent = entries.length;
+    const sNet = document.getElementById('s-networks');
+    if (sNet) sNet.textContent = entries.length;
 
     if (!entries.length) { el.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً على هذا السيرفر.</div>'; return; }
 
@@ -540,15 +610,26 @@ async function refreshAll() {
   const activeTab = window.location.hash || '#dashboard';
   if (activeTab !== '#dashboard') return;
 
-  document.getElementById('last-update').textContent = 'آخر تحديث: ' + ts();
+  const lastUp = document.getElementById('last-update');
+  if (lastUp) lastUp.textContent = 'آخر تحديث: ' + ts();
+  
   const server = getActiveServer();
+  const sTotal = document.getElementById('s-total');
+  const sRunning = document.getElementById('s-running');
+  const sStopped = document.getElementById('s-stopped');
+  const sNet = document.getElementById('s-networks');
+
   if (!server) {
-    document.getElementById('s-total').textContent = '0';
-    document.getElementById('s-running').textContent = '0';
-    document.getElementById('s-stopped').textContent = '0';
-    document.getElementById('s-networks').textContent = '0';
-    document.getElementById('containers').innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من تبويب "إدارة الخوادم" لبدء العمل.</div>';
-    document.getElementById('metrics').innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً.</div>';
+    if (sTotal) sTotal.textContent = '0';
+    if (sRunning) sRunning.textContent = '0';
+    if (sStopped) sStopped.textContent = '0';
+    if (sNet) sNet.textContent = '0';
+    
+    const cont = document.getElementById('containers');
+    if (cont) cont.innerHTML = '<div class="placeholder">⚠️ لا توجد خوادم مضافة حالياً. يرجى إضافة خادمك الأول من تبويب "إدارة الخوادم" لبدء العمل.</div>';
+    
+    const metr = document.getElementById('metrics');
+    if (metr) metr.innerHTML = '<div class="placeholder">لا توجد شبكات مفعّلة حالياً.</div>';
     return;
   }
   await Promise.all([loadContainers(), loadMetrics()]);
